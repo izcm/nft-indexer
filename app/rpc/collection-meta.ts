@@ -5,8 +5,6 @@ import { clientsByChainId } from './clients.js'
 // abis
 import { erc165Abi } from '#app/lib/blockchain/abi/erc165.js'
 
-const RPC_URL = process.env.RPC_URL
-
 export const getCollectionMeta = async (chainId: number, address: Hex) => {
   const client = clientsByChainId[chainId]
 

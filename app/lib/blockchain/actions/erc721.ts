@@ -1,0 +1,3 @@
+// === read ===
+
+export const readName = () => {}

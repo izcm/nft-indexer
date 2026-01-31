@@ -1,10 +1,8 @@
-import { Hex, PublicClient } from 'viem'
-import { clientsByChainId } from './clients.js'
-
-const RPC_URL = process.env.RPC_URL
+import { Hex } from 'viem'
+import { AppClient } from './clients.js'
 
 export const getTxMeta = async (
-  client: PublicClient,
+  client: AppClient,
   txHash: Hex
 ): Promise<{ tx: any; receipt: any }> => {
   const tx = await client.getTransaction({ hash: txHash })

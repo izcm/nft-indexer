@@ -1,12 +1,15 @@
 import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
-import type { Abi, PublicClient } from 'viem'
+
+import type { Abi } from 'viem'
+
+import { AppClient } from '#app/rpc/clients.js'
 
 import { getTxMeta } from '#app/rpc/tx-meta.js'
 
 import { settlementMetaFromTx as metaFromTx } from '#app/workers/settlements/logic.js'
 import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
 
-export const runSettlementWorker = async (client: PublicClient) => {
+export const runSettlementWorker = async (client: AppClient) => {
   const pending = await repo.findPendingMeta(25)
 
   if (pending.length === 0) return
@@ -16,6 +19,7 @@ export const runSettlementWorker = async (client: PublicClient) => {
       const txHash = s.execution.txHash
 
       const { receipt, tx } = await getTxMeta(client, txHash)
+
       const meta = await metaFromTx(tx, receipt, json.abi as Abi)
 
       await repo.updateWithMeta(txHash, meta)

@@ -1,4 +1,5 @@
-import { parseAbi, PublicClient } from 'viem'
+import { parseAbi } from 'viem'
+import { AppClient } from '#app/rpc/clients.js'
 
 import { SETTLEMENT_EVENT_EMITTER } from '#app/domain/constants/app.js'
 
@@ -9,7 +10,7 @@ import { ListenerItem } from './types/context.js'
 // LISTENERS
 // ------------------
 
-export const start = (client: PublicClient) => {
+export const start = (client: AppClient) => {
   client.watchEvent({
     address: SETTLEMENT_EVENT_EMITTER, // todo: address per chain / client
     events: parseAbi([
@@ -19,14 +20,14 @@ export const start = (client: PublicClient) => {
       logs.forEach(log =>
         routeLog({
           log,
-          chainId: client.chain!.id,
+          chainId: client.chain.id,
         })
       )
     },
     onError: error => console.log(error),
   })
-  console.log(`👂 Listening for events on chain: ${client.chain!.id}`)
-  console.log(`👁️ Watching contract: ${SETTLEMENT_EVENT_EMITTER}`)
+  console.log(`Listening for events on chain: ${client.chain!.id}`)
+  console.log(`Watching contract: ${SETTLEMENT_EVENT_EMITTER}`)
 }
 
 const routers: Record<string, (item: ListenerItem) => void> = {
