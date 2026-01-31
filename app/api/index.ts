@@ -14,6 +14,10 @@ const app = Fastify({
   logger: true,
 })
 
+// ------------------
+// API SERVER
+// ------------------
+
 export const start = async () => {
   // register all defined bodies
   app.addSchema(orderCreateBody)

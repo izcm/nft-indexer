@@ -3,11 +3,14 @@ import 'dotenv/config'
 // db
 import { initDb } from './db/mongo.js'
 
-// listener
-import './listeners/index.js'
+// clients
+import { anvilClient } from './rpc/clients.js'
+
+// listsners
+import { start as startListeners } from './listeners/index.js'
 
 // api
-import { start as startServer } from './api/server.js'
+import { start as startServer } from './api/index.js'
 
 // workers
 import { start as startWorkers } from './workers/index.js'
@@ -24,8 +27,17 @@ async function main() {
   console.log('starting API server...')
   await startServer()
 
-  console.log('starting background workers...')
-  startWorkers()
+  // rpc stuff
+
+  const clients = [anvilClient]
+
+  clients.forEach(client => {
+    console.log('starting listeners...')
+    startListeners(client)
+
+    console.log('starting background workers...')
+    startWorkers(client)
+  })
 }
 
 main().catch(err => {

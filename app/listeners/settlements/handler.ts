@@ -3,23 +3,23 @@ import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json
 import type { Abi, Hex } from 'viem'
 
 // db and rpc stuff
-import { settlementRepo } from '#app/repos/settlement.repo.js'
+import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
 import { getTxMeta } from '#app/rpc/tx-meta.js'
 
 import { ListenerItem } from '../types/context.js'
 
-// pure methods
-import { settlementFromLog, settlementMetaFromTx } from './logic.js'
+// logic
+import { settlementFromLog as fromLog } from './logic.js'
 
-export function handle(item: ListenerItem) {
-  const settlement = settlementFromLog(item.log, item.chainId)
-  settlementRepo.save(settlement)
+export function handleSettlement(item: ListenerItem) {
+  const settlement = fromLog(item.log, item.chainId)
+  repo.save(settlement)
 
-  void enrich(item.log.transactionHash)
+  // void enrich(item.chainId, item.log.transactionHash)
 }
 
-const enrich = async (txHash: Hex) => {
-  const { receipt, tx } = await getTxMeta(txHash)
-  const meta = await settlementMetaFromTx(tx, receipt, json.abi as Abi)
-  await settlementRepo.updateWithMeta(txHash, meta)
-}
+// const enrich = async (chainId: number, txHash: Hex) => {
+//   const { receipt, tx } = await getTxMeta(chainId, txHash)
+//   const meta = await metaFromTx(tx, receipt, json.abi as Abi)
+//   await repo.updateWithMeta(txHash, meta)
+// }

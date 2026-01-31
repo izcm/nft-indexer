@@ -1,27 +1,16 @@
 import { Hex } from 'viem'
 import { ObjectId } from 'mongodb'
 
-import { getDb } from '#app/db/mongo.js'
+import { dbSettlements, dbOrderStates } from '#app/db/mongo.js'
 
 import { COLLECTIONS } from '#app/domain/constants/db.js'
 
 import { Settlement, SettlementMeta } from '#app/domain/types/settlement.js'
 import { FindPageArgs } from '#app/repos/types.js'
 
-import { orderRepo } from './order.repo.js'
 import { OrderState } from '#app/domain/types/order-state.js'
 
 // === helpers ===
-
-const dbSettlements = () => {
-  const db = getDb()
-  return db.collection<Settlement>(COLLECTIONS.SETTLEMENTS)
-}
-
-const dbOrderStates = () => {
-  const db = getDb()
-  return db.collection<OrderState>(COLLECTIONS.ORDER_STATES)
-}
 
 export const settlementRepo = {
   // === read ===
@@ -82,7 +71,7 @@ export const settlementRepo = {
 
     await Promise.all([
       dbOrderStates().updateOne(
-        { orderHash: settlement.orderHash },
+        { chainId: settlement.execution.chainId, orderHash: settlement.orderHash },
         {
           $set: {
             status: 'filled',

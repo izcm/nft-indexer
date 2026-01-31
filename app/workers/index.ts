@@ -1,9 +1,14 @@
-import { runSettlementWorker as runSettlementMetaWorker } from './settlement-meta.worker.js'
+import { PublicClient } from 'viem'
+import { runSettlementWorker } from './settlements/runner.js'
 
-export const start = () => {
+// ------------------
+// WORKERS
+// ------------------
+
+export const start = (client: PublicClient) => {
   setInterval(async () => {
     try {
-      await runSettlementMetaWorker()
+      await runSettlementWorker(client)
     } catch (e) {
       console.error('[workers] meta worker crashed', e)
     }

@@ -5,19 +5,7 @@ import { COLLECTIONS } from '#app/domain/constants/db.js'
 import { FindPageArgs } from '#app/repos/types.js'
 import { hashOrderStruct, Order, OrderRecord } from '#app/domain/types/order.js'
 
-import { getDb } from '#app/db/mongo.js'
-import { Hex } from 'viem'
-import { OrderState } from '#app/domain/types/order-state.js'
-
-const dbOrders = () => {
-  const db = getDb()
-  return db.collection<OrderRecord>(COLLECTIONS.ORDERS)
-}
-
-const dbOrderStates = () => {
-  const db = getDb()
-  return db.collection<OrderState>(COLLECTIONS.ORDER_STATES)
-}
+import { dbOrderStates, dbOrders } from '#app/db/mongo.js'
 
 // TODO: dont use hashOrderStruct => use viem typedData functions or smth similar
 export const orderRepo = {
@@ -55,7 +43,6 @@ export const orderRepo = {
 
   // === write ===
 
-  // TODO: make orderState.status depend on the timestamps of `order`
   async save(chainId: number, order: Order) {
     const { signature, ...orderCore } = order
 

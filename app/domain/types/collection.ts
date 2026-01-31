@@ -16,4 +16,6 @@ export type Collection = {
     twitterUsername?: string
     externalUrl?: string
   }
+  metaStatus: 'DONE' | 'PENDING' | 'FAILED'
+  metaError?: string
 }
