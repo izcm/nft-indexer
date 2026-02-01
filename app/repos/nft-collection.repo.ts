@@ -1,17 +1,31 @@
 import { ObjectId } from 'mongodb'
 import { Hex } from 'viem'
 
-import { dbNFTCollections } from '#app/db/mongo.js'
+import { nftCollections } from '#app/db/mongo.js'
 import { NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
 
 export const nftCollectionRepo = {
-  // === write ===
+  // === read ===
+
   async findById(id: ObjectId) {
-    return dbNFTCollections().findOne({ _id: id })
+    return nftCollections().findOne({ _id: id })
+  },
+
+  async findMissingBaseMeta(limit: number) {
+    return nftCollections()
+      .find({ baseMetaFetched: false, metaStatus: 'PENDING' })
+      .limit(limit)
+      .toArray()
+  },
+
+  // === write ===
+
+  async save(chainId: number, address: Hex) {
+    return nftCollections().insertOne
   },
 
   async patchMeta(chainId: number, address: Hex, patch: NFTCollectionMetaPatch) {
-    await dbNFTCollections().updateOne(
+    await nftCollections().updateOne(
       { chainId, address },
       {
         $set: patch,

@@ -4,7 +4,7 @@ import type { Abi, Hex } from 'viem'
 
 // db and rpc stuff
 import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
-import { getTxMeta } from '#app/rpc/tx-meta.js'
+import { getTxMeta } from '#app/chain/calls/tx-meta.js'
 
 import { ListenerItem } from '../types/context.js'
 

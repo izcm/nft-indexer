@@ -1,7 +1,7 @@
 import { Hex } from 'viem'
 import { ObjectId } from 'mongodb'
 
-import { dbSettlements, dbOrderStates } from '#app/db/mongo.js'
+import { settlements, orderStates } from '#app/db/mongo.js'
 
 import { Settlement, SettlementMeta } from '#app/domain/types/settlement.js'
 import { FindPageArgs } from '#app/repos/types.js'
@@ -9,11 +9,11 @@ import { FindPageArgs } from '#app/repos/types.js'
 export const settlementRepo = {
   // === read ===
   async findById(id: ObjectId) {
-    return dbSettlements().findOne({ _id: id })
+    return settlements().findOne({ _id: id })
   },
 
   async findPendingMeta(limit: number) {
-    return dbSettlements().find({ metaStatus: 'PENDING' }).limit(limit).toArray()
+    return settlements().find({ metaStatus: 'PENDING' }).limit(limit).toArray()
   },
 
   async findPage({ filters, from, to, cursor, limit }: FindPageArgs) {
@@ -39,7 +39,7 @@ export const settlementRepo = {
       ]
     }
 
-    const docs = await dbSettlements()
+    const docs = await settlements()
       .find(query)
       .sort({ [blockTs]: -1, _id: -1 })
       .limit(limit + 1)
@@ -64,7 +64,7 @@ export const settlementRepo = {
     const { orderHash, execution } = settlement
 
     await Promise.all([
-      dbOrderStates().updateOne(
+      orderStates().updateOne(
         { chainId: settlement.chainId, orderHash: settlement.orderHash },
         {
           $set: {
@@ -74,7 +74,7 @@ export const settlementRepo = {
         },
         { upsert: true }
       ),
-      dbSettlements().insertOne({
+      settlements().insertOne({
         ...settlement,
         ingestedAt: Date.now(),
       }),
@@ -82,7 +82,7 @@ export const settlementRepo = {
   },
 
   async finalizeWithMeta(chainId: number, txHash: Hex, meta: SettlementMeta) {
-    dbSettlements().updateOne(
+    settlements().updateOne(
       { chainId, 'execution.txHash': txHash },
       {
         $set: {
@@ -95,7 +95,7 @@ export const settlementRepo = {
   },
 
   async markMetaDone(chainId: number, txHash: Hex, meta: SettlementMeta) {
-    await dbSettlements().updateOne(
+    await settlements().updateOne(
       { chainId, 'execution.txHash': txHash },
       {
         $set: {
@@ -108,7 +108,7 @@ export const settlementRepo = {
   },
 
   async markMetaFailed(chainId: number, txHash: Hex, error: string) {
-    await dbSettlements().updateOne(
+    await settlements().updateOne(
       { chainId, 'execution.txHash': txHash },
       {
         $set: {

@@ -2,7 +2,6 @@ import { Hex } from 'viem'
 
 // metaStatus meaning:
 // PENDING  -> no metadata fetched yet
-// PARTIAL  -> some metadata fetched
 // DONE     -> all intended metadata sources processed
 // FAILED   -> ingestion failed irrecoverably
 
@@ -22,11 +21,12 @@ export type NFTCollection = {
     twitterUsername?: string
     externalUrl?: string
   }
-  metaStatus: 'PARTIAL' | 'DONE' | 'PENDING' | 'FAILED'
+  metaStatus: 'DONE' | 'PENDING' | 'FAILED'
+  baseMetaFetched: boolean // symbol, name + potential totalSupply + tokenType
   updatedAt: number
 }
 
 // incremental metadata eg. fetched across requests / partial updates
 export type NFTCollectionMetaPatch = Partial<
-  Omit<NFTCollection, 'chainId' | 'address' | 'metaStatus' | 'updatedAt'>
+  Omit<NFTCollection, 'chainId' | 'address' | 'metaStatus' | 'baseMetaFetched' | 'updatedAt'>
 >

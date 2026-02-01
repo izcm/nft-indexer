@@ -1,5 +1,5 @@
 import { runSettlementWorker } from './settlements/runner.js'
-import { AppClient } from '#app/rpc/clients.js'
+import { AppClient } from '#app/chain/clients.js'
 
 // ------------------
 // WORKERS

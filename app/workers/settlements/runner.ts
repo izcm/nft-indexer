@@ -2,9 +2,9 @@ import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json
 
 import type { Abi } from 'viem'
 
-import { AppClient } from '#app/rpc/clients.js'
+import { AppClient } from '#app/chain/clients.js'
 
-import { getTxMeta } from '#app/rpc/tx-meta.js'
+import { getTxMeta } from '#app/chain/calls/tx-meta.js'
 
 import { settlementMetaFromTx as metaFromTx } from '#app/workers/settlements/logic.js'
 import { settlementRepo as repo } from '#app/repos/settlement.repo.js'

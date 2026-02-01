@@ -1,8 +1,7 @@
-import { Hex } from 'viem'
-import { AppClient } from './clients.js'
+import { Hex, PublicClient } from 'viem'
 
 export const getTxMeta = async (
-  client: AppClient,
+  client: PublicClient,
   txHash: Hex
 ): Promise<{ tx: any; receipt: any }> => {
   const tx = await client.getTransaction({ hash: txHash })

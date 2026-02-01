@@ -3,13 +3,13 @@ import { ObjectId } from 'mongodb'
 import { FindPageArgs } from '#app/repos/types.js'
 import { hashOrderStruct, Order, OrderRecord } from '#app/domain/types/order.js'
 
-import { dbOrderStates, dbOrders, getClient } from '#app/db/mongo.js'
+import { orderStates, orders, getClient } from '#app/db/mongo.js'
 
 // TODO: dont use hashOrderStruct => use viem typedData functions or smth similar
 export const orderRepo = {
   // === read ===
   async findById(id: ObjectId) {
-    return dbOrders().findOne({ _id: id })
+    return orders().findOne({ _id: id })
   },
 
   async findPage({ filters, from, to, cursor, limit }: FindPageArgs) {
@@ -20,7 +20,7 @@ export const orderRepo = {
       const [ts, id] = cursor.split('_')
     }
 
-    const docs = await dbOrders()
+    const docs = await orders()
       .find(query)
       // .sort({ [blockTs]: -1, _id: -1 })
       .limit(limit + 1)
@@ -55,7 +55,7 @@ export const orderRepo = {
 
     try {
       await session.withTransaction(async () => {
-        await dbOrderStates().insertOne(
+        await orderStates().insertOne(
           {
             chainId,
             orderHash: hashOrderStruct(orderCore),
@@ -65,7 +65,7 @@ export const orderRepo = {
           { session }
         )
 
-        const res = await dbOrders().insertOne(
+        const res = await orders().insertOne(
           {
             orderHash,
             chainId,

@@ -1,6 +1,7 @@
+import { Hex } from 'viem'
+
 import { APP_NAME, APP_VERSION, CHAIN_ID, VERIFYING_CONTRACT } from '#app/domain/constants/app.js'
 import { OrderCore } from '#app/domain/types/order.js'
-import { Hex } from 'viem'
 
 export const dmrktDomain = {
   name: APP_NAME,

@@ -34,19 +34,19 @@ export const getClient = (): MongoClient => {
 
 // === db getters ===
 
-export const dbOrders = () => {
+export const orders = () => {
   return col<OrderRecord>(COLLECTIONS.ORDERS)
 }
 
-export const dbNFTCollections = () => {
+export const nftCollections = () => {
   return col<NFTCollection>(COLLECTIONS.NFT_COLLECTIONS)
 }
 
-export const dbSettlements = () => {
+export const settlements = () => {
   return col<Settlement>(COLLECTIONS.SETTLEMENTS)
 }
 
-export const dbOrderStates = () => {
+export const orderStates = () => {
   return col<OrderState>(COLLECTIONS.ORDER_STATES)
 }
 

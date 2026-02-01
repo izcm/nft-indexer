@@ -1,7 +1,7 @@
-import { dbNFTCollections, dbOrders, dbSettlements } from '../mongo.js'
+import { nftCollections, orders, settlements } from '../mongo.js'
 
 export const ensureIndexes = async () => {
-  await dbOrders().createIndex({ chainId: 1, orderHash: 1 }, { unique: true })
-  await dbSettlements().createIndex({ chainId: 1, orderHash: 1 }, { unique: true })
-  await dbNFTCollections().createIndex({ chainId: 1, address: 1 }, { unique: true })
+  await orders().createIndex({ chainId: 1, orderHash: 1 }, { unique: true })
+  await settlements().createIndex({ chainId: 1, orderHash: 1 }, { unique: true })
+  await nftCollections().createIndex({ chainId: 1, address: 1 }, { unique: true })
 }
