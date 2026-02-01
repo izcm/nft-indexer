@@ -1,7 +1,8 @@
-import { dbNFTCollections } from '#app/db/mongo.js'
-import { NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
 import { ObjectId } from 'mongodb'
 import { Hex } from 'viem'
+
+import { dbNFTCollections } from '#app/db/mongo.js'
+import { NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
 
 export const nftCollectionRepo = {
   // === write ===

@@ -1,6 +1,19 @@
-# local docker-compose
 services:
   mongo:
     image: mongo:7
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
     ports:
       - '27017:27017'
+    healthcheck:
+      test: >
+        echo "try {
+          rs.status()
+        } catch (e) {
+          rs.initiate({
+            _id: 'rs0',
+            members: [{ _id: 0, host: 'localhost:27017' }]
+          })
+        }" | mongosh --quiet
+      interval: 5s
+      timeout: 10s
+      retries: 30

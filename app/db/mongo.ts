@@ -1,4 +1,7 @@
-import { MongoClient, Db } from 'mongodb'
+import { MongoClient, Db, Collection, Document } from 'mongodb'
+
+// db config
+import { ensureIndexes } from './config/ensure-indexes.js'
 
 // constants
 import { COLLECTIONS } from '#app/domain/constants/db.js'
@@ -8,33 +11,11 @@ import { OrderState } from '#app/domain/types/order-state.js'
 import { OrderRecord } from '#app/domain/types/order.js'
 import { Settlement } from '#app/domain/types/settlement.js'
 import { NFTCollection } from '#app/domain/types/nft-collection.js'
-import { ensureIndexes } from './config/ensure-indexes.js'
 
+let client: MongoClient | null = null
 let db: Db | null = null
 
-// === db getters ===
-
-export const dbOrders = () => {
-  const db = getDb()
-  return db.collection<OrderRecord>(COLLECTIONS.ORDERS)
-}
-
-export const dbNFTCollections = () => {
-  const db = getDb()
-  return db.collection<NFTCollection>(COLLECTIONS.NFT_COLLECTIONS)
-}
-
-export const dbSettlements = () => {
-  const db = getDb()
-  return db.collection<Settlement>(COLLECTIONS.SETTLEMENTS)
-}
-
-export const dbOrderStates = () => {
-  const db = getDb()
-  return db.collection<OrderState>(COLLECTIONS.ORDER_STATES)
-}
-
-// === initializer ===
+// === mongo drivers ===
 
 export const getDb = (): Db => {
   if (!db) {
@@ -42,6 +23,38 @@ export const getDb = (): Db => {
   }
   return db
 }
+
+export const getClient = (): MongoClient => {
+  if (!client) {
+    throw new Error('Client not initialized')
+  }
+
+  return client
+}
+
+// === db getters ===
+
+export const dbOrders = () => {
+  return col<OrderRecord>(COLLECTIONS.ORDERS)
+}
+
+export const dbNFTCollections = () => {
+  return col<NFTCollection>(COLLECTIONS.NFT_COLLECTIONS)
+}
+
+export const dbSettlements = () => {
+  return col<Settlement>(COLLECTIONS.SETTLEMENTS)
+}
+
+export const dbOrderStates = () => {
+  return col<OrderState>(COLLECTIONS.ORDER_STATES)
+}
+
+const col = <T extends Document>(name: string): Collection<T> => {
+  return getDb().collection<T>(name)
+}
+
+// === initializer ===
 
 export const initDb = async () => {
   const MONGODB_URI = process.env.MONGODB_URI
@@ -51,7 +64,7 @@ export const initDb = async () => {
     throw new Error('Error reading db config from .env')
   }
 
-  const client = new MongoClient(MONGODB_URI)
+  client = new MongoClient(MONGODB_URI)
   await client.connect()
 
   db = client.db(DB_NAME)

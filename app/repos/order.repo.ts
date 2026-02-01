@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 import { FindPageArgs } from '#app/repos/types.js'
 import { hashOrderStruct, Order, OrderRecord } from '#app/domain/types/order.js'
 
-import { dbOrderStates, dbOrders } from '#app/db/mongo.js'
+import { dbOrderStates, dbOrders, getClient } from '#app/db/mongo.js'
 
 // TODO: dont use hashOrderStruct => use viem typedData functions or smth similar
 export const orderRepo = {
@@ -41,26 +41,47 @@ export const orderRepo = {
 
   // === write ===
 
-  async save(chainId: number, order: Order) {
-    const { signature, ...orderCore } = order
+  // --- NB: no order may exist without an orderState      ---
+  // --- an orderState may exist without a connected order ---
 
+  async save(chainId: number, order: Order) {
+    const client = getClient()
+    const session = client.startSession()
+
+    const { signature, ...orderCore } = order
     const orderHash = hashOrderStruct(orderCore)
 
-    // create order_state
-    await dbOrderStates().insertOne({
-      chainId,
-      orderHash: hashOrderStruct(orderCore),
-      status: 'active',
-      updatedAt: Date.now(),
-    })
+    let orderId
 
-    return dbOrders().insertOne({
-      orderHash,
-      chainId,
-      order: {
-        ...orderCore,
-        signature,
-      },
-    })
+    try {
+      await session.withTransaction(async () => {
+        await dbOrderStates().insertOne(
+          {
+            chainId,
+            orderHash: hashOrderStruct(orderCore),
+            status: 'active',
+            updatedAt: Date.now(),
+          },
+          { session }
+        )
+
+        const res = await dbOrders().insertOne(
+          {
+            orderHash,
+            chainId,
+            order: {
+              ...orderCore,
+              signature,
+            },
+          },
+          { session }
+        )
+        orderId = res.insertedId
+      })
+    } finally {
+      await session.endSession()
+    }
+
+    return orderId
   },
 }

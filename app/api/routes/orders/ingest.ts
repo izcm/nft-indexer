@@ -28,7 +28,7 @@ export const ordersIngest = (fastify: FastifyInstance) => {
         return API_ERRORS.INVALID_ORDER
       }
 
-      const { insertedId } = await repo.save(chainId, order)
+      const insertedId = await repo.save(chainId, order)
 
       res.code(201).header('Location', `/api/orders/${insertedId}`)
 
