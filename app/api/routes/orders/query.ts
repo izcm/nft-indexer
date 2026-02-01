@@ -3,8 +3,8 @@ import { ObjectId } from 'mongodb'
 
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/api.js'
 
-import { byIdParams, paginationQueryParams } from '#app/schemas/shared.js'
-import { orderQueryableFields } from '#app/schemas/order.js'
+import { byIdParams, paginationQueryParams } from '#app/api/schemas/shared.js'
+import { orderQueryableFields } from '#app/api/schemas/order.js'
 
 import { orderRepo as repo } from '#app/repos/order.repo.js'
 

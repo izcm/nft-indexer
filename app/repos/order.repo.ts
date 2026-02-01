@@ -1,7 +1,5 @@
 import { ObjectId } from 'mongodb'
 
-import { COLLECTIONS } from '#app/domain/constants/db.js'
-
 import { FindPageArgs } from '#app/repos/types.js'
 import { hashOrderStruct, Order, OrderRecord } from '#app/domain/types/order.js'
 

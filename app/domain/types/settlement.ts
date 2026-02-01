@@ -4,7 +4,9 @@ import type { Hex } from 'viem'
 import { SideLabel } from './order.js'
 
 export type Settlement = {
+  chainId: number
   orderHash: Hex
+
   collection: Hex
   tokenId: string
   seller: Hex
@@ -15,7 +17,6 @@ export type Settlement = {
   orderAttributes?: SettlementMeta['order']
 
   execution: {
-    chainId: number
     logIndex: number
     txHash: Hex
     block: BlockTime
@@ -26,6 +27,8 @@ export type Settlement = {
   metaError?: string
   ingestedAt: number
 }
+
+// atomic metadata eg. fetched in one request ( no partial data )
 
 export type SettlementMeta = {
   order: {

@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/api.js'
 import { ADDR_REGEX } from '#app/domain/constants/regex.js'
 
-import { byIdParams } from '#app/schemas/shared.js'
+import { byIdParams } from '#app/api/schemas/shared.js'
 
 import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
 

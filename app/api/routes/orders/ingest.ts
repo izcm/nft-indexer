@@ -1,7 +1,6 @@
 import { FastifyInstance } from 'fastify'
 
 import { API_ERRORS } from '#app/domain/constants/api.js'
-
 import { Order, validOrder } from '#app/domain/types/order.js'
 
 import { orderRepo as repo } from '#app/repos/order.repo.js'
@@ -28,10 +27,6 @@ export const ordersIngest = (fastify: FastifyInstance) => {
         res.code(400)
         return API_ERRORS.INVALID_ORDER
       }
-
-      // FOR ORDER STATE: SET CHAINID AS HEADER FIELD IN EACH REQ
-      // POST /api/orders
-      // X-Chain-Id: 1
 
       const { insertedId } = await repo.save(chainId, order)
 

@@ -10,6 +10,7 @@ import { settlementMetaFromTx as metaFromTx } from '#app/workers/settlements/log
 import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
 
 export const runSettlementWorker = async (client: AppClient) => {
+  const chainId = client.chain.id
   const pending = await repo.findPendingMeta(25)
 
   if (pending.length === 0) return
@@ -22,10 +23,10 @@ export const runSettlementWorker = async (client: AppClient) => {
 
       const meta = await metaFromTx(tx, receipt, json.abi as Abi)
 
-      await repo.updateWithMeta(txHash, meta)
+      await repo.finalizeWithMeta(chainId, txHash, meta)
     } catch (err: any) {
       console.log('[meta-worker] failed for ', s._id, err.message)
-      await repo.markMetaFailed(s.execution.txHash, err.message)
+      await repo.markMetaFailed(chainId, s.execution.txHash, err.message)
     }
   }
 }

@@ -22,6 +22,7 @@ describe('Settlement log => Settlement domain mapping', () => {
     // settlement data fields
     const { args } = log
 
+    expect(settlement.chainId).toBe(31337)
     expect(settlement.orderHash).toBe(args.orderHash)
 
     expect(settlement.collection).toBe(args.collection)
@@ -32,8 +33,6 @@ describe('Settlement log => Settlement domain mapping', () => {
 
     // chain / execution ctx
     const { execution } = settlement
-
-    expect(execution.chainId).toBe(31337)
 
     expect(execution.logIndex).toBe(Number(log.logIndex))
     expect(execution.txHash).toBe(log.transactionHash)

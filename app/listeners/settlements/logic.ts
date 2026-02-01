@@ -11,16 +11,19 @@ export const settlementFromLog = (log: SettlementLog, chainId: number): Settleme
   const { args } = log
 
   return {
+    chainId: chainId,
     orderHash: args.orderHash,
+
     collection: args.collection,
     tokenId: args.tokenId.toString(),
+
     seller: args.seller,
     buyer: args.buyer,
+
     currency: args.currency,
     priceWei: args.price.toString(),
 
     execution: {
-      chainId: chainId,
       logIndex: Number(log.logIndex),
       txHash: log.transactionHash,
 

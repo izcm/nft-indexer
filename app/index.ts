@@ -25,6 +25,8 @@ async function main() {
 
   logSection('Booting up d | mrkt indexer')
 
+  // db + server
+
   logSection('Database')
   console.log('initializing database connection...')
   await initDb()
@@ -34,7 +36,7 @@ async function main() {
   console.log('starting API server...')
   await startServer()
 
-  // rpc stuff
+  // background workers + listeners
 
   const clients: AppClient[] = [anvilClient]
 
