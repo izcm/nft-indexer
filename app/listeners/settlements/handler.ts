@@ -1,25 +1,14 @@
-import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
+import { settlementFromLog as fromLog } from './logic.js'
 
-import type { Abi, Hex } from 'viem'
-
-// db and rpc stuff
-import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
-import { getTxMeta } from '#app/chain/calls/tx-meta.js'
+import { settlementRepo } from '#app/repos/settlement.repo.js'
+import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 
 import { ListenerItem } from '../types/context.js'
 
-// logic
-import { settlementFromLog as fromLog } from './logic.js'
-
 export function handleSettlement(item: ListenerItem) {
   const settlement = fromLog(item.log, item.chainId)
-  repo.save(settlement)
+  const { chainId, collection } = settlement
 
-  // void enrich(item.chainId, item.log.transactionHash)
+  void settlementRepo.save(settlement)
+  void nftCollectionRepo.noteCollection(chainId, collection)
 }
-
-// const enrich = async (chainId: number, txHash: Hex) => {
-//   const { receipt, tx } = await getTxMeta(chainId, txHash)
-//   const meta = await metaFromTx(tx, receipt, json.abi as Abi)
-//   await repo.updateWithMeta(txHash, meta)
-// }

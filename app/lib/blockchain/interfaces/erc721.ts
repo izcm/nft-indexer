@@ -18,4 +18,6 @@ export const erc721For = (client: PublicClient) => {
       functionName: 'symbol',
     })
   }
+
+  return { readName, readSymbol }
 }

@@ -5,13 +5,9 @@ import { Hex } from 'viem'
 // DONE     -> all intended metadata sources processed
 // FAILED   -> ingestion failed irrecoverably
 
-export type NFTCollection = {
+export type NFTCollectionBase = {
   chainId: number
   address: Hex
-  name?: string
-  symbol?: string
-  totalSupply?: string
-  tokenType?: string
   imageUrl?: string
   bannerImageUrl?: string
   marketData?: {
@@ -22,11 +18,20 @@ export type NFTCollection = {
     externalUrl?: string
   }
   metaStatus: 'DONE' | 'PENDING' | 'FAILED'
-  baseMetaFetched: boolean // symbol, name + potential totalSupply + tokenType
+  chainMetaFetched: boolean // symbol, name, tokenType + potential totalSupply
   updatedAt: number
 }
 
 // incremental metadata eg. fetched across requests / partial updates
 export type NFTCollectionMetaPatch = Partial<
-  Omit<NFTCollection, 'chainId' | 'address' | 'metaStatus' | 'baseMetaFetched' | 'updatedAt'>
+  Omit<NFTCollectionBase, 'chainId' | 'address' | 'metaStatus' | 'baseMetaFetched' | 'updatedAt'>
 >
+
+export type NFTCollectionChainMeta = {
+  name: string
+  symbol: string
+  tokenType: string
+  totalSupply: string
+}
+
+export type NFTCollection = NFTCollectionBase & Partial<NFTCollectionChainMeta>
