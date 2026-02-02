@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 import { Hex } from 'viem'
 
 import { nftCollections } from '#app/db/mongo.js'
-import { NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
+import { NFTCollectionChainMeta, NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
 
 // TODO: may wanna move the state stuff out of repo
 const seenCollections = new Set<string>()
@@ -54,6 +54,20 @@ export const nftCollectionRepo = {
   },
 
   // === write ===
+
+  async finalizeChainMeta(
+    chainId: number,
+    address: Hex,
+    chainMeta: Partial<NFTCollectionChainMeta>
+  ) {
+    await nftCollections().updateOne(
+      { chainId, address },
+      {
+        $set: chainMeta,
+        updatedAt: Date.now(),
+      }
+    )
+  },
 
   async patchMeta(chainId: number, address: Hex, patch: NFTCollectionMetaPatch) {
     await nftCollections().updateOne(

@@ -82,7 +82,7 @@ export const settlementRepo = {
   },
 
   async finalizeWithMeta(chainId: number, txHash: Hex, meta: SettlementMeta) {
-    settlements().updateOne(
+    await settlements().updateOne(
       { chainId, 'execution.txHash': txHash },
       {
         $set: {
@@ -99,8 +99,6 @@ export const settlementRepo = {
       { chainId, 'execution.txHash': txHash },
       {
         $set: {
-          orderAttributes: meta.order,
-          'execution.txContext': meta.txContext,
           metaStatus: 'DONE',
         },
       }
@@ -125,3 +123,21 @@ export const settlementRepo = {
  * - Used only by workers
  * - Prettifies multichain code
  */
+
+export const settlementRepoFor = (chainId: number) => ({
+  findPendingMeta(limit: number) {
+    return settlements().find({ chainId, metaStatus: 'PENDING' }).limit(limit).toArray()
+  },
+
+  finalizeWithMeta(txHash: Hex, meta: SettlementMeta) {
+    return settlementRepo.finalizeWithMeta(chainId, txHash, meta)
+  },
+
+  async markMetaDone(txHash: Hex, meta: SettlementMeta) {
+    return settlementRepo.markMetaDone(chainId, txHash, meta)
+  },
+
+  async markMetaFailed(txHash: Hex, error: string) {
+    return settlementRepo.markMetaFailed(chainId, txHash, error)
+  },
+})
