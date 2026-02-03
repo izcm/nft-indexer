@@ -12,7 +12,7 @@ export const settlementRepo = {
     return settlements().findOne({ _id: id })
   },
 
-  async findPendingMeta(limit: number) {
+  async findPendingMeta(chainId: number, limit: number) {
     return settlements().find({ metaStatus: 'PENDING' }).limit(limit).toArray()
   },
 
@@ -63,7 +63,7 @@ export const settlementRepo = {
   async save(settlement: Settlement) {
     const { orderHash, execution } = settlement
 
-    await Promise.all([
+    return Promise.all([
       orderStates().updateOne(
         { chainId: settlement.chainId, orderHash: settlement.orderHash },
         {
@@ -81,8 +81,8 @@ export const settlementRepo = {
     ])
   },
 
-  async finalizeWithMeta(chainId: number, txHash: Hex, meta: SettlementMeta) {
-    await settlements().updateOne(
+  async finalizeMeta(chainId: number, txHash: Hex, meta: SettlementMeta) {
+    return settlements().updateOne(
       { chainId, 'execution.txHash': txHash },
       {
         $set: {
@@ -95,7 +95,7 @@ export const settlementRepo = {
   },
 
   async markMetaDone(chainId: number, txHash: Hex, meta: SettlementMeta) {
-    await settlements().updateOne(
+    return settlements().updateOne(
       { chainId, 'execution.txHash': txHash },
       {
         $set: {
@@ -106,7 +106,7 @@ export const settlementRepo = {
   },
 
   async markMetaFailed(chainId: number, txHash: Hex, error: string) {
-    await settlements().updateOne(
+    return settlements().updateOne(
       { chainId, 'execution.txHash': txHash },
       {
         $set: {
@@ -126,11 +126,11 @@ export const settlementRepo = {
 
 export const settlementRepoFor = (chainId: number) => ({
   findPendingMeta(limit: number) {
-    return settlements().find({ chainId, metaStatus: 'PENDING' }).limit(limit).toArray()
+    return settlementRepo.findPendingMeta(chainId, limit)
   },
 
   finalizeWithMeta(txHash: Hex, meta: SettlementMeta) {
-    return settlementRepo.finalizeWithMeta(chainId, txHash, meta)
+    return settlementRepo.finalizeMeta(chainId, txHash, meta)
   },
 
   async markMetaDone(txHash: Hex, meta: SettlementMeta) {

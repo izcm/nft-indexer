@@ -18,11 +18,10 @@ export const runSettlementWorker = async (client: AppClient) => {
   if (pending.length === 0) return
 
   for (const s of pending) {
+    const { txHash } = s.execution
+
     try {
-      const txHash = s.execution.txHash
-
       const { receipt, tx } = await getTxMeta(client, txHash)
-
       const meta = await metaFromTx(tx, receipt, json.abi as Abi)
 
       await repo.finalizeWithMeta(txHash, meta)

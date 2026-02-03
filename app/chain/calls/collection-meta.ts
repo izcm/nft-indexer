@@ -7,12 +7,12 @@ import { NFTCollectionChainMeta } from '#app/domain/types/nft-collection.js'
 
 const totalSupplyAbi = parseAbi(['function totalSupply() view returns (uint256)'])
 
-export const getCollectionChainMeta = async (
+export const getCollectionMeta = async (
   client: PublicClient,
   address: Hex
 ): Promise<Partial<NFTCollectionChainMeta>> => {
   const isSupported = await isErc721(client, address)
-  if (!isSupported) throw new Error('[meta-worker] encountered unsupported nft collection')
+  if (!isSupported) throw new Error('[meta-worker] unsupported nft collection')
 
   const erc721 = erc721For(client)
 

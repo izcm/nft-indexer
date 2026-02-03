@@ -7,3 +7,5 @@ export const VERIFYING_CONTRACT: Hex = process.env.VERIFYING_CONRACT as Hex
 export const SETTLEMENT_EVENT_EMITTER: Hex = process.env.SETTLEMENT_EMITTER as Hex
 
 export const CHAIN_ID: bigint = 31337n
+
+export const DB_WORKER_LIMIT = 25

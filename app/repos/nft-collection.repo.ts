@@ -25,7 +25,7 @@ export const nftCollectionRepo = {
 
     seenCollections.add(key)
 
-    await nftCollections().updateOne(
+    return nftCollections().updateOne(
       { chainId, address },
       {
         $setOnInsert: {
@@ -46,9 +46,9 @@ export const nftCollectionRepo = {
     return nftCollections().findOne({ _id: id })
   },
 
-  async findMissingChainMeta(limit: number) {
+  async findMissingChainMeta(chainId: number, limit: number) {
     return nftCollections()
-      .find({ chainMetaFetched: false, metaStatus: 'PENDING' })
+      .find({ chainId: chainId, chainMetaFetched: false, metaStatus: 'PENDING' })
       .limit(limit)
       .toArray()
   },
@@ -60,17 +60,33 @@ export const nftCollectionRepo = {
     address: Hex,
     chainMeta: Partial<NFTCollectionChainMeta>
   ) {
-    await nftCollections().updateOne(
+    return nftCollections().updateOne(
       { chainId, address },
       {
-        $set: chainMeta,
-        updatedAt: Date.now(),
+        $set: {
+          ...chainMeta,
+          chainMetaStatus: 'DONE',
+          updatedAt: Date.now(),
+        },
+      }
+    )
+  },
+
+  async markChainMetaFailed(chainId: number, address: Hex, err: string) {
+    return nftCollections().updateOne(
+      { chainId, address },
+      {
+        $set: {
+          chainMetaStatus: 'FAILED',
+          chainMetaError: err,
+          updatedAt: Date.now(),
+        },
       }
     )
   },
 
   async patchMeta(chainId: number, address: Hex, patch: NFTCollectionMetaPatch) {
-    await nftCollections().updateOne(
+    return nftCollections().updateOne(
       { chainId, address },
       {
         $set: patch,
@@ -79,3 +95,27 @@ export const nftCollectionRepo = {
     )
   },
 }
+
+/**
+ * WRAPPER
+ * - Used only by workers
+ * - Prettifies multichain code
+ */
+
+export const nftCollectionRepoFor = (chainId: number) => ({
+  findMissingChainMeta(limit: number) {
+    return nftCollectionRepo.findMissingChainMeta(chainId, limit)
+  },
+
+  finalizeChainMeta(address: Hex, chainMeta: Partial<NFTCollectionChainMeta>) {
+    return nftCollectionRepo.finalizeChainMeta(chainId, address, chainMeta)
+  },
+
+  markChainMetaFailed(address: Hex, err: string) {
+    return nftCollectionRepo.markChainMetaFailed(chainId, address, err)
+  },
+
+  patchMeta(address: Hex, patch: NFTCollectionMetaPatch) {
+    return nftCollectionRepo.patchMeta(chainId, address, patch)
+  },
+})

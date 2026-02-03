@@ -1,19 +1,45 @@
 import { runSettlementWorker } from './settlements/runner.js'
 import { AppClient } from '#app/chain/clients.js'
+import { runNFTCollectionWorker } from './collections/runner.js'
 
 // ------------------
 // WORKERS
 // ------------------
 
-export const start = async (client: AppClient) => {
-  setInterval(async () => {
-    try {
-      await runSettlementWorker(client)
-    } catch (e) {
-      const chainId = client.chain.id
-      const reason = e instanceof Error ? e.message : String(e)
+type Worker = {
+  name: string
+  run: () => Promise<void>
+}
 
-      console.error('[workers] settlement worker crashed', { chainId, reason })
+const workers = (client: AppClient): Worker[] => [
+  {
+    name: 'settlement',
+    run: () => runSettlementWorker(client),
+  },
+  {
+    name: 'nft-collection',
+    run: () => runNFTCollectionWorker(client),
+  },
+]
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+export const start = async (client: AppClient) => {
+  const list = workers(client)
+
+  const loop = async () => {
+    for (const worker of list) {
+      try {
+        await worker.run()
+      } catch (err) {
+        const { id } = client.chain
+        console.error(`[workers][${id}]: ${worker.name} crashed`, id, err)
+      }
     }
-  }, 10_000)
+
+    await sleep(10_000)
+    loop()
+  }
+
+  loop()
 }
