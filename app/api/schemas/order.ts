@@ -1,5 +1,7 @@
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 
+const UNIX_SECONDS_MAX = 1e11 // year ~5138
+
 export const orderQueryableFields = {
   actor: { type: 'string', pattern: ADDR_REGEX },
   collection: { type: 'string', pattern: ADDR_REGEX },
@@ -7,8 +9,8 @@ export const orderQueryableFields = {
   price: { type: 'string' },
   nonce: { type: 'string' },
   side: { type: 'integer', minimum: 0 },
-  start: { type: 'integer', minimum: 0 },
-  end: { type: 'integer', minimum: 0 },
+  start: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
+  end: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
   tokenId: { type: 'string' },
   isCollectionBid: { type: 'boolean' },
 

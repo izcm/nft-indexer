@@ -11,6 +11,7 @@ import { OrderState } from '#app/domain/types/order-state.js'
 import { OrderRecord } from '#app/domain/types/order.js'
 import { Settlement } from '#app/domain/types/settlement.js'
 import { NFTCollection } from '#app/domain/types/nft-collection.js'
+import { nftCollectionStats } from '#app/repos/nft-collections/collection-stats.repo.js'
 
 let client: MongoClient | null = null
 let db: Db | null = null
@@ -38,16 +39,20 @@ export const orders = () => {
   return col<OrderRecord>(COLLECTIONS.ORDERS)
 }
 
-export const nftCollections = () => {
-  return col<NFTCollection>(COLLECTIONS.NFT_COLLECTIONS)
-}
-
 export const settlements = () => {
   return col<Settlement>(COLLECTIONS.SETTLEMENTS)
 }
 
 export const orderStates = () => {
   return col<OrderState>(COLLECTIONS.ORDER_STATES)
+}
+
+export const nftCollections = () => {
+  return col<NFTCollection>(COLLECTIONS.NFT_COLLECTIONS)
+}
+
+export const nftCollectionsStats = () => {
+  return col<nftCollectionStats>(COLLECTIONS.NFT_COLLECTION_STATS)
 }
 
 const col = <T extends Document>(name: string): Collection<T> => {

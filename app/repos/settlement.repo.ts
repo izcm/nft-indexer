@@ -94,17 +94,6 @@ export const settlementRepo = {
     )
   },
 
-  async markMetaDone(chainId: number, txHash: Hex, meta: SettlementMeta) {
-    return settlements().updateOne(
-      { chainId, 'execution.txHash': txHash },
-      {
-        $set: {
-          metaStatus: 'DONE',
-        },
-      }
-    )
-  },
-
   async markMetaFailed(chainId: number, txHash: Hex, error: string) {
     return settlements().updateOne(
       { chainId, 'execution.txHash': txHash },
@@ -129,12 +118,8 @@ export const settlementRepoFor = (chainId: number) => ({
     return settlementRepo.findPendingMeta(chainId, limit)
   },
 
-  finalizeWithMeta(txHash: Hex, meta: SettlementMeta) {
+  finalizeMeta(txHash: Hex, meta: SettlementMeta) {
     return settlementRepo.finalizeMeta(chainId, txHash, meta)
-  },
-
-  async markMetaDone(txHash: Hex, meta: SettlementMeta) {
-    return settlementRepo.markMetaDone(chainId, txHash, meta)
   },
 
   async markMetaFailed(txHash: Hex, error: string) {

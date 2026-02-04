@@ -24,7 +24,7 @@ export const runSettlementWorker = async (client: AppClient) => {
       const { receipt, tx } = await getTxMeta(client, txHash)
       const meta = await metaFromTx(tx, receipt, json.abi as Abi)
 
-      await repo.finalizeWithMeta(txHash, meta)
+      await repo.finalizeMeta(txHash, meta)
     } catch (err: any) {
       console.log('[meta-worker] failed for ', s._id, err.message)
       await repo.markMetaFailed(s.execution.txHash, err.message)
