@@ -70,9 +70,7 @@ export const nftCollectionStatsRepo = {
         $setOnInsert: {
           chainId,
           collection,
-          activeAskCount: 0,
-          activeBidCount: 0,
-          activeCbCount: 0,
+          ...EMPTY_STATS,
         },
       },
       { upsert: true }
@@ -107,11 +105,7 @@ export const nftCollectionStatsRepo = {
         $setOnInsert: {
           chainId,
           address: collection,
-          volume: '0',
-          floorPrice: '0',
-          activeAskCount: 0,
-          activeBidCount: 0,
-          activeCbCount: 0,
+          ...EMPTY_STATS,
         },
       },
       { upsert: true }
@@ -137,11 +131,7 @@ export const nftCollectionStatsRepo = {
         $setOnInsert: {
           chainId,
           address: collection,
-          volume: '0',
-          floorPrice: '0',
-          activeAskCount: 0,
-          activeBidCount: 0,
-          activeCbCount: 0,
+          ...EMPTY_STATS,
         },
       },
       { upsert: true }

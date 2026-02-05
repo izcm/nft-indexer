@@ -4,7 +4,7 @@ import { API_ERRORS } from '#app/domain/constants/api.js'
 import { Order, Side, SideLabel, validOrder } from '#app/domain/types/order.js'
 
 import { orderRepo as orderRepo } from '#app/repos/order.repo.js'
-import { applyOrderCreated } from '#app/domain/actions/apply-order-created.js'
+import { applyOrderCreated } from '#app/domain/actions/order/apply-created.js'
 
 // TODO: index orderhash on `order_status`
 export const ordersIngest = (fastify: FastifyInstance) => {
@@ -30,11 +30,6 @@ export const ordersIngest = (fastify: FastifyInstance) => {
       }
 
       const insertedId = await orderRepo.save(chainId, orderCore)
-
-      // todo: for fire and forget => todo: add bg worker
-
-      const { side, isCollectionBid, collection, start } = orderCore
-
       void applyOrderCreated(chainId, orderCore)
 
       res.code(201).header('Location', `/api/orders/${insertedId}`)
