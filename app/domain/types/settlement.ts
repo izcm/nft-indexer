@@ -1,7 +1,7 @@
 import { BlockTime, TxContext } from '#app/listeners/types/context.js'
 import type { Hex } from 'viem'
 
-import { SideLabel } from './order.js'
+import { OrderType, SideLabel } from './order.js'
 
 export type Settlement = {
   chainId: number
@@ -12,7 +12,7 @@ export type Settlement = {
   seller: Hex
   buyer: Hex
   currency: Hex
-  priceWei: string
+  price: string
 
   orderAttributes?: SettlementMeta['order']
 
@@ -32,7 +32,7 @@ export type Settlement = {
 
 export type SettlementMeta = {
   order: {
-    side: SideLabel
+    side: OrderType
     signer: Hex
   }
   txContext: TxContext

@@ -11,7 +11,7 @@ import { OrderState } from '#app/domain/types/order-state.js'
 import { OrderRecord } from '#app/domain/types/order.js'
 import { Settlement } from '#app/domain/types/settlement.js'
 import { NFTCollection } from '#app/domain/types/nft-collection.js'
-import { nftCollectionStats } from '#app/repos/nft-collections/collection-stats.repo.js'
+import { nftCollectionStats } from '#app/domain/types/nft-collection.js'
 
 let client: MongoClient | null = null
 let db: Db | null = null

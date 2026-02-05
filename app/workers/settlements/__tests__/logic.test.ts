@@ -15,7 +15,6 @@ import { dmrktDomain, toOrder712, dmrktTypes } from '#app/lib/blockchain/eip712.
 
 import {
   mockPrivateKeys,
-  mockSettlementLog,
   mockTx,
   mockReceipt,
   mockFill,

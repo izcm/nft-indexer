@@ -54,6 +54,9 @@ export const settlementMetaFromTx = async (
     signature: sigHex,
   })
 
+  const direction = Side[order.side] as SideLabel
+  const side = direction === 'BID' && order.isCollectionBid ? 'COLLECTION_BID' : direction
+
   return {
     order: {
       side: Side[order.side] as SideLabel,

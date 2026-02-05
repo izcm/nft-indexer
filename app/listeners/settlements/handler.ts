@@ -12,11 +12,4 @@ export function handleSettlement(item: ListenerItem) {
 
   void settlementRepo.save(settlement)
   void nftCollectionRepo.noteCollection(chainId, collection)
-
-  void nftCollectionStatsRepo.recordSettlement({
-    chainId,
-    collectionAddress: settlement.collection,
-    timestamp: settlement.execution.block.timestamp,
-    price: settlement.priceWei,
-  })
 }

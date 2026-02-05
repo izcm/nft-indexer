@@ -21,7 +21,7 @@ export const settlementFromLog = (log: SettlementLog, chainId: number): Settleme
     buyer: args.buyer,
 
     currency: args.currency,
-    priceWei: args.price.toString(),
+    price: args.price.toString(),
 
     execution: {
       logIndex: Number(log.logIndex),

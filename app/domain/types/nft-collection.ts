@@ -1,5 +1,16 @@
 import { Hex } from 'viem'
 
+export type nftCollectionStats = {
+  chainId: number
+  address: Hex
+  day: number // unix timestamp at 00:00 UTC
+  volume: string // wei
+  floorPrice: string
+  activeAskCount: number
+  activeBidCount: number
+  activeCbCount: number
+}
+
 // metaStatus meaning:
 // PENDING  -> no metadata fetched yet
 // DONE     -> all intended metadata sources processed

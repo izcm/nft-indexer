@@ -24,7 +24,7 @@ export const ordersIngest = (fastify: FastifyInstance) => {
       const order = req.body
       const chainId = req.headers['x-chain-id']
 
-      if (!validOrder(order)) {
+      if (!validOrder(order, Math.floor(Date.now() / 1000))) {
         res.code(400)
         return API_ERRORS.INVALID_ORDER
       }
@@ -33,13 +33,22 @@ export const ordersIngest = (fastify: FastifyInstance) => {
 
       // todo: for fire and forget => todo: add bg worker
 
-      // nb: timestamp = unix seconds enforced in JSON schema
-      void nftCollectionStatsRepo.recordOrderCreated({
-        chainId,
-        collectionAddress: order.collection,
-        side: (Side[order.side] as SideLabel) === 'ASK' ? 'ASK' : 'BID',
-        start: Number(order.start), // unix seconds
-      })
+      const { side, isCollectionBid, collection, start } = order
+
+      void nftCollectionStatsRepo
+        .recordOrderCreated({
+          chainId,
+          collection,
+          isCollectionBid,
+          side,
+          timestamp: Number(start), // timestamp = unix in seconds enforced in JSON schema
+        })
+        .catch(err => {
+          fastify.log.error(
+            { err, chainId, collection },
+            '[order:ingest]: failed to record collection stats'
+          )
+        })
 
       res.code(201).header('Location', `/api/orders/${insertedId}`)
 

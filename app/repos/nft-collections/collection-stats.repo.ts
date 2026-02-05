@@ -1,49 +1,59 @@
-import { nftCollectionsStats } from '#app/db/mongo.js'
-import { Hex } from 'viem'
+import { nftCollectionsStats as stats } from '#app/db/mongo.js'
+import { OrderCore, Side, SideLabel, OrderType, toOrderType } from '#app/domain/types/order.js'
 
-export type nftCollectionStats = {
-  chainId: number
-  collectionAddres: Hex
-  day: number // unix timestamp at 00:00 UTC
-  volume: string // wei
-  floorPrice: string
-  activeAskCount: number
-  activeBidCount: number
-}
+import { isUnixSeconds } from '#app/lib/utils/time.js'
+import { Hex } from 'viem'
 
 type CollectionStatsKey = {
   chainId: number
-  collectionAddress: Hex
+  collection: Hex
+  timestamp: number
 }
 
 type RecordSettlementArgs = CollectionStatsKey & {
-  timestamp: number
   price: string
 }
 
 type RecordOrderArgs = CollectionStatsKey & {
-  side: 'BID' | 'ASK'
-  start: number // timestamp `order.start`
+  side: number
+  isCollectionBid: boolean
 }
+
+const ORDER_TYPE_FIELD: Record<OrderType, string> = {
+  ASK: 'activeAskCount',
+  BID: 'activeBidCount',
+  COLLECTION_BID: 'activeCbCount',
+}
+
+const EMPTY_STATS = {
+  volume: '0',
+  floorPrice: '0',
+  activeAskCount: 0,
+  activeBidCount: 0,
+  activeCbCount: 0,
+}
+
+const makeInc = (type: OrderType, delta: 1 | -1) => ({
+  [ORDER_TYPE_FIELD[type]]: delta,
+})
 
 const minWei = (a: string, b: string) => (BigInt(a) < BigInt(b) ? a : b)
 
 // timestamp in seconds!
-const day = (tsSeconds: number) => tsSeconds - (tsSeconds % 86400)
+const startOfDay = (tsSeconds: number) => tsSeconds - (tsSeconds % 86400)
 
 export const nftCollectionStatsRepo = {
   // === settlements (immutable on-chain history) ===
 
-  async recordSettlement({ chainId, collectionAddress, timestamp, price }: RecordSettlementArgs) {
-    const day = timestamp //todo asap: make todayMidnight()
-
+  async recordSettlement({ chainId, collection, timestamp, price }: RecordSettlementArgs) {
     // prices are in WEI
     // => has to be stored as string
     // => manual cast + calculation + back to string
 
-    const doc = await nftCollectionsStats().findOne({
+    const day = startOfDay(timestamp) // block.timestamp guarantees unix seconds
+    const doc = await stats().findOne({
       chainId,
-      collectionAddress,
+      collection,
       day,
     })
 
@@ -53,55 +63,85 @@ export const nftCollectionStatsRepo = {
     const prevFloorprice = doc?.floorPrice ?? '0'
     const nextFloorprice = minWei(price, prevFloorprice)
 
-    await nftCollectionsStats().updateOne(
-      { chainId, collectionAddress, day },
+    await stats().updateOne(
+      { chainId, collection, day },
       {
         $set: { volume: nextVolume, floorprice: nextFloorprice },
         $setOnInsert: {
           chainId,
-          collectionAddress,
+          collection,
           activeAskCount: 0,
           activeBidCount: 0,
+          activeCbCount: 0,
         },
       },
       { upsert: true }
     )
   },
 
-  async recordOrderCreated({ chainId, collectionAddress, side, start }: RecordOrderArgs) {
-    const inc = side === 'ASK' ? { activeAskCount: 1 } : { activeBidCount: 1 }
+  async recordOrderCreated({
+    chainId,
+    collection,
+    side,
+    isCollectionBid,
+    timestamp: orderStart,
+  }: RecordOrderArgs) {
+    // json schema enforces unix seconds
+    // future proofing by explicit check
+    const ts = Number(orderStart)
 
-    await nftCollectionsStats().updateOne(
-      { chainId, collectionAddress },
+    if (!isUnixSeconds(ts)) {
+      console.error('[stats] non-unix-seconds start', { start: orderStart })
+      return
+    }
+
+    const day = startOfDay(ts)
+
+    const orderType = toOrderType(side, isCollectionBid)
+    const inc = makeInc(orderType, 1)
+
+    await stats().updateOne(
+      { chainId, address: collection, day },
       {
         $inc: inc,
         $setOnInsert: {
           chainId,
-          collectionAddress,
+          address: collection,
           volume: '0',
           floorPrice: '0',
           activeAskCount: 0,
           activeBidCount: 0,
+          activeCbCount: 0,
         },
       },
       { upsert: true }
     )
   },
 
-  async recordOrderFilled({ chainId, collectionAddress, side }: RecordOrderArgs) {
-    const inc = side === 'ASK' ? { activeAskCount: 1 } : { activeBidCount: 1 }
+  async recordOrderFilled({
+    chainId,
+    collection,
+    side,
+    isCollectionBid,
+    timestamp: filledAt,
+  }: RecordOrderArgs) {
+    const day = startOfDay(Number(filledAt))
 
-    await nftCollectionsStats().updateOne(
-      { chainId, collectionAddress },
+    const orderType = toOrderType(side, isCollectionBid)
+    const inc = makeInc(orderType, -1)
+
+    await stats().updateOne(
+      { chainId, address: collection },
       {
         $inc: inc,
         $setOnInsert: {
           chainId,
-          collectionAddress,
+          address: collection,
           volume: '0',
           floorPrice: '0',
           activeAskCount: 0,
           activeBidCount: 0,
+          activeCbCount: 0,
         },
       },
       { upsert: true }

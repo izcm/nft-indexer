@@ -4,6 +4,8 @@ import { FindPageArgs } from '#app/repos/types.js'
 import { hashOrderStruct, Order, OrderRecord } from '#app/domain/types/order.js'
 
 import { orderStates, orders, getClient } from '#app/db/mongo.js'
+import { Hex } from 'viem'
+import { OrderStatus } from '#app/domain/types/order-state.js'
 
 // TODO: dont use hashOrderStruct => use viem typedData functions or smth similar
 export const orderRepo = {
@@ -37,6 +39,10 @@ export const orderRepo = {
       items: docs.slice(0, limit),
       nextCursor,
     }
+  },
+
+  async findByChainIdAndHash(chainId: number, orderHash: Hex) {
+    return orders().findOne({ chainId, orderHash })
   },
 
   // === write ===
@@ -84,4 +90,49 @@ export const orderRepo = {
 
     return orderId
   },
+
+  async updateStatus(chainId: number, orderHash: Hex, status: OrderStatus) {
+    await orderStates().updateOne(
+      { chainId, orderHash },
+      {
+        $set: {
+          status,
+          updatedAt: Date.now(),
+        },
+
+        $setOnInsert: {
+          chainId,
+          orderHash,
+        },
+      },
+      { upsert: true }
+    )
+  },
 }
+
+/**
+ * WRAPPER
+ * - Prettifies multichain code
+ */
+
+export const orderRepoFor = (chainId: number) => ({
+  async readState(orderHash: Hex) {
+    return orderStates().findOne({ chainId, orderHash })
+  },
+
+  async findByHash(orderHash: Hex) {
+    return orderRepo.findByChainIdAndHash(chainId, orderHash)
+  },
+
+  async markFilled(orderHash: Hex) {
+    await orderRepo.updateStatus(chainId, orderHash, 'filled')
+  },
+
+  async markCancelled(orderHash: Hex) {
+    await orderRepo.updateStatus(chainId, orderHash, 'cancelled')
+  },
+
+  async markExpired(orderHash: Hex) {
+    await orderRepo.updateStatus(chainId, orderHash, 'expired')
+  },
+})

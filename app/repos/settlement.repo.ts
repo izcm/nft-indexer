@@ -61,11 +61,11 @@ export const settlementRepo = {
   // === write ===
 
   async save(settlement: Settlement) {
-    const { orderHash, execution } = settlement
+    const { chainId, orderHash, execution } = settlement
 
     return Promise.all([
       orderStates().updateOne(
-        { chainId: settlement.chainId, orderHash: settlement.orderHash },
+        { chainId, orderHash },
         {
           $set: {
             status: 'filled',
@@ -81,9 +81,9 @@ export const settlementRepo = {
     ])
   },
 
-  async finalizeMeta(chainId: number, txHash: Hex, meta: SettlementMeta) {
+  async finalizeMeta(chainId: number, orderHash: Hex, meta: SettlementMeta) {
     return settlements().updateOne(
-      { chainId, 'execution.txHash': txHash },
+      { chainId, orderHash },
       {
         $set: {
           orderAttributes: meta['order'],
@@ -94,9 +94,9 @@ export const settlementRepo = {
     )
   },
 
-  async markMetaFailed(chainId: number, txHash: Hex, error: string) {
+  async markMetaFailed(chainId: number, orderHash: Hex, error: string) {
     return settlements().updateOne(
-      { chainId, 'execution.txHash': txHash },
+      { chainId, 'execution.txHash': orderHash },
       {
         $set: {
           metaStatus: 'FAILED',
@@ -109,7 +109,6 @@ export const settlementRepo = {
 
 /**
  * WRAPPER
- * - Used only by workers
  * - Prettifies multichain code
  */
 
@@ -118,11 +117,11 @@ export const settlementRepoFor = (chainId: number) => ({
     return settlementRepo.findPendingMeta(chainId, limit)
   },
 
-  finalizeMeta(txHash: Hex, meta: SettlementMeta) {
-    return settlementRepo.finalizeMeta(chainId, txHash, meta)
+  finalizeMeta(orderHash: Hex, meta: SettlementMeta) {
+    return settlementRepo.finalizeMeta(chainId, orderHash, meta)
   },
 
-  async markMetaFailed(txHash: Hex, error: string) {
-    return settlementRepo.markMetaFailed(chainId, txHash, error)
+  async markMetaFailed(orderHash: Hex, error: string) {
+    return settlementRepo.markMetaFailed(chainId, orderHash, error)
   },
 })

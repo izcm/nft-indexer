@@ -7,6 +7,7 @@ import { NFTCollectionChainMeta } from '#app/domain/types/nft-collection.js'
 
 const totalSupplyAbi = parseAbi(['function totalSupply() view returns (uint256)'])
 
+// TODO: move this to lib/blockchain + remove ERC721 check + move to erc721-summary
 export const getCollectionMeta = async (
   client: PublicClient,
   address: Hex
