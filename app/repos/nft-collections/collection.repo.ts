@@ -4,7 +4,6 @@ import { Hex } from 'viem'
 import { nftCollections } from '#app/db/mongo.js'
 import { NFTCollectionChainMeta, NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
 
-// TODO: may wanna move the state stuff out of repo
 const seenCollections = new Set<string>()
 
 const collectionKey = (chainId: number, address: string) => {
@@ -98,7 +97,6 @@ export const nftCollectionRepo = {
 
 /**
  * WRAPPER
- * - Used only by workers
  * - Prettifies multichain code
  */
 

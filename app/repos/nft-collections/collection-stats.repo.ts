@@ -63,7 +63,7 @@ export const nftCollectionStatsRepo = {
     const prevFloorprice = doc?.floorPrice ?? '0'
     const nextFloorprice = minWei(price, prevFloorprice)
 
-    await stats().updateOne(
+    return stats().updateOne(
       { chainId, collection, day },
       {
         $set: { volume: nextVolume, floorprice: nextFloorprice },
@@ -100,7 +100,7 @@ export const nftCollectionStatsRepo = {
     const orderType = toOrderType(side, isCollectionBid)
     const inc = makeInc(orderType, 1)
 
-    await stats().updateOne(
+    return stats().updateOne(
       { chainId, address: collection, day },
       {
         $inc: inc,
@@ -130,7 +130,7 @@ export const nftCollectionStatsRepo = {
     const orderType = toOrderType(side, isCollectionBid)
     const inc = makeInc(orderType, -1)
 
-    await stats().updateOne(
+    return stats().updateOne(
       { chainId, address: collection },
       {
         $inc: inc,
