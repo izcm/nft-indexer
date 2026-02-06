@@ -2,7 +2,7 @@ import { Hex } from 'viem'
 
 export type nftCollectionStats = {
   chainId: number
-  address: Hex
+  collection: Hex
   day: number // unix timestamp at 00:00 UTC
   volume: string // wei
   floorPrice: string

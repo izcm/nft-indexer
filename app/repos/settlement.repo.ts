@@ -1,7 +1,7 @@
 import { Hex } from 'viem'
 import { ObjectId } from 'mongodb'
 
-import { settlements, orderStates } from '#app/db/mongo.js'
+import { settlements } from '#app/db/mongo.js'
 
 import { Settlement, SettlementMeta } from '#app/domain/types/settlement.js'
 import { FindPageArgs } from '#app/repos/types.js'
@@ -61,24 +61,10 @@ export const settlementRepo = {
   // === write ===
 
   async save(settlement: Settlement) {
-    const { chainId, orderHash, execution } = settlement
-
-    return Promise.all([
-      orderStates().updateOne(
-        { chainId, orderHash },
-        {
-          $set: {
-            status: 'filled',
-            updatedAt: Date.now(),
-          },
-        },
-        { upsert: true }
-      ),
-      settlements().insertOne({
-        ...settlement,
-        ingestedAt: Date.now(),
-      }),
-    ])
+    return settlements().insertOne({
+      ...settlement,
+      ingestedAt: Date.now(),
+    })
   },
 
   async finalizeMeta(chainId: number, orderHash: Hex, meta: SettlementMeta) {

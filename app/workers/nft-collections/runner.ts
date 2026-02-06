@@ -1,7 +1,7 @@
 import { AppClient } from '#app/chain/clients.js'
 import { DB_WORKER_LIMIT } from '#app/domain/constants/app.js'
 
-import { nftCollectionRepoFor } from '#app/repos/nft-collections/collection.repo.js'
+import { nftCollectionRepoFor } from '#app/repos/nft-collection.repo.js'
 
 import { getCollectionMeta as getCollectionChainMeta } from '#app/chain/calls/collection-meta.js'
 

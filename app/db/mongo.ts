@@ -7,7 +7,6 @@ import { ensureIndexes } from './config/ensure-indexes.js'
 import { COLLECTIONS } from '#app/domain/constants/db.js'
 
 // domain types
-import { OrderState } from '#app/domain/types/order-state.js'
 import { OrderRecord } from '#app/domain/types/order.js'
 import { Settlement } from '#app/domain/types/settlement.js'
 import { NFTCollection } from '#app/domain/types/nft-collection.js'
@@ -41,10 +40,6 @@ export const orders = () => {
 
 export const settlements = () => {
   return col<Settlement>(COLLECTIONS.SETTLEMENTS)
-}
-
-export const orderStates = () => {
-  return col<OrderState>(COLLECTIONS.ORDER_STATES)
 }
 
 export const nftCollections = () => {

@@ -7,7 +7,6 @@ import { getTxMeta } from '#app/chain/calls/tx-meta.js'
 import { settlementMetaFromTx as metaFromTx } from '#app/workers/settlements/logic.js'
 
 import { settlementRepoFor } from '#app/repos/settlement.repo.js'
-import { applySettlementMeta as applyMeta } from '#app/domain/actions/settlement/apply-meta.js'
 
 export const runSettlementWorker = async (client: AppClient) => {
   const chainId = client.chain.id
@@ -24,7 +23,7 @@ export const runSettlementWorker = async (client: AppClient) => {
       const { receipt, tx } = await getTxMeta(client, txHash)
       const meta = await metaFromTx(tx, receipt, json.abi as Abi)
 
-      await applyMeta(settlement, meta)
+      await repo.finalizeMeta(settlement.orderHash, meta)
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err))
       console.error('[settlement-worker] failed', err)

@@ -1,5 +1,5 @@
-import { encodeAbiParameters, keccak256, toBytes, zeroAddress } from 'viem'
 import type { Hex } from 'viem'
+import { encodeAbiParameters, keccak256, toBytes, zeroAddress } from 'viem'
 
 export type OrderType = 'ASK' | 'BID' | 'COLLECTION_BID'
 
@@ -15,10 +15,18 @@ export enum Side {
 
 export type SideLabel = keyof typeof Side
 
+export type OrderStatus = 'active' | 'filled' | 'cancelled' | 'expired'
+
 export type OrderRecord = {
   orderHash: Hex // = orderHash
   chainId: number
+
   order: Order
+
+  status: OrderStatus
+  updatedAt: number // only mutable field is status field
+
+  createdAt: number
 }
 
 export type Order = {

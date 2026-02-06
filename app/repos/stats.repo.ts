@@ -1,5 +1,5 @@
 import { nftCollectionsStats as stats } from '#app/db/mongo.js'
-import { OrderCore, Side, SideLabel, OrderType, toOrderType } from '#app/domain/types/order.js'
+import { OrderType, toOrderType } from '#app/domain/types/order.js'
 
 import { isUnixSeconds } from '#app/lib/utils/time.js'
 import { Hex } from 'viem'
@@ -25,9 +25,7 @@ const ORDER_TYPE_FIELD: Record<OrderType, string> = {
   COLLECTION_BID: 'activeCbCount',
 }
 
-const EMPTY_STATS = {
-  volume: '0',
-  floorPrice: '0',
+const EMPTY_COUNTERS = {
   activeAskCount: 0,
   activeBidCount: 0,
   activeCbCount: 0,
@@ -66,75 +64,79 @@ export const nftCollectionStatsRepo = {
     return stats().updateOne(
       { chainId, collection, day },
       {
-        $set: { volume: nextVolume, floorprice: nextFloorprice },
+        $set: { volume: nextVolume, floorPrice: nextFloorprice },
         $setOnInsert: {
           chainId,
           collection,
-          ...EMPTY_STATS,
+          day,
+          ...EMPTY_COUNTERS,
         },
       },
       { upsert: true }
     )
   },
 
-  async recordOrderCreated({
-    chainId,
-    collection,
-    side,
-    isCollectionBid,
-    timestamp: orderStart,
-  }: RecordOrderArgs) {
-    // json schema enforces unix seconds
-    // future proofing by explicit check
-    const ts = Number(orderStart)
+  // async recordOrderCreated({
+  //   chainId,
+  //   collection,
+  //   side,
+  //   isCollectionBid,
+  //   timestamp: orderStart,
+  // }: RecordOrderArgs) {
+  //   // json schema enforces unix seconds in api order-ingest
+  //   const ts = Number(orderStart)
 
-    if (!isUnixSeconds(ts)) {
-      console.error('[stats] non-unix-seconds start', { start: orderStart })
-      return
-    }
+  //   if (!isUnixSeconds(ts)) {
+  //     console.error('[stats] non-unix-seconds start', { start: orderStart })
+  //     return
+  //   }
 
-    const day = startOfDay(ts)
+  //   const day = startOfDay(ts)
 
-    const orderType = toOrderType(side, isCollectionBid)
-    const inc = makeInc(orderType, 1)
+  //   const orderType = toOrderType(side, isCollectionBid)
+  //   const inc = makeInc(orderType, 1)
 
-    return stats().updateOne(
-      { chainId, address: collection, day },
-      {
-        $inc: inc,
-        $setOnInsert: {
-          chainId,
-          address: collection,
-          ...EMPTY_STATS,
-        },
-      },
-      { upsert: true }
-    )
-  },
+  //   return stats().updateOne(
+  //     { chainId, collection, day },
+  //     {
+  //       $inc: inc,
+  //       $setOnInsert: {
+  //         chainId,
+  //         collection,
+  //         day,
+  //         volume: '0',
+  //         floorPrice: '0',
+  //       },
+  //     },
+  //     { upsert: true }
+  //   )
+  // },
 
-  async recordOrderFilled({
-    chainId,
-    collection,
-    side,
-    isCollectionBid,
-    timestamp: filledAt,
-  }: RecordOrderArgs) {
-    const day = startOfDay(Number(filledAt))
+  // async recordOrderFilled({
+  //   chainId,
+  //   collection,
+  //   side,
+  //   isCollectionBid,
+  //   timestamp: filledAt,
+  // }: RecordOrderArgs) {
+  //   const day = startOfDay(Number(filledAt))
 
-    const orderType = toOrderType(side, isCollectionBid)
-    const inc = makeInc(orderType, -1)
+  //   const orderType = toOrderType(side, isCollectionBid)
+  //   const inc = makeInc(orderType, -1)
 
-    return stats().updateOne(
-      { chainId, address: collection },
-      {
-        $inc: inc,
-        $setOnInsert: {
-          chainId,
-          address: collection,
-          ...EMPTY_STATS,
-        },
-      },
-      { upsert: true }
-    )
-  },
+  //   return stats().updateOne(
+  //     { chainId, collection, day },
+  //     {
+  //       $inc: inc,
+  //       $setOnInsert: {
+  //         chainId,
+  //         collection,
+  //         day,
+  //         volume: '0',
+  //         floorPrice: '0',
+  //       },
+  //     },
+  //     { upsert: true }
+  //   )
+  // },
 }
