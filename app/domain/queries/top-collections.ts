@@ -91,22 +91,48 @@ export const topCollectionsByActiveOrders = async (chainId: number, limit: numbe
     {
       $lookup: {
         from: 'nftCollections',
-        localField: '_id',
-        foreignField: 'address',
+
+        let: {
+          addr: '$_id',
+          cid: '$chainId',
+        },
+
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [{ $eq: ['$address', '$$addr'] }, { $eq: ['$chainId', '$$cid'] }],
+              },
+            },
+          },
+        ],
         as: 'doc',
       },
     },
 
     { $unwind: '$doc' },
+
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: [
+            '$doc',
+            {
+              summary: {
+                collection: '$_id',
+                activeAskCount: '$activeAskCount',
+                activeBidCount: '$activeBidCount',
+                activeCbCount: '$activeCbCount',
+                totalActive: '$totalActive',
+              },
+            },
+          ],
+        },
+      },
+    },
   ]
 
-  const rows = await orders().aggregate<TopCollectionActiveCounts>(pipeline).toArray()
+  const rows = await orders().aggregate<TopCollectionByActiveOrders>(pipeline).toArray()
 
-  const addresses = rows.map(r => r.collection)
-
-  const collectionDocs = await nftCollections()
-    .find({ chainId, address: { $in: addresses } })
-    .toArray()
-
-  const byAddr = new Map(collectionDocs.map(c => [c.address, c]))
+  return rows
 }
