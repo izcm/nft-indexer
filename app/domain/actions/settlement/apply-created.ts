@@ -14,11 +14,11 @@ export async function applySettlementCreated(settlement: Settlement) {
     .recordSettlement({ chainId, collection, timestamp, price })
     .catch(err => console.error(`[${tag}] recordSettlement failed`, err))
 
-  void applyOrderFilled(chainId, orderHash, timestamp).catch(err =>
-    console.error(`[${tag}] applyOrderFilled failed`, err)
-  )
-
   void nftCollectionRepo
     .noteCollection(chainId, collection)
     .catch(err => console.error(`[${tag}] noteCollection failed`, err))
+
+  void applyOrderFilled(chainId, orderHash, timestamp).catch(err =>
+    console.error(`[${tag}] applyOrderFilled failed`, err)
+  )
 }

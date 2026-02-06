@@ -4,7 +4,7 @@ import 'dotenv/config'
 import { initDb } from './db/mongo.js'
 
 // clients
-import { anvilClient, AppClient } from './chain/clients.js'
+import { anvilClient, AppClient } from './clients.js'
 
 // listsners
 import { start as startListeners } from './listeners/index.js'

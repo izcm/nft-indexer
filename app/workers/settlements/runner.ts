@@ -1,12 +1,11 @@
 import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
 
 import type { Abi } from 'viem'
-import { AppClient } from '#app/chain/clients.js'
+import { AppClient } from '#app/clients.js'
 
-import { getTxMeta } from '#app/chain/calls/tx-meta.js'
 import { settlementMetaFromTx as metaFromTx } from '#app/workers/settlements/logic.js'
-
 import { settlementRepoFor } from '#app/repos/settlement.repo.js'
+import { readTxMeta } from '#app/lib/blockchain/calls/tx-meta.js'
 
 export const runSettlementWorker = async (client: AppClient) => {
   const chainId = client.chain.id
@@ -20,7 +19,7 @@ export const runSettlementWorker = async (client: AppClient) => {
     const { txHash } = settlement.execution
 
     try {
-      const { receipt, tx } = await getTxMeta(client, txHash)
+      const { receipt, tx } = await readTxMeta(client, txHash)
       const meta = await metaFromTx(tx, receipt, json.abi as Abi)
 
       await repo.finalizeMeta(settlement.orderHash, meta)

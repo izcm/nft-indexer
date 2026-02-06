@@ -1,5 +1,5 @@
 import { parseAbi } from 'viem'
-import { AppClient } from '#app/chain/clients.js'
+import { AppClient } from '#app/clients.js'
 
 import { SETTLEMENT_EVENT_EMITTER } from '#app/domain/constants/app.js'
 

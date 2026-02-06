@@ -1,20 +1,14 @@
 import { Hex, parseAbi, PublicClient } from 'viem'
-
-import { isErc721 } from '#app/lib/blockchain/interfaces/erc165.js'
 import { erc721For } from '#app/lib/blockchain/interfaces/erc721.js'
 
 import { NFTCollectionChainMeta } from '#app/domain/types/nft-collection.js'
 
 const totalSupplyAbi = parseAbi(['function totalSupply() view returns (uint256)'])
 
-// TODO: move this to lib/blockchain + remove ERC721 check + move to erc721-summary
-export const getCollectionMeta = async (
+export const readERC721Meta = async (
   client: PublicClient,
   address: Hex
 ): Promise<Partial<NFTCollectionChainMeta>> => {
-  const isSupported = await isErc721(client, address)
-  if (!isSupported) throw new Error('[meta-worker] unsupported nft collection')
-
   const erc721 = erc721For(client)
 
   const meta: Partial<NFTCollectionChainMeta> = {

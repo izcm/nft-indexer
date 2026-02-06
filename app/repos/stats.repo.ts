@@ -14,27 +14,6 @@ type RecordSettlementArgs = CollectionStatsKey & {
   price: string
 }
 
-type RecordOrderArgs = CollectionStatsKey & {
-  side: number
-  isCollectionBid: boolean
-}
-
-const ORDER_TYPE_FIELD: Record<OrderType, string> = {
-  ASK: 'activeAskCount',
-  BID: 'activeBidCount',
-  COLLECTION_BID: 'activeCbCount',
-}
-
-const EMPTY_COUNTERS = {
-  activeAskCount: 0,
-  activeBidCount: 0,
-  activeCbCount: 0,
-}
-
-const makeInc = (type: OrderType, delta: 1 | -1) => ({
-  [ORDER_TYPE_FIELD[type]]: delta,
-})
-
 const minWei = (a: string, b: string) => (BigInt(a) < BigInt(b) ? a : b)
 
 // timestamp in seconds!
@@ -69,74 +48,9 @@ export const nftCollectionStatsRepo = {
           chainId,
           collection,
           day,
-          ...EMPTY_COUNTERS,
         },
       },
       { upsert: true }
     )
   },
-
-  // async recordOrderCreated({
-  //   chainId,
-  //   collection,
-  //   side,
-  //   isCollectionBid,
-  //   timestamp: orderStart,
-  // }: RecordOrderArgs) {
-  //   // json schema enforces unix seconds in api order-ingest
-  //   const ts = Number(orderStart)
-
-  //   if (!isUnixSeconds(ts)) {
-  //     console.error('[stats] non-unix-seconds start', { start: orderStart })
-  //     return
-  //   }
-
-  //   const day = startOfDay(ts)
-
-  //   const orderType = toOrderType(side, isCollectionBid)
-  //   const inc = makeInc(orderType, 1)
-
-  //   return stats().updateOne(
-  //     { chainId, collection, day },
-  //     {
-  //       $inc: inc,
-  //       $setOnInsert: {
-  //         chainId,
-  //         collection,
-  //         day,
-  //         volume: '0',
-  //         floorPrice: '0',
-  //       },
-  //     },
-  //     { upsert: true }
-  //   )
-  // },
-
-  // async recordOrderFilled({
-  //   chainId,
-  //   collection,
-  //   side,
-  //   isCollectionBid,
-  //   timestamp: filledAt,
-  // }: RecordOrderArgs) {
-  //   const day = startOfDay(Number(filledAt))
-
-  //   const orderType = toOrderType(side, isCollectionBid)
-  //   const inc = makeInc(orderType, -1)
-
-  //   return stats().updateOne(
-  //     { chainId, collection, day },
-  //     {
-  //       $inc: inc,
-  //       $setOnInsert: {
-  //         chainId,
-  //         collection,
-  //         day,
-  //         volume: '0',
-  //         floorPrice: '0',
-  //       },
-  //     },
-  //     { upsert: true }
-  //   )
-  // },
 }

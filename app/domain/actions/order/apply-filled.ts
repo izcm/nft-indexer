@@ -1,6 +1,4 @@
 import { Hex } from 'viem'
-
-import { nftCollectionStatsRepo as statsRepo } from '#app/repos/stats.repo.js'
 import { orderRepoFor } from '#app/repos/order.repo.js'
 
 export async function applyOrderFilled(chainId: number, orderHash: Hex, filledAt: number) {

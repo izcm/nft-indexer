@@ -1,6 +1,6 @@
 import { Hex, PublicClient } from 'viem'
 
-export const getTxMeta = async (
+export const readTxMeta = async (
   client: PublicClient,
   txHash: Hex
 ): Promise<{ tx: any; receipt: any }> => {

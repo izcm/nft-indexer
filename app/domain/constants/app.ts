@@ -8,4 +8,4 @@ export const SETTLEMENT_EVENT_EMITTER: Hex = process.env.SETTLEMENT_EMITTER as H
 
 export const CHAIN_ID: bigint = 31337n
 
-export const DB_WORKER_LIMIT = 25
+export const DEFAULT_WORKER_LIMIT = 25

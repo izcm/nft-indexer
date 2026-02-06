@@ -49,6 +49,9 @@ export type Order = {
   }
 }
 
+export type OrderCore = Omit<Order, 'signature'>
+export type OrderSignature = Order['signature']
+
 export const hashOrderStruct = (o: OrderCore): Hex => {
   const encoded = encodeAbiParameters(
     [
@@ -88,9 +91,6 @@ const ORDER_TYPE_HASH = () =>
       'Order(uint8 side,bool isCollectionBid,address collection,uint256 tokenId,address currency,uint256 price,address actor,uint64 start,uint64 end,uint256 nonce)'
     )
   )
-
-export type OrderCore = Omit<Order, 'signature'>
-export type OrderSignature = Order['signature']
 
 const MAX_ORDER_LIFETIME = 90 * 24 * 60 * 60 // 90 days
 

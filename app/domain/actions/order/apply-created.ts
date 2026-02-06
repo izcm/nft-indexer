@@ -1,4 +1,3 @@
-import { nftCollectionStatsRepo as statsRepo } from '#app/repos/stats.repo.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { OrderCore } from '../../types/order.js'
 
