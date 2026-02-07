@@ -12,7 +12,6 @@ import { Settlement } from '#app/domain/types/settlement.js'
 import { NFTCollection } from '#app/domain/types/nft-collection.js'
 import { nftCollectionStats } from '#app/domain/types/nft-collection.js'
 
-let client: MongoClient | null = null
 let db: Db | null = null
 
 // === mongo drivers ===
@@ -22,14 +21,6 @@ export const getDb = (): Db => {
     throw new Error('DB not initialized')
   }
   return db
-}
-
-export const getClient = (): MongoClient => {
-  if (!client) {
-    throw new Error('Client not initialized')
-  }
-
-  return client
 }
 
 // === db getters ===
@@ -64,10 +55,16 @@ export const initDb = async () => {
     throw new Error('Error reading db config from .env')
   }
 
-  client = new MongoClient(MONGODB_URI)
+  const client = new MongoClient(MONGODB_URI)
   await client.connect()
 
   db = client.db(DB_NAME)
 
   await ensureIndexes()
+}
+
+// === di ===
+
+export const setDb = (next: Db) => {
+  db = next
 }
