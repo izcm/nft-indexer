@@ -11,7 +11,7 @@ import {
   mockTx,
   mockReceipt,
   mockFill,
-  mockOrder,
+  mockOrderCore,
 } from '#tests/mocks/primitives.js'
 
 describe('Settlement log => Settlement domain mapping', () => {

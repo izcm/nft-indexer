@@ -1,14 +1,10 @@
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { OrderCore } from '../../types/order.js'
 
-export async function applyOrderCreated(
-  chainId: number,
-  order: OrderCore,
-  opts?: { waitForStats?: boolean }
-) {
-  const tag = 'order:created'
+const TAG = 'order:created'
 
+export async function applyOrderCreated(chainId: number, order: OrderCore) {
   void nftCollectionRepo
     .noteCollection(chainId, order.collection)
-    .catch(err => console.error(`[${tag}] noteCollection failed`, err))
+    .catch(err => console.error(`[${TAG}] noteCollection failed`, err))
 }

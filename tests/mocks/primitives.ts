@@ -38,7 +38,7 @@ export const mockFill = () => ({
   actor: addrOf('fill:actor'),
 })
 
-export const mockOrder = (): OrderCore => ({
+export const mockOrderCore = (): OrderCore => ({
   side: 0,
   isCollectionBid: false,
   collection: addrOf('order:collection'),

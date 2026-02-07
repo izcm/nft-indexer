@@ -18,7 +18,7 @@ import {
   mockTx,
   mockReceipt,
   mockFill,
-  mockOrder,
+  mockOrderCore,
 } from '#tests/mocks/primitives.js'
 
 describe('tx input => SettlementMeta extraction', () => {
@@ -33,7 +33,7 @@ describe('tx input => SettlementMeta extraction', () => {
     expect(settleFunc).toBeDefined()
 
     // mock inputs
-    const order = mockOrder()
+    const order = mockOrderCore()
     const signerAcount = privateKeyToAccount(mockPrivateKeys.signer) // doesn't need to match order.actor
 
     const sig = await signerAcount.signTypedData({
