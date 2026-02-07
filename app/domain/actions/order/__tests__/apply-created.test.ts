@@ -17,11 +17,9 @@ const fmtError = (fnName: string) => `[order:created] ${fnName} failed`
 describe('applyOrderCreated', () => {
   it('logs if noteCollection fails', async () => {
     const err = new Error('db down')
-
     noteCollection.mockRejectedValueOnce(err)
 
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
     await applyOrderCreated(1, mockOrderCore())
 
     expect(spy).toHaveBeenCalledWith(fmtError('noteCollection'), err)

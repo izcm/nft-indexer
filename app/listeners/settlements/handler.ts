@@ -4,5 +4,5 @@ import { applySettlementCreated } from '#app/domain/actions/settlement/apply-cre
 
 export function handleSettlement(item: ListenerItem) {
   const settlement = fromLog(item.log, item.chainId)
-  void applySettlementCreated(settlement)
+  void applySettlementCreated({ ...settlement, timestamp: item.log.blockTimestamp })
 }

@@ -2,7 +2,7 @@ import { Hex } from 'viem'
 import { ObjectId } from 'mongodb'
 
 import { FindPageArgs } from '#app/repos/types.js'
-import { hashOrderStruct, Order, OrderRecord } from '#app/domain/types/order.js'
+import { hashOrderStruct, Order } from '#app/domain/types/order.js'
 
 import { orders } from '#app/db/mongo.js'
 import { OrderStatus } from '#app/domain/types/order.js'

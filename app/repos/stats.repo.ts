@@ -1,8 +1,5 @@
-import { nftCollectionsStats as stats } from '#app/db/mongo.js'
-import { OrderType, toOrderType } from '#app/domain/types/order.js'
-
-import { isUnixSeconds } from '#app/lib/utils/time.js'
 import { Hex } from 'viem'
+import { nftCollectionsStats as stats } from '#app/db/mongo.js'
 
 type CollectionStatsKey = {
   chainId: number
@@ -16,16 +13,16 @@ type RecordSettlementArgs = CollectionStatsKey & {
 
 const minWei = (a: string, b: string) => (BigInt(a) < BigInt(b) ? a : b)
 
-// timestamp in seconds!
+// input ts must be unix seconds
 const startOfDay = (tsSeconds: number) => tsSeconds - (tsSeconds % 86400)
 
-export const nftCollectionStatsRepo = {
+export const statsRepo = {
   // === settlements (immutable on-chain history) ===
 
   async recordSettlement({ chainId, collection, timestamp, price }: RecordSettlementArgs) {
     // prices are in WEI
     // => has to be stored as string
-    // => manual cast + calculation + back to string
+    // => manual cast => calculation => back to string
 
     const day = startOfDay(timestamp) // block.timestamp guarantees unix seconds
     const doc = await stats().findOne({
