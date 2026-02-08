@@ -46,7 +46,7 @@ export const nftCollectionRepo = {
 
   // === read ===
 
-  async findBydId(id: ObjectId) {
+  async findById(id: ObjectId) {
     return nftCollections().findOne({ _id: id })
   },
 
