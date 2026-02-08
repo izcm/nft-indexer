@@ -1,12 +1,21 @@
+import { nftCollections } from '#app/db/mongo.js'
 import { NFTCollection } from '#app/domain/types/nft-collection.js'
 import { addrOf } from '../hash.js'
 
-export const seedCollections = (chainId: number) => {
-  const docs: NFTCollection[] = Array.from({ length: 3 }).map((_, i) => ({
+export const seedCollections = async (
+  chainId: number,
+  count: number,
+  seed: string,
+  patch: Partial<NFTCollection> = {}
+) => {
+  const cols: NFTCollection[] = Array.from({ length: count }).map((_, i) => ({
     chainId,
-    address: addrOf(`collection:${i}`),
+    address: addrOf(`collection:${i}:${seed}`),
     metaStatus: 'PENDING',
     chainMetaStatus: 'PENDING',
     updatedAt: i,
+    ...patch,
   }))
+
+  return nftCollections().insertMany(cols)
 }
