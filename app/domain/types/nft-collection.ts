@@ -1,14 +1,12 @@
 import { Hex } from 'viem'
+import { Status } from '../constants/db.js'
 
-export type nftCollectionStats = {
+export type NFTCollectionStats = {
   chainId: number
   collection: Hex
   day: number // unix timestamp at 00:00 UTC
   volume: string // wei
   floorPrice: string
-  activeAskCount: number
-  activeBidCount: number
-  activeCbCount: number
 }
 
 // metaStatus meaning:
@@ -31,16 +29,17 @@ export type NFTCollectionBase = {
   marketData?: {
     floorPrice?: number
   }
+
   socials?: {
     twitterUsername?: string
     externalUrl?: string
   }
 
-  metaStatus: statusOptions
+  metaStatus: Status
   metaError?: string
 
   // CHAIN META
-  chainMetaStatus: statusOptions
+  chainMetaStatus: Status
   chainMetaError?: string
 
   // CTX

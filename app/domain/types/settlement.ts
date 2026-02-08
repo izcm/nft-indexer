@@ -2,6 +2,7 @@ import { BlockTime, TxContext } from '#app/listeners/types/context.js'
 import type { Hex } from 'viem'
 
 import { OrderType, SideLabel } from './order.js'
+import { Status } from '../constants/db.js'
 
 export type Settlement = {
   chainId: number
@@ -23,7 +24,7 @@ export type Settlement = {
     txContext?: SettlementMeta['txContext']
   }
 
-  metaStatus: 'DONE' | 'PENDING' | 'FAILED'
+  metaStatus: Status
   metaError?: string
   ingestedAt: number
 }

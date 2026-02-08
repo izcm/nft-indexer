@@ -3,8 +3,13 @@ import { Hex } from 'viem'
 
 import { nftCollections } from '#app/db/mongo.js'
 import { NFTCollectionChainMeta, NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
+import { Status } from '#app/domain/constants/db.js'
 
 const seenCollections = new Set<string>()
+
+export const __resetSeenCollectionsForTest = () => {
+  seenCollections.clear()
+}
 
 const collectionKey = (chainId: number, address: string) => {
   return `${chainId}:${address.toLowerCase()}`
@@ -30,8 +35,8 @@ export const nftCollectionRepo = {
         $setOnInsert: {
           chainId,
           address,
-          metaStatus: 'PENDING',
-          chainMetaFetched: false,
+          metaStatus: Status.PENDING,
+          chainMetaStatus: Status.PENDING,
           updatedAt: Date.now(),
         },
       },
@@ -41,13 +46,17 @@ export const nftCollectionRepo = {
 
   // === read ===
 
-  async findById(id: ObjectId) {
+  async findBydId(id: ObjectId) {
     return nftCollections().findOne({ _id: id })
+  },
+
+  async findByChainIdAndAddress(chainId: number, address: Hex) {
+    return nftCollections().findOne({ chainId, address })
   },
 
   async findMissingChainMeta(chainId: number, limit: number) {
     return nftCollections()
-      .find({ chainId: chainId, chainMetaFetched: false, metaStatus: 'PENDING' })
+      .find({ chainId: chainId, chainMetaStatus: Status.PENDING })
       .limit(limit)
       .toArray()
   },
@@ -64,7 +73,7 @@ export const nftCollectionRepo = {
       {
         $set: {
           ...chainMeta,
-          chainMetaStatus: 'DONE',
+          chainMetaStatus: Status.DONE,
           updatedAt: Date.now(),
         },
       }
@@ -76,7 +85,7 @@ export const nftCollectionRepo = {
       { chainId, address },
       {
         $set: {
-          chainMetaStatus: 'FAILED',
+          chainMetaStatus: Status.FAILED,
           chainMetaError: err,
           updatedAt: Date.now(),
         },

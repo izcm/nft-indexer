@@ -1,5 +1,5 @@
 import { Hex } from 'viem'
-import { nftCollections, orders } from '#app/db/mongo.js'
+import { orders } from '#app/db/mongo.js'
 
 import { NFTCollection } from '../types/nft-collection.js'
 import { Side } from '../types/order.js'

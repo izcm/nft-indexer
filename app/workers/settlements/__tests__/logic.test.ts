@@ -21,8 +21,8 @@ import {
   mockOrderCore,
 } from '#tests/mocks/primitives.js'
 
-describe('tx input => SettlementMeta extraction', () => {
-  it('recovers signer + other order attributes ', async () => {
+describe('tx input => SettlementMeta logic', () => {
+  it('recovers signer + order attributes ', async () => {
     const abi = json.abi as Abi
 
     const settleFunc = getAbiItem({
