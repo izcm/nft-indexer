@@ -97,8 +97,10 @@ export const nftCollectionRepo = {
     return nftCollections().updateOne(
       { chainId, address },
       {
-        $set: patch,
-        updatedAt: Date.now(),
+        $set: {
+          ...patch,
+          updatedAt: Date.now(),
+        },
       }
     )
   },

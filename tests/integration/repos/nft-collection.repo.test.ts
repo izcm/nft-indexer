@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { nftCollections } from '#app/db/mongo.js'
-import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import {
+  __resetSeenCollectionsForTest,
+  nftCollectionRepo,
+  nftCollectionRepoFor,
+} from '#app/repos/nft-collection.repo.js'
 
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections } from '#tests/helpers/seed/seed-collections.js'
@@ -138,7 +142,33 @@ describe('nftCollectionRepo', () => {
         })
       })
 
-      it('patchMeta updates partial fields', async () => {})
+      it('patchMeta updates partial fields', async () => {
+        await nftCollections().insertOne({
+          ...baseDoc,
+          imageUrl: 'old-image',
+          bannerImageUrl: 'old-banner',
+          marketData: { floorPrice: 123 },
+          socials: { twitterUsername: 'old-tw', externalUrl: 'old-url' },
+        })
+
+        const { chainId, address } = baseDoc
+        vi.setSystemTime(writeTime)
+
+        await patchMeta(chainId, address, { imageUrl: 'new-image' })
+
+        const row = await nftCollections().findOne({ chainId, address })
+        if (!row) throw new Error('row missing')
+
+        expect(row).toMatchObject({
+          imageUrl: 'new-image',
+          bannerImageUrl: 'old-banner',
+          marketData: { floorPrice: 123 },
+          socials: { twitterUsername: 'old-tw', externalUrl: 'old-url' },
+          metaStatus: Status.PENDING,
+          chainMetaStatus: Status.PENDING,
+          updatedAt: writeTime,
+        })
+      })
     })
   })
 
@@ -189,4 +219,41 @@ describe('nftCollectionRepo', () => {
   })
 
   // === test repoFor wrapper ===
+
+  describe('repoFor wrapper', () => {
+    const forChainId = TEST_CHAIN_ID
+    const wrapper = nftCollectionRepoFor(forChainId)
+
+    it('forwards to repo.findMissingChainMeta with expected params', async () => {
+      const spy = vi.spyOn(nftCollectionRepo, 'findMissingChainMeta').mockResolvedValue([])
+
+      await wrapper.findMissingChainMeta(10)
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith(forChainId, 10)
+    })
+
+    it('forwards to repo.finalizeChainMeta with expected params', async () => {
+      const spy = vi.spyOn(nftCollectionRepo, 'finalizeChainMeta').mockResolvedValue({} as any)
+
+      await wrapper.finalizeChainMeta(address, {})
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith(forChainId, address, {})
+    })
+
+    it('forwards to repo.markChainMetaFailed with expected params', async () => {
+      const spy = vi.spyOn(nftCollectionRepo, 'markChainMetaFailed').mockResolvedValue({} as any)
+
+      await wrapper.markChainMetaFailed(address, 'error')
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith(forChainId, address, 'error')
+    })
+
+    it('forwards to repo.patchMeta with expected params', async () => {
+      const spy = vi.spyOn(nftCollectionRepo, 'patchMeta').mockResolvedValue({} as any)
+
+      await wrapper.patchMeta(address, {})
+
+      expect(spy).toHaveBeenCalledExactlyOnceWith(forChainId, address, {})
+    })
+  })
 })
