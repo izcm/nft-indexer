@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { ObjectId } from 'mongodb'
 
 import { nftCollections } from '#app/db/collections.js'
 import {
@@ -7,12 +8,11 @@ import {
   nftCollectionRepoFor,
 } from '#app/repos/nft-collection.repo.js'
 
+import { NFTCollectionChainMeta } from '#app/domain/types/nft-collection.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
-import { Status } from '#app/domain/enums.js'
 import { addrOf } from '#tests/helpers/hash.js'
-import { ObjectId } from 'mongodb'
-import { NFTCollectionChainMeta } from '#app/domain/types/nft-collection.js'
+import { Status } from '#app/domain/enums.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -48,7 +48,7 @@ describe('nftCollectionRepo', () => {
   describe('write', () => {
     describe('noteCollection', () => {
       const { noteCollection } = nftCollectionRepo
-      it('inserts new doc on first call', async () => {
+      it('creates collection doc for new chainId + address pair', async () => {
         vi.useFakeTimers()
         vi.setSystemTime(0)
 
@@ -66,7 +66,7 @@ describe('nftCollectionRepo', () => {
         })
       })
 
-      it('does not insert duplicate when cached in memory', async () => {
+      it('does not insert duplicate when chainId + address pair cached in memory', async () => {
         await noteCollection(chainId, address)
         await noteCollection(chainId, address)
 
@@ -98,6 +98,10 @@ describe('nftCollectionRepo', () => {
 
       beforeEach(() => {
         vi.setSystemTime(startTime)
+      })
+
+      afterAll(() => {
+        vi.useRealTimers()
       })
 
       it('finalizeChainMeta sets status DONE + meta fields', async () => {
@@ -206,7 +210,7 @@ describe('nftCollectionRepo', () => {
       })
     })
 
-    it('findMissingChainMeta returns docs where metaStatus = Status.PENDING', async () => {
+    it('findMissingChainMeta returns only collections with chainMetaStatus PENDING', async () => {
       // seed matching docs
       await seedCollections(chainId, 3, 'pending')
 

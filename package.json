@@ -21,7 +21,6 @@
   "type": "module",
   "dependencies": {
     "@a2zb/packages": "github:izcm/a2zblocks-packages",
-    "@fastify/mongodb": "^9.0.2",
     "dotenv": "^17.2.3",
     "fastify": "^5.6.2",
     "mongodb": "^7.0.0",

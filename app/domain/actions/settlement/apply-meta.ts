@@ -10,10 +10,10 @@ export async function applySettlementMeta(settlement: Settlement, meta: Settleme
   const { chainId, orderHash, collection, price, execution } = settlement
   const { timestamp } = execution.block
 
-  const settlementRepo = settlementRepoFor(chainId)
+  const repo = settlementRepoFor(chainId)
 
   try {
-    await settlementRepo.finalizeMeta(orderHash, meta)
+    await repo.finalizeMeta(orderHash, meta)
   } catch (err) {
     throw new Error('[settlement:meta] finalizeMeta failed', { cause: err })
   }
