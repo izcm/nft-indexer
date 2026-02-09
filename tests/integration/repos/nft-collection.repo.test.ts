@@ -30,7 +30,7 @@ beforeEach(async () => {
 const TEST_CHAIN_ID = 1
 
 describe('nftCollectionRepo', () => {
-  // default values
+  // === defaults ===
 
   const chainId = TEST_CHAIN_ID
   const address = addrOf('collection:default')

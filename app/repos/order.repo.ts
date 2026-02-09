@@ -66,7 +66,7 @@ export const orderRepo = {
   },
 
   async updateStatus(chainId: number, orderHash: Hex, status: OrderStatus) {
-    await orders().updateOne(
+    return orders().updateOne(
       { chainId, orderHash },
       {
         $set: {
@@ -84,19 +84,19 @@ export const orderRepo = {
  */
 
 export const orderRepoFor = (chainId: number) => ({
-  async findByHash(orderHash: Hex) {
+  findByHash(orderHash: Hex) {
     return orderRepo.findByChainIdAndHash(chainId, orderHash)
   },
 
-  async markFilled(orderHash: Hex) {
-    await orderRepo.updateStatus(chainId, orderHash, 'filled')
+  markFilled(orderHash: Hex) {
+    return orderRepo.updateStatus(chainId, orderHash, 'filled')
   },
 
-  async markCancelled(orderHash: Hex) {
-    await orderRepo.updateStatus(chainId, orderHash, 'cancelled')
+  markCancelled(orderHash: Hex) {
+    return orderRepo.updateStatus(chainId, orderHash, 'cancelled')
   },
 
-  async markExpired(orderHash: Hex) {
-    await orderRepo.updateStatus(chainId, orderHash, 'expired')
+  markExpired(orderHash: Hex) {
+    return orderRepo.updateStatus(chainId, orderHash, 'expired')
   },
 })

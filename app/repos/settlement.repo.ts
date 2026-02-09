@@ -2,7 +2,6 @@ import { Hex } from 'viem'
 import { ObjectId } from 'mongodb'
 
 import { settlements } from '#app/db/collections.js'
-
 import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
 import { FindPageArgs } from '#app/repos/types.js'
 
@@ -107,7 +106,7 @@ export const settlementRepoFor = (chainId: number) => ({
     return settlementRepo.finalizeMeta(chainId, orderHash, meta)
   },
 
-  async markMetaFailed(orderHash: Hex, error: string) {
+  markMetaFailed(orderHash: Hex, error: string) {
     return settlementRepo.markMetaFailed(chainId, orderHash, error)
   },
 })

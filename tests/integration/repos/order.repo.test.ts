@@ -9,6 +9,7 @@ import { OrderRecord } from '#app/domain/order/types.js'
 import { orderRepo } from '#app/repos/order.repo.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { ObjectId } from 'mongodb'
+import { satoshiVMTestnet } from 'viem/chains'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -25,9 +26,13 @@ beforeEach(async () => {
 const TEST_CHAIN_ID = 1
 
 describe('orderRepo', () => {
-  const chainId = TEST_CHAIN_ID
+  const repo = orderRepo
 
+  // === defaults ===
+
+  const chainId = TEST_CHAIN_ID
   const core = mockOrderCore()
+
   const baseDoc: OrderRecord = {
     chainId,
     orderHash: hashOrderStruct(core),
@@ -46,7 +51,6 @@ describe('orderRepo', () => {
 
   describe('write', () => {
     const startTime = 0
-    const writeTime = 1000
 
     beforeAll(() => {
       vi.useFakeTimers()
@@ -61,11 +65,9 @@ describe('orderRepo', () => {
     })
 
     describe('save', () => {
-      const { save } = orderRepo
-
       it('inserts order doc for new chainId + orderHash pair', async () => {
         const { chainId, order } = baseDoc
-        await save(chainId, order)
+        await repo.save(chainId, order)
 
         const rows = await orders().find({}).toArray()
 
@@ -79,15 +81,47 @@ describe('orderRepo', () => {
       it('throws error for duplicate chainId + orderHash pair', async () => {
         const { chainId, order } = baseDoc
 
-        // unique pair
-        await save(chainId, order)
+        const { save } = orderRepo
 
-        // duplicate pair
+        await save(chainId, order)
         await expect(save(chainId, order)).rejects.toThrow()
 
         const rows = await orders().find({}).toArray()
         expect(rows.length).toBe(1)
       })
+    })
+  })
+
+  describe('updateStatus', () => {
+    const writeTime = 1000
+
+    it('sets status and date', async () => {
+      await orders().insertOne(baseDoc)
+
+      vi.setSystemTime(writeTime)
+
+      const { chainId, orderHash } = baseDoc
+      await repo.updateStatus(chainId, orderHash, 'filled')
+
+      const row = await orders().findOne({ chainId, orderHash })
+      if (!row) throw Error('row missing')
+
+      expect(row.status).toBe('filled')
+      expect(row.updatedAt).toBe(writeTime)
+    })
+
+    it('does nothing if order not found', async () => {
+      const { chainId, orderHash } = baseDoc
+      const result = await repo.updateStatus(chainId, orderHash, 'filled')
+
+      expect(result.acknowledged).toBe(true)
+
+      // no match or modifications
+      expect(result.matchedCount).toBe(0)
+      expect(result.modifiedCount).toBe(0)
+
+      // upsert should be disabled
+      expect(result.upsertedCount).toBe(0)
     })
   })
 })
