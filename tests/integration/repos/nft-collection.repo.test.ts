@@ -9,7 +9,7 @@ import {
 
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
-import { Status } from '#app/domain/constants/db.js'
+import { Status } from '#app/domain/enums.js'
 import { addrOf } from '#tests/helpers/hash.js'
 import { ObjectId } from 'mongodb'
 import { NFTCollectionChainMeta } from '#app/domain/types/nft-collection.js'

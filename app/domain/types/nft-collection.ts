@@ -1,5 +1,5 @@
 import { Hex } from 'viem'
-import { Status } from '../constants/db.js'
+import { Status } from '../enums.js'
 
 export type NFTCollectionStats = {
   chainId: number

@@ -2,7 +2,7 @@ import { BlockTime, TxContext } from '#app/listeners/types/context.js'
 import type { Hex } from 'viem'
 
 import { OrderType, SideLabel } from './order.js'
-import { Status } from '../constants/db.js'
+import { Status } from '../enums.js'
 
 export type Settlement = {
   chainId: number

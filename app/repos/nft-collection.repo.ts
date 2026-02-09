@@ -3,7 +3,7 @@ import { Hex } from 'viem'
 
 import { nftCollections } from '#app/db/collections.js'
 import { NFTCollectionChainMeta, NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
-import { Status } from '#app/domain/constants/db.js'
+import { Status } from '#app/domain/enums.js'
 
 const seenCollections = new Set<string>()
 
