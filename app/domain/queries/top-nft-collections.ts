@@ -25,17 +25,14 @@ export const topCollectionsByActiveOrders = async (chainId: number, limit: numbe
     { $match: match },
     {
       $group: {
-        _id: '$order.collection',
+        _id: {
+          chainId: '$chainId',
+          collection: '$order.collection',
+        },
 
         activeAskCount: {
           $sum: {
-            $cond: [
-              {
-                $and: [{ $eq: ['$order.side', Side.ASK] }],
-              },
-              1,
-              0,
-            ],
+            $cond: [{ $eq: ['$order.side', Side.ASK] }, 1, 0],
           },
         },
 
@@ -44,16 +41,12 @@ export const topCollectionsByActiveOrders = async (chainId: number, limit: numbe
             $cond: [
               {
                 $and: [
-                  {
-                    $and: [
-                      { $eq: ['$order.side', Side.BID] },
-                      { $eq: ['$order.isCollectionBid', false] },
-                    ],
-                  },
-                  1,
-                  0,
+                  { $eq: ['$order.side', Side.BID] },
+                  { $eq: ['$order.isCollectionBid', false] },
                 ],
               },
+              1,
+              0,
             ],
           },
         },
@@ -63,16 +56,12 @@ export const topCollectionsByActiveOrders = async (chainId: number, limit: numbe
             $cond: [
               {
                 $and: [
-                  {
-                    $and: [
-                      { $eq: ['$order.side', Side.BID] },
-                      { $eq: ['$order.isCollectionBid', true] },
-                    ],
-                  },
-                  1,
-                  0,
+                  { $eq: ['$order.side', Side.BID] },
+                  { $eq: ['$order.isCollectionBid', true] },
                 ],
               },
+              1,
+              0,
             ],
           },
         },
@@ -90,11 +79,11 @@ export const topCollectionsByActiveOrders = async (chainId: number, limit: numbe
 
     {
       $lookup: {
-        from: 'nftCollections',
+        from: 'nft-collections',
 
         let: {
-          addr: '$_id',
-          cid: '$chainId',
+          addr: '$_id.collection',
+          cid: '$_id.chainId',
         },
 
         pipeline: [
@@ -119,7 +108,6 @@ export const topCollectionsByActiveOrders = async (chainId: number, limit: numbe
             '$doc',
             {
               summary: {
-                collection: '$_id',
                 activeAskCount: '$activeAskCount',
                 activeBidCount: '$activeBidCount',
                 activeCbCount: '$activeCbCount',
