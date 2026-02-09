@@ -57,7 +57,10 @@ describe('nftCollectionRepo', () => {
         const rows = await nftCollections().find({}).toArray()
 
         expect(rows.length).toBe(1)
-        expect(rows[0]).toMatchObject({
+
+        const row = rows[0]
+        expect(row._id).toBeInstanceOf(ObjectId)
+        expect(row).toMatchObject({
           chainId,
           address,
           metaStatus: Status.PENDING,
@@ -191,7 +194,6 @@ describe('nftCollectionRepo', () => {
       if (!row) throw new Error('row missing')
 
       expect(row).toBeDefined()
-      expect(row._id).toBeInstanceOf(ObjectId)
       expect(row).toMatchObject(baseDoc)
     })
 

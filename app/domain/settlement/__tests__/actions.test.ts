@@ -18,7 +18,7 @@ vi.mock('#app/repos/stats.repo.js', () => ({
   },
 }))
 
-vi.mock('#app/domain/actions/order/apply-filled.js', () => ({
+vi.mock('#app/domain/order/actions.ts', () => ({
   applyOrderFilled: vi.fn().mockResolvedValue(undefined),
 }))
 

@@ -15,7 +15,7 @@ export const orderRepo = {
     return orders().findOne({ _id: id })
   },
 
-  async findByChainIdAndHash(chainId: number, orderHash: Hex) {
+  async findByChainIdAndOrderHash(chainId: number, orderHash: Hex) {
     return orders().findOne({ chainId, orderHash })
   },
 
@@ -85,7 +85,7 @@ export const orderRepo = {
 
 export const orderRepoFor = (chainId: number) => ({
   findByHash(orderHash: Hex) {
-    return orderRepo.findByChainIdAndHash(chainId, orderHash)
+    return orderRepo.findByChainIdAndOrderHash(chainId, orderHash)
   },
 
   markFilled(orderHash: Hex) {

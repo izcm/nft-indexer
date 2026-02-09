@@ -3,12 +3,12 @@ import { orderRepoFor } from '#app/repos/order.repo.js'
 import { Hex } from 'viem'
 import { OrderCore } from './types.js'
 
-const TAG = 'order:created'
+const TAG = 'order'
 
 export async function applyOrderCreated(chainId: number, order: OrderCore) {
   void nftCollectionRepo
     .noteCollection(chainId, order.collection)
-    .catch(err => console.error(`[${TAG}] noteCollection failed`, err))
+    .catch(err => console.error(`[${TAG}:created] noteCollection failed`, err))
 }
 
 export async function applyOrderFilled(chainId: number, orderHash: Hex) {
@@ -23,6 +23,6 @@ export async function applyOrderFilled(chainId: number, orderHash: Hex) {
   try {
     await repo.markFilled(orderHash)
   } catch (err) {
-    throw new Error(`[${TAG}] markFilled failed`, { cause: err })
+    throw new Error(`[${TAG}:filled] markFilled failed`, { cause: err })
   }
 }

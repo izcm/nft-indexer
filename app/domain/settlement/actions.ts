@@ -5,8 +5,6 @@ import { Settlement, SettlementMeta } from './types.js'
 import { applyOrderFilled } from '../order/actions.js'
 import { settlementRepoFor } from '#app/repos/settlement.repo.js'
 
-const TAG = 'settlement:created'
-
 type SettlementCreatedInput = Pick<Settlement, 'chainId' | 'collection' | 'orderHash' | 'price'> & {
   timestamp: number
 }
@@ -18,16 +16,18 @@ export async function applySettlementCreated({
   price,
   timestamp,
 }: SettlementCreatedInput) {
+  const tag = 'settlement:created'
+
   void statsRepo
     .recordSettlement({ chainId, collection, timestamp, price })
-    .catch(err => console.error(`[${TAG}] recordSettlement failed`, err))
+    .catch(err => console.error(`[${tag}] recordSettlement failed`, err))
 
   void nftCollectionRepo
     .noteCollection(chainId, collection)
-    .catch(err => console.error(`[${TAG}] noteCollection failed`, err))
+    .catch(err => console.error(`[${tag}] noteCollection failed`, err))
 
   void applyOrderFilled(chainId, orderHash).catch(err =>
-    console.error(`[${TAG}] applyOrderFilled failed`, err)
+    console.error(`[${tag}] applyOrderFilled failed`, err)
   )
 }
 

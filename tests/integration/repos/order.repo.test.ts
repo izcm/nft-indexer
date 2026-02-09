@@ -49,6 +49,8 @@ describe('orderRepo', () => {
     createdAt: 0,
   }
 
+  // === test repo write ===
+
   describe('write', () => {
     const startTime = 0
 
@@ -122,6 +124,32 @@ describe('orderRepo', () => {
 
       // upsert should be disabled
       expect(result.upsertedCount).toBe(0)
+    })
+  })
+
+  // === test repo read ===
+
+  describe('read', async () => {
+    it('findById returns expected doc', async () => {
+      const { insertedId } = await orders().insertOne(baseDoc)
+
+      const row = await repo.findById(insertedId)
+      if (!row) throw new Error('row missing')
+
+      expect(row).toBeDefined()
+      expect(row._id).toBeInstanceOf(ObjectId)
+      expect(row).toMatchObject(baseDoc)
+    })
+
+    it('findByChainIdAndOrderHash returns expected doc', async () => {
+      await orders().insertOne(baseDoc)
+
+      const { chainId, orderHash } = baseDoc
+      const row = await repo.findByChainIdAndOrderHash(chainId, orderHash)
+      if (!row) throw new Error('row missing')
+
+      expect(row).toBeDefined()
+      expect(row).toMatchObject(baseDoc)
     })
   })
 })
