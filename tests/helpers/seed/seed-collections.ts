@@ -8,7 +8,7 @@ export const seedCollections = async (
   seed: string,
   patch: Partial<NFTCollection> = {}
 ) => {
-  const cols: NFTCollection[] = Array.from({ length: count }).map((_, i) => ({
+  const collections: NFTCollection[] = Array.from({ length: count }).map((_, i) => ({
     chainId,
     address: addrOf(`collection:${i}:${seed}`),
     metaStatus: 'PENDING',
@@ -17,5 +17,5 @@ export const seedCollections = async (
     ...patch,
   }))
 
-  return nftCollections().insertMany(cols)
+  return nftCollections().insertMany(collections)
 }

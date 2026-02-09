@@ -1,4 +1,4 @@
-import { Hex } from 'viem'
+import { encodeAbiParameters, Hex, keccak256, toBytes } from 'viem'
 
 import { APP_NAME, APP_VERSION, CHAIN_ID, VERIFYING_CONTRACT } from '#app/domain/constants/app.js'
 import { OrderCore } from '#app/domain/types/order.js'
@@ -49,3 +49,43 @@ export const toOrder712 = (order: OrderCore): OrderCore712 => ({
   end: BigInt(order.end),
   nonce: BigInt(order.nonce),
 })
+
+export const hashOrderStruct = (o: OrderCore): Hex => {
+  const encoded = encodeAbiParameters(
+    [
+      { type: 'bytes32' },
+      { type: 'uint8' },
+      { type: 'bool' },
+      { type: 'address' },
+      { type: 'uint256' },
+      { type: 'address' },
+      { type: 'uint256' },
+      { type: 'address' },
+      { type: 'uint64' },
+      { type: 'uint64' },
+      { type: 'uint256' },
+    ],
+    [
+      ORDER_TYPE_HASH(),
+      o.side,
+      o.isCollectionBid,
+      o.collection,
+      BigInt(o.tokenId),
+      o.currency,
+      BigInt(o.price),
+      o.actor,
+      BigInt(o.start),
+      BigInt(o.end),
+      BigInt(o.nonce),
+    ]
+  )
+
+  return keccak256(encoded)
+}
+
+const ORDER_TYPE_HASH = () =>
+  keccak256(
+    toBytes(
+      'Order(uint8 side,bool isCollectionBid,address collection,uint256 tokenId,address currency,uint256 price,address actor,uint64 start,uint64 end,uint256 nonce)'
+    )
+  )

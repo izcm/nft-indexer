@@ -21,3 +21,6 @@ export const bytesOf = (label: string, byteCount: number): Hex => {
   }
   return ('0x' + hash(label, [], []).slice(-(byteCount * 2))) as Hex
 }
+
+export const priceWei = (seed: string) =>
+  1_000_000_000_000_000n + (bytes32n(seed) % 1_000_000_000_000_000n)

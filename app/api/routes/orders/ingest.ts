@@ -1,10 +1,11 @@
 import { FastifyInstance } from 'fastify'
 
 import { API_ERRORS } from '#app/domain/constants/api.js'
-import { Order, Side, SideLabel, validOrder } from '#app/domain/types/order.js'
+import { Order } from '#app/domain/types/order.js'
 
-import { orderRepo as orderRepo } from '#app/repos/order.repo.js'
+import { orderRepo } from '#app/repos/order.repo.js'
 import { applyOrderCreated } from '#app/domain/actions/order/apply-created.js'
+import { validOrder } from '#app/domain/validation/order.js'
 
 // TODO: index orderhash on `order_status`
 export const ordersIngest = (fastify: FastifyInstance) => {

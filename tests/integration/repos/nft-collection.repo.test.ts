@@ -92,8 +92,11 @@ describe('nftCollectionRepo', () => {
       const startTime = 0
       const writeTime = 100
 
-      beforeEach(() => {
+      beforeAll(() => {
         vi.useFakeTimers()
+      })
+
+      beforeEach(() => {
         vi.setSystemTime(startTime)
       })
 
