@@ -8,11 +8,11 @@ import {
   nftCollectionRepoFor,
 } from '#app/repos/nft-collection.repo.js'
 
-import { NFTCollectionChainMeta } from '#app/domain/types/nft-collection.js'
+import { NFTCollectionChainMeta } from '#app/domain/nft-collection/types.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
 import { addrOf } from '#tests/helpers/hash.js'
-import { Status } from '#app/domain/enums.js'
+import { Status } from '#app/domain/shared.js'
 
 beforeAll(async () => {
   await startTestMongo()

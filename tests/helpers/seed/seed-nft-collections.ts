@@ -1,5 +1,5 @@
 import { nftCollections } from '#app/db/collections.js'
-import { NFTCollection } from '#app/domain/types/nft-collection.js'
+import { NFTCollection } from '#app/domain/nft-collection/types.js'
 import { addrOf } from '../hash.js'
 
 export const seedCollections = async (

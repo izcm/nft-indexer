@@ -3,9 +3,8 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { statsRepo } from '#app/repos/stats.repo.js'
-
-import { applySettlementCreated } from '../apply-created.js'
-import { applyOrderFilled } from '../../order/apply-filled.js'
+import { applySettlementCreated } from '../actions.js'
+import { applyOrderFilled } from '#app/domain/order/actions.js'
 
 vi.mock('#app/repos/nft-collection.repo.js', () => ({
   nftCollectionRepo: {

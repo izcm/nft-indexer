@@ -1,11 +1,11 @@
 // order types & methods
-import { OrderCore, OrderSignature, Side, SideLabel } from '#app/domain/types/order.js'
+import { OrderCore, OrderSignature, Side, SideLabel } from '#app/domain/order/types.js'
 
 // context types
 import { SettlementLog } from '../types/logs.js'
 
 // domain types
-import { Settlement } from '#app/domain/types/settlement.js'
+import { Settlement } from '#app/domain/settlement/types.js'
 
 export const settlementFromLog = (log: SettlementLog, chainId: number): Settlement => {
   const { args } = log

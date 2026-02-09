@@ -1,9 +1,9 @@
 import { statsRepo } from '#app/repos/stats.repo.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 
-import { Settlement } from '#app/domain/types/settlement.js'
-import { applyOrderFilled } from '../order/apply-filled.js'
-import { Hex } from 'viem'
+import { Settlement, SettlementMeta } from './types.js'
+import { applyOrderFilled } from '../order/actions.js'
+import { settlementRepoFor } from '#app/repos/settlement.repo.js'
 
 const TAG = 'settlement:created'
 
@@ -29,4 +29,17 @@ export async function applySettlementCreated({
   void applyOrderFilled(chainId, orderHash).catch(err =>
     console.error(`[${TAG}] applyOrderFilled failed`, err)
   )
+}
+
+export async function applySettlementMeta(settlement: Settlement, meta: SettlementMeta) {
+  const { chainId, orderHash, collection, price, execution } = settlement
+  const { timestamp } = execution.block
+
+  const repo = settlementRepoFor(chainId)
+
+  try {
+    await repo.finalizeMeta(orderHash, meta)
+  } catch (err) {
+    throw new Error('[settlement:meta] finalizeMeta failed', { cause: err })
+  }
 }

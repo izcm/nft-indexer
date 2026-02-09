@@ -8,7 +8,7 @@ import { Abi, encodeFunctionData, getAbiItem, Hex, parseSignature } from 'viem'
 
 import { settlementMetaFromTx } from '#app/workers/settlements/logic.js'
 
-import { Side, SideLabel } from '#app/domain/types/order.js'
+import { Side, SideLabel } from '#app/domain/order/types.js'
 import { dmrktDomain, toOrder712, dmrktTypes } from '#app/lib/blockchain/eip712.js'
 
 // test helpers

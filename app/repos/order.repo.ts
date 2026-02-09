@@ -2,10 +2,10 @@ import { Hex } from 'viem'
 import { ObjectId } from 'mongodb'
 
 import { FindPageArgs } from '#app/repos/types.js'
-import { Order } from '#app/domain/types/order.js'
+import { Order } from '#app/domain/order/types.js'
 
 import { orders } from '#app/db/collections.js'
-import { OrderStatus } from '#app/domain/types/order.js'
+import { OrderStatus } from '#app/domain/order/types.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 
 // TODO: dont use hashOrderStruct => use viem typedData functions or smth similar

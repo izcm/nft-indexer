@@ -2,10 +2,10 @@ import { decodeFunctionData, serializeSignature, recoverTypedDataAddress, getAbi
 import type { AbiFunction, Abi, Hex } from 'viem'
 
 // order types & methods
-import { OrderCore, OrderSignature, Side, SideLabel } from '#app/domain/types/order.js'
+import { OrderCore, OrderSignature, Side, SideLabel } from '#app/domain/order/types.js'
 
 // domain types
-import { SettlementMeta } from '#app/domain/types/settlement.js'
+import { SettlementMeta } from '#app/domain/settlement/types.js'
 
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 

@@ -1,7 +1,15 @@
-import { Hex } from 'viem'
+import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { orderRepoFor } from '#app/repos/order.repo.js'
+import { Hex } from 'viem'
+import { OrderCore } from './types.js'
 
-const TAG = 'order:filled'
+const TAG = 'order:created'
+
+export async function applyOrderCreated(chainId: number, order: OrderCore) {
+  void nftCollectionRepo
+    .noteCollection(chainId, order.collection)
+    .catch(err => console.error(`[${TAG}] noteCollection failed`, err))
+}
 
 export async function applyOrderFilled(chainId: number, orderHash: Hex) {
   const repo = orderRepoFor(chainId)

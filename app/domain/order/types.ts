@@ -2,11 +2,6 @@ import type { Hex } from 'viem'
 
 export type OrderType = 'ASK' | 'BID' | 'COLLECTION_BID'
 
-export const toOrderType = (side: number, isCollectionBid: boolean): OrderType => {
-  const direction = Side[side] as SideLabel
-  return direction === 'BID' && isCollectionBid ? 'COLLECTION_BID' : direction
-}
-
 export enum Side {
   ASK,
   BID,

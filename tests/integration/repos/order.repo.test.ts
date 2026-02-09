@@ -5,7 +5,7 @@ import { orders } from '#app/db/collections.js'
 
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { mockOrderCore } from '#tests/mocks/primitives.js'
-import { OrderRecord } from '#app/domain/types/order.js'
+import { OrderRecord } from '#app/domain/order/types.js'
 import { orderRepo } from '#app/repos/order.repo.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { ObjectId } from 'mongodb'

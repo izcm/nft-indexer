@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 
 import { settlements } from '#app/db/collections.js'
 
-import { Settlement, SettlementMeta } from '#app/domain/types/settlement.js'
+import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
 import { FindPageArgs } from '#app/repos/types.js'
 
 export const settlementRepo = {

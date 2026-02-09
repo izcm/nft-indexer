@@ -1,6 +1,6 @@
 import type { Hex } from 'viem'
 
-import { OrderCore } from '#app/domain/types/order.js'
+import { OrderCore } from '#app/domain/order/types.js'
 import { SettlementLog } from '#app/listeners/types/logs.js'
 
 import { addrOf, bytes32, bytes32n, bytesOf } from '../helpers/hash.js'
