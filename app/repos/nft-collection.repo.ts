@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { Hex } from 'viem'
 
-import { nftCollections } from '#app/db/mongo.js'
+import { nftCollections } from '#app/db/collections.js'
 import { NFTCollectionChainMeta, NFTCollectionMetaPatch } from '#app/domain/types/nft-collection.js'
 import { Status } from '#app/domain/constants/db.js'
 

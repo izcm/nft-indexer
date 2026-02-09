@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { nftCollections } from '#app/db/mongo.js'
+import { nftCollections } from '#app/db/collections.js'
 import {
   __resetSeenCollectionsForTest,
   nftCollectionRepo,
@@ -8,7 +8,7 @@ import {
 } from '#app/repos/nft-collection.repo.js'
 
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-import { seedCollections } from '#tests/helpers/seed/seed-collections.js'
+import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
 import { Status } from '#app/domain/constants/db.js'
 import { addrOf } from '#tests/helpers/hash.js'
 import { ObjectId } from 'mongodb'

@@ -1,4 +1,4 @@
-import { nftCollections, nftCollectionsStats, orders, settlements } from '../mongo.js'
+import { nftCollections, nftCollectionsStats, orders, settlements } from '../collections.js'
 
 export const ensureIndexes = async () => {
   // === unique indexes ===

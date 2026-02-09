@@ -1,7 +1,7 @@
 import { Hex } from 'viem'
 import { ObjectId } from 'mongodb'
 
-import { settlements } from '#app/db/mongo.js'
+import { settlements } from '#app/db/collections.js'
 
 import { Settlement, SettlementMeta } from '#app/domain/types/settlement.js'
 import { FindPageArgs } from '#app/repos/types.js'

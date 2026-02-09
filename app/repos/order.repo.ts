@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { FindPageArgs } from '#app/repos/types.js'
 import { Order } from '#app/domain/types/order.js'
 
-import { orders } from '#app/db/mongo.js'
+import { orders } from '#app/db/collections.js'
 import { OrderStatus } from '#app/domain/types/order.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 

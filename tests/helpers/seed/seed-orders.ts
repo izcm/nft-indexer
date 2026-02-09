@@ -1,6 +1,8 @@
 import { Hex } from 'viem'
 import { addrOf, bytes32, bytes32n, priceWei } from '../hash.js'
 import { Order, OrderCore, OrderRecord, OrderSignature } from '#app/domain/types/order.js'
+import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
+import { orders } from '#app/db/collections.js'
 
 const s = (x: number | bigint) => x.toString()
 
@@ -9,19 +11,19 @@ export const seedOrders = async (
   chainId: number,
   collections: Hex[],
   countPerCollection: number,
-  seed: string
+  seed: string,
+  now: number = 0
 ) => {
   // test data => safe to cast
-  const unixBase = 1_700_000_000
   const byCollection: Record<Hex, Order[]> = {}
 
   for (const collection of collections) {
     byCollection[collection] = Array.from({ length: countPerCollection }).map((_, i) => {
-      const orderSeed = `seed:${i}`
+      const orderSeed = `${seed}:${i}`
       const seedNum = Number(bytes32n(orderSeed))
 
-      const startTs = unixBase + i * 60 // orders are 1 minute apart
-      const endTs = unixBase + i * 60 + 3600 // valid for 1 hour
+      const startTs = now + i * 60 // orders are 1 minute apart
+      const endTs = now + i * 60 + 3600 // valid for 1 hour
 
       const side = i % 2
 
@@ -41,6 +43,21 @@ export const seedOrders = async (
       }
     })
   }
+
+  const allOrders = Object.values(byCollection).flat()
+
+  const orderRecords: OrderRecord[] = allOrders.map(o => ({
+    chainId,
+    orderHash: hashOrderStruct(o),
+
+    order: o,
+    status: 'active',
+    updatedAt: now,
+
+    createdAt: now,
+  }))
+
+  return orders().insertMany(orderRecords)
 }
 
 const dummySignature = (seed: string): OrderSignature => {

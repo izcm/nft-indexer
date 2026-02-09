@@ -1,5 +1,5 @@
 import { Hex } from 'viem'
-import { nftCollectionsStats as stats } from '#app/db/mongo.js'
+import { nftCollectionsStats as stats } from '#app/db/collections.js'
 
 type CollectionStatsKey = {
   chainId: number

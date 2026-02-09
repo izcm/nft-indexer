@@ -17,11 +17,10 @@ export type SideLabel = keyof typeof Side
 export type OrderStatus = 'active' | 'filled' | 'cancelled' | 'expired'
 
 export type OrderRecord = {
-  orderHash: Hex
   chainId: number
+  orderHash: Hex
 
   order: Order
-
   status: OrderStatus
   updatedAt: number // only mutable field is status field
 

@@ -1,4 +1,4 @@
-import { nftCollections } from '#app/db/mongo.js'
+import { nftCollections } from '#app/db/collections.js'
 import { NFTCollection } from '#app/domain/types/nft-collection.js'
 import { addrOf } from '../hash.js'
 

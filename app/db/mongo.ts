@@ -3,30 +3,7 @@ import { MongoClient, Db, Collection, Document } from 'mongodb'
 // db config
 import { ensureIndexes } from './config/ensure-indexes.js'
 
-// constants
-import { COLLECTIONS } from '#app/domain/constants/db.js'
-
-// domain types
-import { OrderRecord } from '#app/domain/types/order.js'
-import { Settlement } from '#app/domain/types/settlement.js'
-import { NFTCollection } from '#app/domain/types/nft-collection.js'
-import { NFTCollectionStats } from '#app/domain/types/nft-collection.js'
-
 let db: Db | null = null
-
-// === db getters ===
-
-export const orders = () => col<OrderRecord>(COLLECTIONS.ORDERS)
-
-export const settlements = () => col<Settlement>(COLLECTIONS.SETTLEMENTS)
-
-export const nftCollections = () => col<NFTCollection>(COLLECTIONS.NFT_COLLECTIONS)
-
-export const nftCollectionsStats = () => col<NFTCollectionStats>(COLLECTIONS.NFT_COLLECTION_STATS)
-
-const col = <T extends Document>(name: string): Collection<T> => {
-  return getDb().collection<T>(name)
-}
 
 // === mongo drivers ===
 
