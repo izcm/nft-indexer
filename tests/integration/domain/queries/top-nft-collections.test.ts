@@ -8,10 +8,8 @@ import { Hex } from 'viem'
 import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
 import {
   ActiveCounts,
-  TopNFTCollectionByActiveOrders,
   topNFTCollectionsByActiveOrders,
 } from '#app/domain/queries/top-nft-collections.js'
-import { a, b } from 'node_modules/vitest/dist/chunks/suite.d.BJWk38HB.js'
 
 const CHAIN_ID = 1
 
@@ -46,7 +44,7 @@ describe('topCollectionsByActiveOrders query', () => {
   it('groups + sorts + counts corectly', async () => {
     // --- seed collections ---
 
-    seedCollections(CHAIN_ID, 3, 'sort')
+    await seedCollections(CHAIN_ID, 3, 'sort')
 
     const cols = await nftCollections().find({}).toArray()
 
@@ -94,7 +92,24 @@ describe('topCollectionsByActiveOrders query', () => {
     }
   })
 
-  it('respect limits', async () => {})
+  it('respect limits', async () => {
+    const colN = 10
+    const limit = 3
+
+    await seedCollections(CHAIN_ID, colN, 'seed')
+
+    const cols = await nftCollections().find({}).toArray()
+    await seedOrders(
+      CHAIN_ID,
+      cols.map(c => c.address),
+      5,
+      'seed'
+    )
+
+    const queryResult = await topNFTCollectionsByActiveOrders(CHAIN_ID, limit)
+
+    expect(queryResult.length).toBe(limit)
+  })
 
   it('does not count inactive orders', async () => {})
 
@@ -102,5 +117,5 @@ describe('topCollectionsByActiveOrders query', () => {
 
   it('order side is classified correctly', () => {})
 
-  it('handles missing collections', async () => {})
+  it('handles missing nft-collections', async () => {})
 })

@@ -53,7 +53,7 @@ const buildFakeOrder = (
   now: number,
   shapeFn?: (i: number) => { side: Side; isCollectionBid: boolean }
 ): Order => {
-  const orderSeed = `${seed}:${i}`
+  const orderSeed = `order:${i}:${seed}`
   const seedNum = Number(bytes32n(orderSeed))
 
   const startTs = now + i * 60
