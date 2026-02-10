@@ -4,21 +4,20 @@ import { orders } from '#app/db/collections.js'
 import { NFTCollection } from '../nft-collection/types.js'
 import { Side } from '../order/types.js'
 
-export type TopCollectionByActiveOrders = NFTCollection & {
-  summary: TopCollectionActiveCounts
+export type TopNFTCollectionByActiveOrders = NFTCollection & {
+  summary: ActiveCounts
 }
 
-export type TopCollectionActiveCounts = {
-  collection: Hex
+export type ActiveCounts = {
   activeAskCount: number
   activeBidCount: number
   activeCbCount: number
   totalActive: number
 }
 
-export const topCollectionsBySettlements = () => {}
+export const topNFTCollectionsBySettlements = () => {}
 
-export const topCollectionsByActiveOrders = async (chainId: number, limit: number) => {
+export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: number) => {
   const match: any = { chainId, status: 'active' }
 
   const pipeline = [
@@ -120,7 +119,7 @@ export const topCollectionsByActiveOrders = async (chainId: number, limit: numbe
     },
   ]
 
-  const rows = await orders().aggregate<TopCollectionByActiveOrders>(pipeline).toArray()
+  const rows = await orders().aggregate<TopNFTCollectionByActiveOrders>(pipeline).toArray()
 
   return rows
 }

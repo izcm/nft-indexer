@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon --exec node --conditions=dev --loader ts-node/esm app/index.ts",
     "test": "vitest run",
+    "test:cov": "vitest run --coverage",
     "build": "tsc",
     "start": "node --conditions=prod dist/app/index.js",
     "fmt": "prettier --write .",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.0.2",
+    "@vitest/coverage-v8": "^4.0.18",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "mongodb-memory-server": "^11.0.1",

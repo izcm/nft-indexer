@@ -23,13 +23,14 @@ beforeEach(async () => {
 describe('seed-orders', () => {
   // --- helpers ---
 
+  const makeParams = () => ({ colN: 2, perCol: 5 })
+
   const mockAddresses = (count: number) => {
     return Array.from({ length: count }).map((_, i) => addrOf(`collection:${i}`))
   }
 
   it('inserts collections * countPerCollection', async () => {
-    const colN = 2
-    const perCol = 5
+    const { colN, perCol } = makeParams()
 
     const cols = mockAddresses(colN)
 
@@ -60,6 +61,19 @@ describe('seed-orders', () => {
     const orderDocs = await orders().find({}).toArray()
 
     expect(orderDocs.every(o => o.order.side === Side.ASK && o.order.isCollectionBid)).toBe(true)
+  })
+
+  it('defaults to active status', async () => {
+    const { colN, perCol } = makeParams()
+
+    const cols = mockAddresses(colN)
+
+    await seedOrders(CHAIN_ID, cols, perCol, 'seed')
+
+    const orderDocs = await orders().find({}).toArray()
+
+    expect(orderDocs.length).toBe(colN * perCol)
+    expect(orderDocs.every(o => o.status === 'active')).toBe(true)
   })
 
   it('falls back to default side logic', async () => {

@@ -1,6 +1,7 @@
 import { Hex } from 'viem'
+
 import { addrOf, bytes32, bytes32n, priceWei } from '../hash.js'
-import { Order, OrderCore, OrderRecord, OrderSignature, Side } from '#app/domain/order/types.js'
+import { Order, OrderRecord, OrderSignature, Side } from '#app/domain/order/types.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { orders } from '#app/db/collections.js'
 
