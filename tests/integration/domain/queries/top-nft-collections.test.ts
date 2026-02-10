@@ -81,9 +81,6 @@ describe('topCollectionsByActiveOrders query', () => {
       ([, a], [, b]) => b.ask + b.bid + b.cb - (a.ask + a.bid + a.cb)
     )
 
-    const wtf = sortedPlan.entries()
-    const wtf2 = Object.fromEntries(sortedPlan)
-
     for (const [i, [addr, c]] of sortedPlan.entries()) {
       expect(queryResult[i]).toMatchObject({
         address: addr,
