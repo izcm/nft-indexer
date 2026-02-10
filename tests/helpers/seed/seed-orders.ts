@@ -1,6 +1,6 @@
 import { Hex } from 'viem'
 import { addrOf, bytes32, bytes32n, priceWei } from '../hash.js'
-import { Order, OrderCore, OrderRecord, OrderSignature } from '#app/domain/order/types.js'
+import { Order, OrderCore, OrderRecord, OrderSignature, Side } from '#app/domain/order/types.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { orders } from '#app/db/collections.js'
 
@@ -12,36 +12,21 @@ export const seedOrders = async (
   collections: Hex[],
   countPerCollection: number,
   seed: string,
-  now: number = 0
+  now: number = 0,
+  shapeFn?: (
+    i: number,
+    seedNum: number
+  ) => {
+    side: Side
+    isCollectionBid: boolean
+  }
 ) => {
-  // test data => safe to cast
   const byCollection: Record<Hex, Order[]> = {}
 
   for (const collection of collections) {
-    byCollection[collection] = Array.from({ length: countPerCollection }).map((_, i) => {
-      const orderSeed = `${seed}:${i}`
-      const seedNum = Number(bytes32n(orderSeed))
-
-      const startTs = now + i * 60 // orders are 1 minute apart
-      const endTs = now + i * 60 + 3600 // valid for 1 hour
-
-      const side = i % 2
-
-      return {
-        side: side,
-        isCollectionBid: side === 1 && seedNum % 2 === 0,
-        collection,
-        tokenId: s(seedNum % 10000),
-        currency: addrOf('currency'),
-        price: s(priceWei(orderSeed)),
-        actor: addrOf(orderSeed),
-        start: s(startTs),
-        end: s(endTs),
-        nonce: s(seedNum),
-
-        signature: dummySignature(orderSeed),
-      }
-    })
+    byCollection[collection] = Array.from({ length: countPerCollection }).map((_, i) =>
+      buildFakeOrder(collection, i, seed, now, shapeFn)
+    )
   }
 
   const allOrders = Object.values(byCollection).flat()
@@ -52,12 +37,47 @@ export const seedOrders = async (
 
     order: o,
     status: 'active',
-    updatedAt: now,
 
+    updatedAt: now,
     createdAt: now,
   }))
 
   return orders().insertMany(orderRecords)
+}
+
+const buildFakeOrder = (
+  collection: Hex,
+  i: number,
+  seed: string,
+  now: number,
+  shapeFn?: (i: number, seedNum: number) => { side: Side; isCollectionBid: boolean }
+): Order => {
+  const orderSeed = `${seed}:${i}`
+  const seedNum = Number(bytes32n(orderSeed))
+
+  const startTs = now + i * 60
+  const endTs = startTs + 3600
+
+  const shape = shapeFn
+    ? shapeFn(i, seedNum)
+    : {
+        side: i % 2,
+        isCollectionBid: i % 2 === 1 && seedNum % 2 === 0,
+      }
+
+  return {
+    side: shape.side,
+    isCollectionBid: shape.isCollectionBid,
+    collection,
+    tokenId: s(seedNum % 10000),
+    currency: addrOf('currency'),
+    price: s(priceWei(orderSeed)),
+    actor: addrOf(orderSeed),
+    start: s(startTs),
+    end: s(endTs),
+    nonce: s(seedNum),
+    signature: dummySignature(orderSeed),
+  }
 }
 
 const dummySignature = (seed: string): OrderSignature => {

@@ -18,6 +18,7 @@ export type TopCollectionActiveCounts = {
 
 export const topCollectionsBySettlements = () => {}
 
+// todo... add timespans
 export const topCollectionsByActiveOrders = async (chainId: number, limit: number) => {
   const match: any = { chainId, status: 'active' }
 
