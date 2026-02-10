@@ -14,8 +14,8 @@ export const seedOrders = async (
   seed: string,
   now: number = 0,
   shapeFn?: (
-    i: number,
-    seedNum: number
+    i: number
+    // seedNum: number
   ) => {
     side: Side
     isCollectionBid: boolean
@@ -50,7 +50,7 @@ const buildFakeOrder = (
   i: number,
   seed: string,
   now: number,
-  shapeFn?: (i: number, seedNum: number) => { side: Side; isCollectionBid: boolean }
+  shapeFn?: (i: number) => { side: Side; isCollectionBid: boolean }
 ): Order => {
   const orderSeed = `${seed}:${i}`
   const seedNum = Number(bytes32n(orderSeed))
@@ -59,7 +59,7 @@ const buildFakeOrder = (
   const endTs = startTs + 3600
 
   const shape = shapeFn
-    ? shapeFn(i, seedNum)
+    ? shapeFn(i)
     : {
         side: i % 2,
         isCollectionBid: i % 2 === 1 && seedNum % 2 === 0,
@@ -75,7 +75,7 @@ const buildFakeOrder = (
     actor: addrOf(orderSeed),
     start: s(startTs),
     end: s(endTs),
-    nonce: s(seedNum),
+    nonce: s(bytes32n(orderSeed)), // don't use seedNum (bigint => number => bigint creates issues when hashing order)
     signature: dummySignature(orderSeed),
   }
 }

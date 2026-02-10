@@ -9,7 +9,6 @@ import { OrderRecord } from '#app/domain/order/types.js'
 import { orderRepo } from '#app/repos/order.repo.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { ObjectId } from 'mongodb'
-import { satoshiVMTestnet } from 'viem/chains'
 
 beforeAll(async () => {
   await startTestMongo()
