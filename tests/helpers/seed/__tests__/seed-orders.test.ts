@@ -5,6 +5,7 @@ import { seedOrders } from '../seed-orders.js'
 import { orders } from '#app/db/collections.js'
 import { addrOf, bytes32n } from '#tests/helpers/hash.js'
 import { Side } from '#app/domain/order/types.js'
+import { Status } from '#app/domain/shared.js'
 
 const CHAIN_ID = 1
 
@@ -102,5 +103,18 @@ describe('seed-orders', () => {
         order: expected,
       })
     }
+  })
+
+  it('sets expected fields when patch is passed', async () => {
+    const cols = mockAddresses(1)
+
+    await seedOrders(CHAIN_ID, cols, 1, 'seed', 0, undefined, { status: 'cancelled' })
+
+    const orderDocs = await orders().find({}).toArray()
+    expect(orderDocs.length).toBe(1)
+
+    const doc = orderDocs[0]
+
+    expect(doc.status).toBe('cancelled')
   })
 })

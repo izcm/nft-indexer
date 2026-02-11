@@ -115,7 +115,5 @@ describe('topCollectionsByActiveOrders query', () => {
 
   it('does not count orders with different chainId', async () => {})
 
-  it('order side is classified correctly', () => {})
-
   it('handles missing nft-collections', async () => {})
 })

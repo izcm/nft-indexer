@@ -20,7 +20,8 @@ export const seedOrders = async (
   ) => {
     side: Side
     isCollectionBid: boolean
-  }
+  },
+  patch: Partial<OrderRecord> = {}
 ) => {
   const byCollection: Record<Hex, Order[]> = {}
 
@@ -41,6 +42,8 @@ export const seedOrders = async (
 
     updatedAt: now,
     createdAt: now,
+
+    ...patch,
   }))
 
   return orders().insertMany(orderRecords)

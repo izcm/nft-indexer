@@ -76,6 +76,7 @@ export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: nu
     { $sort: { totalActive: -1 } },
     { $limit: limit },
 
+    // todo: for missing nftcollection => put lookup + unwind before sort + limit
     {
       $lookup: {
         from: 'nft-collections',
