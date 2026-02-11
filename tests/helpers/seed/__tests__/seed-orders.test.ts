@@ -21,18 +21,20 @@ beforeEach(async () => {
 describe('seed-orders', () => {
   // --- helpers ---
 
-  const makeParams = () => ({ chainId: 1, colN: 2, perCol: 5 })
+  const CHAIN_ID = 1
+
+  const makeParams = () => ({ colN: 2, perCol: 5 })
 
   const mockAddresses = (count: number) => {
     return Array.from({ length: count }).map((_, i) => addrOf(`collection:${i}`))
   }
 
   it('inserts collections * countPerCollection', async () => {
-    const { chainId, colN, perCol } = makeParams()
+    const { colN, perCol } = makeParams()
 
     const cols = mockAddresses(colN)
 
-    await seedOrders(chainId, cols, perCol, 'seed')
+    await seedOrders(CHAIN_ID, cols, perCol, 'seed')
 
     const orderRows = await orders().find({}).toArray()
 
@@ -46,14 +48,14 @@ describe('seed-orders', () => {
   })
 
   it('uses shapeFn for side + collectionBid', async () => {
-    const { chainId, colN, perCol } = makeParams()
+    const { colN, perCol } = makeParams()
 
     // array of one address
     const cols = mockAddresses(colN)
 
     const shapeFn = () => ({ side: Side.ASK, isCollectionBid: true })
 
-    await seedOrders(chainId, cols, perCol, 'shapeFn', 0, shapeFn)
+    await seedOrders(CHAIN_ID, cols, perCol, 'shapeFn', 0, shapeFn)
 
     const docs = await orders().find({}).toArray()
 
@@ -62,8 +64,6 @@ describe('seed-orders', () => {
   })
 
   it('falls back to default side logic', async () => {
-    const { chainId } = makeParams()
-
     const colN = 1
     const perCol = 3
 
@@ -73,7 +73,7 @@ describe('seed-orders', () => {
     const seed = 'seed'
     const seedNums = Array.from({ length: perCol }).map((_, i) => Number(bytes32n(`seed:${i}`)))
 
-    await seedOrders(chainId, cols, perCol, seed)
+    await seedOrders(CHAIN_ID, cols, perCol, seed)
 
     const docs = await orders().find({}).sort({ createdAt: 1 }).toArray()
 
@@ -92,15 +92,13 @@ describe('seed-orders', () => {
   })
 
   it('applies default record fields to all orders', async () => {
-    const { chainId, colN, perCol } = makeParams()
+    const { colN, perCol } = makeParams()
 
     const cols = mockAddresses(colN)
 
-    await seedOrders(chainId, cols, perCol, 'seed')
+    await seedOrders(CHAIN_ID, cols, perCol, 'seed')
 
     const docs = await orders().find({}).toArray()
-
-    console.log(docs)
 
     expect(docs).toHaveLength(colN * perCol)
 
@@ -114,14 +112,12 @@ describe('seed-orders', () => {
   })
 
   it('sets expected fields when patch is passed', async () => {
-    const { chainId } = makeParams()
-
     const colN = 1
     const perCol = 1
 
     const cols = mockAddresses(colN)
 
-    await seedOrders(chainId, cols, perCol, 'seed', 0, undefined, { status: 'cancelled' })
+    await seedOrders(CHAIN_ID, cols, perCol, 'seed', 0, undefined, { status: 'cancelled' })
 
     const docs = await orders().find({}).toArray()
 

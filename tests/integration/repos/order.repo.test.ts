@@ -29,11 +29,10 @@ describe('orderRepo', () => {
 
   // === defaults ===
 
-  const chainId = TEST_CHAIN_ID
   const core = mockOrderCore()
 
   const baseDoc: OrderRecord = {
-    chainId,
+    chainId: TEST_CHAIN_ID,
     orderHash: hashOrderStruct(core),
     order: {
       ...core,

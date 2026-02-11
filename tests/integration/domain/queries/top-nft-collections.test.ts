@@ -44,7 +44,9 @@ describe('topCollectionsByActiveOrders query', () => {
   it('groups + sorts + counts corectly', async () => {
     // --- seed collections ---
 
-    await seedCollections(CHAIN_ID, 3, 'sort')
+    const colN = 3
+
+    await seedCollections(CHAIN_ID, colN, 'seed')
 
     const cols = await nftCollections().find({}).toArray()
 
@@ -73,7 +75,7 @@ describe('topCollectionsByActiveOrders query', () => {
 
     // --- test expectations ---
 
-    expect(queryResult.length).toBe(3)
+    expect(queryResult).toHaveLength(colN)
 
     const sortedPlan = Object.entries(plan).sort(
       ([, a], [, b]) => b.ask + b.bid + b.cb - (a.ask + a.bid + a.cb)
@@ -108,10 +110,29 @@ describe('topCollectionsByActiveOrders query', () => {
 
     const queryResult = await topNFTCollectionsByActiveOrders(CHAIN_ID, limit)
 
-    expect(queryResult.length).toBe(limit)
+    expect(queryResult).toHaveLength(limit)
   })
 
-  it('does not count inactive orders', async () => {})
+  it('does not count inactive orders', async () => {
+    const activeCount = 5
+    const inactiveCount = 2
+
+    await seedCollections(CHAIN_ID, 1, 'seed')
+
+    // array of one collection
+    const col = (await nftCollections().find({}).toArray())[0]
+
+    await seedOrders(CHAIN_ID, [col.address], activeCount, 'active')
+    await seedOrders(CHAIN_ID, [col.address], inactiveCount, 'inactive', 0, undefined, {
+      status: 'cancelled',
+    })
+
+    const queryResult = await topNFTCollectionsByActiveOrders(CHAIN_ID, 100)
+
+    expect(queryResult).toHaveLength(1)
+
+    expect(queryResult[0].summary.totalActive).toBe(activeCount)
+  })
 
   it('does not count orders with different chainId', async () => {})
 
