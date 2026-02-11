@@ -73,10 +73,6 @@ export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: nu
       },
     },
 
-    { $sort: { totalActive: -1 } },
-    { $limit: limit },
-
-    // todo: for missing nftcollection => put lookup + unwind before sort + limit
     {
       $lookup: {
         from: 'nft-collections',
@@ -100,6 +96,12 @@ export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: nu
     },
 
     { $unwind: '$doc' },
+
+    // limit placed after lookup/unwind to ensure missing collection docs
+    // do not consume top-N slots
+
+    { $sort: { totalActive: -1 } },
+    { $limit: limit },
 
     {
       $replaceRoot: {

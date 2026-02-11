@@ -1,11 +1,12 @@
+import { Hex } from 'viem'
 import { afterAll, beforeAll, beforeEach, expect, describe, it } from 'vitest'
 
 import { nftCollections, orders } from '#app/db/collections.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
 import { Side } from '#app/domain/order/types.js'
-import { Hex } from 'viem'
 import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
+import { addrOf } from '#tests/helpers/hash.js'
 import {
   ActiveCounts,
   topNFTCollectionsByActiveOrders,
@@ -101,6 +102,7 @@ describe('topCollectionsByActiveOrders query', () => {
     await seedCollections(CHAIN_ID, colN, 'seed')
 
     const cols = await nftCollections().find({}).toArray()
+
     await seedOrders(
       CHAIN_ID,
       cols.map(c => c.address),
@@ -119,7 +121,6 @@ describe('topCollectionsByActiveOrders query', () => {
 
     await seedCollections(CHAIN_ID, 1, 'seed')
 
-    // array of one collection
     const col = (await nftCollections().find({}).toArray())[0]
 
     await seedOrders(CHAIN_ID, [col.address], activeCount, 'active')
@@ -130,7 +131,6 @@ describe('topCollectionsByActiveOrders query', () => {
     const queryResult = await topNFTCollectionsByActiveOrders(CHAIN_ID, 100)
 
     expect(queryResult).toHaveLength(1)
-
     expect(queryResult[0].summary.totalActive).toBe(activeCount)
   })
 
@@ -143,7 +143,6 @@ describe('topCollectionsByActiveOrders query', () => {
 
     await seedCollections(CHAIN_ID, 1, 'seed')
 
-    // array of one collection
     const col = (await nftCollections().find({}).toArray())[0]
 
     await seedOrders(CHAIN_ID, [col.address], matchingChainCount, 'match')
@@ -152,9 +151,38 @@ describe('topCollectionsByActiveOrders query', () => {
     const queryResult = await topNFTCollectionsByActiveOrders(matchChainId, 100)
 
     expect(queryResult).toHaveLength(1)
-
     expect(queryResult[0].summary.totalActive).toBe(matchingChainCount)
   })
 
-  it('handles missing nft-collections', async () => {})
+  it('handles missing nft-collections while respecting limit', async () => {
+    const colN = 3
+    const perCol = 5
+
+    const limit = 3
+
+    await seedCollections(CHAIN_ID, colN, 'seed')
+    const storedCols = await nftCollections().find({}).toArray()
+
+    const missingColAddr = addrOf('missing')
+
+    // seed stored collections with same order-count
+    await seedOrders(
+      CHAIN_ID,
+      storedCols.map(c => c.address),
+      perCol,
+      'col_stored'
+    )
+
+    // seed orders for a collection address that is NOT present in nft-collections
+    // -> has double order count to ensure its place in top 3
+    // -> lookup will return empty → unwind drops it
+    await seedOrders(CHAIN_ID, [missingColAddr], perCol * 2, 'col_missing')
+
+    const queryResult = await topNFTCollectionsByActiveOrders(CHAIN_ID, limit)
+
+    expect(queryResult).toHaveLength(limit)
+
+    const addrs = queryResult.map(r => r.address)
+    expect(addrs).not.toContain(missingColAddr)
+  })
 })
