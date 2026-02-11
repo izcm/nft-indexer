@@ -5,9 +5,6 @@ import { seedOrders } from '../seed-orders.js'
 import { orders } from '#app/db/collections.js'
 import { addrOf, bytes32n } from '#tests/helpers/hash.js'
 import { Side } from '#app/domain/order/types.js'
-import { Status } from '#app/domain/shared.js'
-
-const CHAIN_ID = 1
 
 beforeAll(async () => {
   await startTestMongo()
@@ -24,18 +21,18 @@ beforeEach(async () => {
 describe('seed-orders', () => {
   // --- helpers ---
 
-  const makeParams = () => ({ colN: 2, perCol: 5 })
+  const makeParams = () => ({ chainId: 1, colN: 2, perCol: 5 })
 
   const mockAddresses = (count: number) => {
     return Array.from({ length: count }).map((_, i) => addrOf(`collection:${i}`))
   }
 
   it('inserts collections * countPerCollection', async () => {
-    const { colN, perCol } = makeParams()
+    const { chainId, colN, perCol } = makeParams()
 
     const cols = mockAddresses(colN)
 
-    await seedOrders(CHAIN_ID, cols, perCol, 'seed')
+    await seedOrders(chainId, cols, perCol, 'seed')
 
     const orderRows = await orders().find({}).toArray()
 
@@ -49,35 +46,24 @@ describe('seed-orders', () => {
   })
 
   it('uses shapeFn for side + collectionBid', async () => {
-    const colN = 1
-    const perCol = 5
+    const { chainId, colN, perCol } = makeParams()
 
     // array of one address
     const cols = mockAddresses(colN)
 
     const shapeFn = () => ({ side: Side.ASK, isCollectionBid: true })
 
-    await seedOrders(CHAIN_ID, cols, perCol, 'shapeFn', 0, shapeFn)
+    await seedOrders(chainId, cols, perCol, 'shapeFn', 0, shapeFn)
 
-    const orderDocs = await orders().find({}).toArray()
+    const docs = await orders().find({}).toArray()
 
-    expect(orderDocs.every(o => o.order.side === Side.ASK && o.order.isCollectionBid)).toBe(true)
-  })
-
-  it('defaults to active status', async () => {
-    const { colN, perCol } = makeParams()
-
-    const cols = mockAddresses(colN)
-
-    await seedOrders(CHAIN_ID, cols, perCol, 'seed')
-
-    const orderDocs = await orders().find({}).toArray()
-
-    expect(orderDocs.length).toBe(colN * perCol)
-    expect(orderDocs.every(o => o.status === 'active')).toBe(true)
+    expect(docs.length).toBe(colN * perCol)
+    expect(docs.every(o => o.order.side === Side.ASK && o.order.isCollectionBid)).toBe(true)
   })
 
   it('falls back to default side logic', async () => {
+    const { chainId } = makeParams()
+
     const colN = 1
     const perCol = 3
 
@@ -87,11 +73,11 @@ describe('seed-orders', () => {
     const seed = 'seed'
     const seedNums = Array.from({ length: perCol }).map((_, i) => Number(bytes32n(`seed:${i}`)))
 
-    await seedOrders(CHAIN_ID, cols, perCol, seed)
+    await seedOrders(chainId, cols, perCol, seed)
 
-    const orderDocs = await orders().find({}).sort({ createdAt: 1 }).toArray()
+    const docs = await orders().find({}).sort({ createdAt: 1 }).toArray()
 
-    expect(orderDocs.length).toBe(perCol)
+    expect(docs.length).toBe(perCol)
 
     for (let i = 0; i < perCol; i++) {
       const expected = {
@@ -99,22 +85,47 @@ describe('seed-orders', () => {
         isCollectionBid: i % 2 === 1 && seedNums[i] % 2 === 0,
       }
 
-      expect(orderDocs[i]).toMatchObject({
+      expect(docs[i]).toMatchObject({
         order: expected,
       })
     }
   })
 
+  it('applies default record fields to all orders', async () => {
+    const { chainId, colN, perCol } = makeParams()
+
+    const cols = mockAddresses(colN)
+
+    await seedOrders(chainId, cols, perCol, 'seed')
+
+    const docs = await orders().find({}).toArray()
+
+    console.log(docs)
+
+    expect(docs).toHaveLength(colN * perCol)
+
+    for (const doc of docs) {
+      expect(doc).toMatchObject({
+        status: 'active',
+        updatedAt: 0,
+        createdAt: 0,
+      })
+    }
+  })
+
   it('sets expected fields when patch is passed', async () => {
-    const cols = mockAddresses(1)
+    const { chainId } = makeParams()
 
-    await seedOrders(CHAIN_ID, cols, 1, 'seed', 0, undefined, { status: 'cancelled' })
+    const colN = 1
+    const perCol = 1
 
-    const orderDocs = await orders().find({}).toArray()
-    expect(orderDocs.length).toBe(1)
+    const cols = mockAddresses(colN)
 
-    const doc = orderDocs[0]
+    await seedOrders(chainId, cols, perCol, 'seed', 0, undefined, { status: 'cancelled' })
 
-    expect(doc.status).toBe('cancelled')
+    const docs = await orders().find({}).toArray()
+
+    expect(docs).toHaveLength(1)
+    expect(docs[0].status).toBe('cancelled')
   })
 })

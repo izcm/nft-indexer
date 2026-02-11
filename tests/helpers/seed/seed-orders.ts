@@ -21,7 +21,7 @@ export const seedOrders = async (
     side: Side
     isCollectionBid: boolean
   },
-  patch: Partial<OrderRecord> = {}
+  patch: Partial<Omit<OrderRecord, 'order' | 'orderHash'>> = {}
 ) => {
   const byCollection: Record<Hex, Order[]> = {}
 
