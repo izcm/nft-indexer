@@ -134,7 +134,27 @@ describe('topCollectionsByActiveOrders query', () => {
     expect(queryResult[0].summary.totalActive).toBe(activeCount)
   })
 
-  it('does not count orders with different chainId', async () => {})
+  it('does not count orders with different chainId', async () => {
+    const matchChainId = 1
+    const matchingChainCount = 5
+
+    const otherChainId = 1337
+    const otherChainCount = 2
+
+    await seedCollections(CHAIN_ID, 1, 'seed')
+
+    // array of one collection
+    const col = (await nftCollections().find({}).toArray())[0]
+
+    await seedOrders(CHAIN_ID, [col.address], matchingChainCount, 'match')
+    await seedOrders(otherChainId, [col.address], otherChainCount, 'other')
+
+    const queryResult = await topNFTCollectionsByActiveOrders(matchChainId, 100)
+
+    expect(queryResult).toHaveLength(1)
+
+    expect(queryResult[0].summary.totalActive).toBe(matchingChainCount)
+  })
 
   it('handles missing nft-collections', async () => {})
 })
