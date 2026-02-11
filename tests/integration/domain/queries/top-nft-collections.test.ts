@@ -154,7 +154,7 @@ describe('topCollectionsByActiveOrders query', () => {
     expect(queryResult[0].summary.totalActive).toBe(matchingChainCount)
   })
 
-  it('handles missing nft-collections while respecting limit', async () => {
+  it('handles missing nft-collection while respecting limit', async () => {
     const colN = 3
     const perCol = 5
 

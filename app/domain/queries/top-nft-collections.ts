@@ -17,7 +17,7 @@ export type ActiveCounts = {
 
 export const topNFTCollectionsBySettlements = () => {}
 
-export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: number) => {
+export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: number = 10) => {
   const match: any = { chainId, status: 'active' }
 
   const pipeline = [
