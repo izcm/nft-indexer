@@ -23,7 +23,7 @@ export async function applySettlementCreated({
   //   .catch(err => console.error(`[${tag}] recordSettlement failed`, err))
 
   void nftCollectionRepo
-    .noteCollection(chainId, collection)
+    .noteCollection({ chainId, address: collection })
     .catch(err => console.error(`[${tag}] noteCollection failed`, err))
 
   void applyOrderFilled(chainId, orderHash).catch(err =>
@@ -33,7 +33,6 @@ export async function applySettlementCreated({
 
 export async function applySettlementMeta(settlement: Settlement, meta: SettlementMeta) {
   const { chainId, orderHash, collection, price, execution } = settlement
-  const { timestamp } = execution.block
 
   const repo = settlementRepoFor(chainId)
 

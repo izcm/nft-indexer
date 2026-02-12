@@ -12,7 +12,7 @@ import { NFTCollectionChainMeta } from '#app/domain/nft-collection/types.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
 import { addrOf } from '#tests/helpers/hash.js'
-import { Status } from '#app/domain/shared.js'
+import { Status } from '#app/domain/enum.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -28,16 +28,18 @@ beforeEach(async () => {
 })
 
 const TEST_CHAIN_ID = 1
+const TEST_ADDR = addrOf('collection:default')
 
 describe('nftCollectionRepo', () => {
   // === defaults ===
 
-  const chainId = TEST_CHAIN_ID
-  const address = addrOf('collection:default')
+  const repo = nftCollectionRepo
+
+  const makeParams = () => ({ chainId: 1, address: TEST_ADDR })
 
   const baseDoc = {
-    chainId,
-    address,
+    chainId: TEST_CHAIN_ID,
+    address: TEST_ADDR,
     metaStatus: Status.PENDING,
     chainMetaStatus: Status.PENDING,
     updatedAt: 0,
@@ -47,12 +49,13 @@ describe('nftCollectionRepo', () => {
 
   describe('write', () => {
     describe('noteCollection', () => {
-      const { noteCollection } = nftCollectionRepo
       it('creates collection doc for new chainId + address pair', async () => {
+        const { chainId, address } = makeParams()
+
         vi.useFakeTimers()
         vi.setSystemTime(0)
 
-        await noteCollection(chainId, address)
+        await repo.noteCollection({ chainId, address })
 
         const rows = await nftCollections().find({}).toArray()
 
@@ -70,8 +73,10 @@ describe('nftCollectionRepo', () => {
       })
 
       it('does not insert duplicate when chainId + address pair cached in memory', async () => {
-        await noteCollection(chainId, address)
-        await noteCollection(chainId, address)
+        const { chainId, address } = makeParams()
+
+        await repo.noteCollection({ chainId, address })
+        await repo.noteCollection({ chainId, address })
 
         const rows = await nftCollections().find({}).toArray()
 
@@ -79,9 +84,11 @@ describe('nftCollectionRepo', () => {
       })
 
       it('does not insert duplicate when cache is cleared', async () => {
-        await noteCollection(chainId, address)
+        const { chainId, address } = makeParams()
+
+        await repo.noteCollection({ chainId, address })
         __resetSeenCollectionsForTest()
-        await noteCollection(chainId, address)
+        await repo.noteCollection({ chainId, address })
 
         const rows = await nftCollections().find({}).toArray()
 
@@ -120,7 +127,7 @@ describe('nftCollectionRepo', () => {
         const { chainId, address } = baseDoc
         vi.setSystemTime(writeTime)
 
-        await finalizeChainMeta(chainId, address, chainMeta)
+        await finalizeChainMeta({ chainId, address, chainMeta })
 
         const row = await nftCollections().findOne({ chainId, address })
         if (!row) throw new Error('row missing')
@@ -135,19 +142,19 @@ describe('nftCollectionRepo', () => {
       it('markChainMetaFailed sets FAILED + error', async () => {
         await nftCollections().insertOne(baseDoc)
 
-        const err = 'error msg'
+        const error = 'error msg'
 
         const { chainId, address } = baseDoc
         vi.setSystemTime(writeTime)
 
-        await markChainMetaFailed(chainId, address, err)
+        await markChainMetaFailed({ chainId, address, error })
 
         const row = await nftCollections().findOne({ chainId, address })
         if (!row) throw new Error('row missing')
 
         expect(row).toMatchObject({
           chainMetaStatus: Status.FAILED,
-          chainMetaError: err,
+          chainMetaError: error,
           updatedAt: writeTime,
         })
       })
@@ -164,7 +171,7 @@ describe('nftCollectionRepo', () => {
         const { chainId, address } = baseDoc
         vi.setSystemTime(writeTime)
 
-        await patchMeta(chainId, address, { imageUrl: 'new-image' })
+        await patchMeta({ chainId, address, patch: { imageUrl: 'new-image' } })
 
         const row = await nftCollections().findOne({ chainId, address })
         if (!row) throw new Error('row missing')
@@ -185,7 +192,11 @@ describe('nftCollectionRepo', () => {
   // === test repo read ===
 
   describe('read', () => {
-    const { findById, findByChainIdAndAddress, findMissingChainMeta } = nftCollectionRepo
+    const {
+      findById,
+      findByNFTCollectionKey: findByChainIdAndAddress,
+      findMissingChainMeta,
+    } = nftCollectionRepo
 
     it('findById returns expected doc', async () => {
       const { insertedId } = await nftCollections().insertOne(baseDoc)
@@ -202,7 +213,7 @@ describe('nftCollectionRepo', () => {
 
       const { chainId, address } = baseDoc
 
-      const row = await findByChainIdAndAddress(chainId, address)
+      const row = await findByChainIdAndAddress({ chainId, address })
       if (!row) throw new Error('row missing')
 
       expect(row).toBeDefined()
@@ -213,6 +224,8 @@ describe('nftCollectionRepo', () => {
     })
 
     it('findMissingChainMeta returns only collections with chainMetaStatus PENDING', async () => {
+      const { chainId, address } = makeParams()
+
       // seed matching docs
       await seedCollections(chainId, 3, 'pending')
 
@@ -244,25 +257,37 @@ describe('nftCollectionRepo', () => {
     it('forwards to repo.finalizeChainMeta with expected params', async () => {
       const spy = vi.spyOn(nftCollectionRepo, 'finalizeChainMeta').mockResolvedValue({} as any)
 
-      await wrapper.finalizeChainMeta(address, {})
+      await wrapper.finalizeChainMeta(TEST_ADDR, {})
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith(forChainId, address, {})
+      expect(spy).toHaveBeenCalledExactlyOnceWith({
+        chainId: forChainId,
+        address: TEST_ADDR,
+        chainMeta: {},
+      })
     })
 
     it('forwards to repo.markChainMetaFailed with expected params', async () => {
       const spy = vi.spyOn(nftCollectionRepo, 'markChainMetaFailed').mockResolvedValue({} as any)
 
-      await wrapper.markChainMetaFailed(address, 'error')
+      await wrapper.markChainMetaFailed(TEST_ADDR, 'error')
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith(forChainId, address, 'error')
+      expect(spy).toHaveBeenCalledExactlyOnceWith({
+        chainId: forChainId,
+        address: TEST_ADDR,
+        error: 'error',
+      })
     })
 
     it('forwards to repo.patchMeta with expected params', async () => {
       const spy = vi.spyOn(nftCollectionRepo, 'patchMeta').mockResolvedValue({} as any)
 
-      await wrapper.patchMeta(address, {})
+      await wrapper.patchMeta(TEST_ADDR, {})
 
-      expect(spy).toHaveBeenCalledExactlyOnceWith(forChainId, address, {})
+      expect(spy).toHaveBeenCalledExactlyOnceWith({
+        chainId: forChainId,
+        address: TEST_ADDR,
+        patch: {},
+      })
     })
   })
 })

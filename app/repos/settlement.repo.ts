@@ -3,12 +3,22 @@ import { ObjectId } from 'mongodb'
 
 import { settlements } from '#app/db/collections.js'
 import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
-import { FindPageArgs } from '#app/repos/types.js'
+import { FindPageArgs } from '#app/repos/_shared/types.js'
+
+type SettlementKey = {
+  chainId: number
+  orderHash: Hex
+}
 
 export const settlementRepo = {
   // === read ===
   async findById(id: ObjectId) {
     return settlements().findOne({ _id: id })
+  },
+
+  async findBySettlementKey(key: SettlementKey) {
+    const { chainId, orderHash } = key
+    return settlements().findOne({ chainId, orderHash })
   },
 
   async findPendingMeta(chainId: number, limit: number) {
@@ -66,7 +76,7 @@ export const settlementRepo = {
     })
   },
 
-  async finalizeMeta(chainId: number, orderHash: Hex, meta: SettlementMeta) {
+  async finalizeMeta({ chainId, orderHash, meta }: SettlementKey & { meta: SettlementMeta }) {
     return settlements().updateOne(
       { chainId, orderHash },
       {
@@ -79,9 +89,9 @@ export const settlementRepo = {
     )
   },
 
-  async markMetaFailed(chainId: number, orderHash: Hex, error: string) {
+  async markMetaFailed({ chainId, orderHash, error }: SettlementKey & { error: string }) {
     return settlements().updateOne(
-      { chainId, 'execution.txHash': orderHash },
+      { chainId, orderHash },
       {
         $set: {
           metaStatus: 'FAILED',
@@ -103,10 +113,10 @@ export const settlementRepoFor = (chainId: number) => ({
   },
 
   finalizeMeta(orderHash: Hex, meta: SettlementMeta) {
-    return settlementRepo.finalizeMeta(chainId, orderHash, meta)
+    return settlementRepo.finalizeMeta({ chainId, orderHash, meta })
   },
 
   markMetaFailed(orderHash: Hex, error: string) {
-    return settlementRepo.markMetaFailed(chainId, orderHash, error)
+    return settlementRepo.markMetaFailed({ chainId, orderHash, error })
   },
 })

@@ -101,7 +101,7 @@ describe('orderRepo', () => {
       vi.setSystemTime(writeTime)
 
       const { chainId, orderHash } = baseDoc
-      await repo.updateStatus(chainId, orderHash, 'filled')
+      await repo.updateStatus({ chainId, orderHash, status: 'filled' })
 
       const row = await orders().findOne({ chainId, orderHash })
       if (!row) throw Error('row missing')
@@ -112,7 +112,7 @@ describe('orderRepo', () => {
 
     it('does nothing if order not found', async () => {
       const { chainId, orderHash } = baseDoc
-      const result = await repo.updateStatus(chainId, orderHash, 'filled')
+      const result = await repo.updateStatus({ chainId, orderHash, status: 'filled' })
 
       expect(result.acknowledged).toBe(true)
 
@@ -143,7 +143,7 @@ describe('orderRepo', () => {
       await orders().insertOne(baseDoc)
 
       const { chainId, orderHash } = baseDoc
-      const row = await repo.findByChainIdAndOrderHash(chainId, orderHash)
+      const row = await repo.findByOrderKey({ chainId, orderHash })
       if (!row) throw new Error('row missing')
 
       expect(row).toBeDefined()

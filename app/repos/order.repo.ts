@@ -1,21 +1,26 @@
 import { Hex } from 'viem'
 import { ObjectId } from 'mongodb'
 
-import { FindPageArgs } from '#app/repos/types.js'
+import { FindPageArgs } from '#app/repos/_shared/types.js'
 import { Order } from '#app/domain/order/types.js'
 
 import { orders } from '#app/db/collections.js'
 import { OrderStatus } from '#app/domain/order/types.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 
-// TODO: dont use hashOrderStruct => use viem typedData functions or smth similar
+type OrderKey = {
+  chainId: number
+  orderHash: Hex
+}
+
 export const orderRepo = {
   // === read ===
   async findById(id: ObjectId) {
     return orders().findOne({ _id: id })
   },
 
-  async findByChainIdAndOrderHash(chainId: number, orderHash: Hex) {
+  async findByOrderKey(key: OrderKey) {
+    const { chainId, orderHash } = key
     return orders().findOne({ chainId, orderHash })
   },
 
@@ -65,7 +70,7 @@ export const orderRepo = {
     })
   },
 
-  async updateStatus(chainId: number, orderHash: Hex, status: OrderStatus) {
+  async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
     return orders().updateOne(
       { chainId, orderHash },
       {
@@ -85,18 +90,18 @@ export const orderRepo = {
 
 export const orderRepoFor = (chainId: number) => ({
   findByHash(orderHash: Hex) {
-    return orderRepo.findByChainIdAndOrderHash(chainId, orderHash)
+    return orderRepo.findByOrderKey({ chainId, orderHash })
   },
 
   markFilled(orderHash: Hex) {
-    return orderRepo.updateStatus(chainId, orderHash, 'filled')
+    return orderRepo.updateStatus({ chainId, orderHash, status: 'filled' })
   },
 
   markCancelled(orderHash: Hex) {
-    return orderRepo.updateStatus(chainId, orderHash, 'cancelled')
+    return orderRepo.updateStatus({ chainId, orderHash, status: 'cancelled' })
   },
 
   markExpired(orderHash: Hex) {
-    return orderRepo.updateStatus(chainId, orderHash, 'expired')
+    return orderRepo.updateStatus({ chainId, orderHash, status: 'expired' })
   },
 })

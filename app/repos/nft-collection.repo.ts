@@ -3,16 +3,23 @@ import { Hex } from 'viem'
 
 import { nftCollections } from '#app/db/collections.js'
 import { NFTCollectionChainMeta, NFTCollectionMetaPatch } from '#app/domain/nft-collection/types.js'
-import { Status } from '#app/domain/shared.js'
+import { Status } from '#app/domain/enum.js'
+
+type NFTCollectionKey = {
+  chainId: number
+  address: Hex
+}
+
+const stringifyKey = (key: NFTCollectionKey) => {
+  return `${key.chainId}:${key.address.toLowerCase()}`
+}
+
+// === cache ===
 
 const seenCollections = new Set<string>()
 
 export const __resetSeenCollectionsForTest = () => {
   seenCollections.clear()
-}
-
-const collectionKey = (chainId: number, address: string) => {
-  return `${chainId}:${address.toLowerCase()}`
 }
 
 export const nftCollectionRepo = {
@@ -23,11 +30,13 @@ export const nftCollectionRepo = {
    * Avoids repeated DB upserts using in-memory tracking
    */
 
-  async noteCollection(chainId: number, address: Hex) {
-    const key = collectionKey(chainId, address)
-    if (seenCollections.has(key)) return
+  async noteCollection(key: NFTCollectionKey) {
+    const { chainId, address } = key
 
-    seenCollections.add(key)
+    const cacheKey = stringifyKey(key)
+    if (seenCollections.has(cacheKey)) return
+
+    seenCollections.add(cacheKey)
 
     return nftCollections().updateOne(
       { chainId, address },
@@ -50,7 +59,8 @@ export const nftCollectionRepo = {
     return nftCollections().findOne({ _id: id })
   },
 
-  async findByChainIdAndAddress(chainId: number, address: Hex) {
+  async findByNFTCollectionKey(key: NFTCollectionKey) {
+    const { chainId, address } = key
     return nftCollections().findOne({ chainId, address })
   },
 
@@ -63,11 +73,11 @@ export const nftCollectionRepo = {
 
   // === write ===
 
-  async finalizeChainMeta(
-    chainId: number,
-    address: Hex,
-    chainMeta: Partial<NFTCollectionChainMeta>
-  ) {
+  async finalizeChainMeta({
+    chainId,
+    address,
+    chainMeta,
+  }: NFTCollectionKey & { chainMeta: Partial<NFTCollectionChainMeta> }) {
     return nftCollections().updateOne(
       { chainId, address },
       {
@@ -80,20 +90,24 @@ export const nftCollectionRepo = {
     )
   },
 
-  async markChainMetaFailed(chainId: number, address: Hex, err: string) {
+  async markChainMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
     return nftCollections().updateOne(
       { chainId, address },
       {
         $set: {
           chainMetaStatus: Status.FAILED,
-          chainMetaError: err,
+          chainMetaError: error,
           updatedAt: Date.now(),
         },
       }
     )
   },
 
-  async patchMeta(chainId: number, address: Hex, patch: NFTCollectionMetaPatch) {
+  async patchMeta({
+    chainId,
+    address,
+    patch,
+  }: NFTCollectionKey & { patch: NFTCollectionMetaPatch }) {
     return nftCollections().updateOne(
       { chainId, address },
       {
@@ -117,14 +131,14 @@ export const nftCollectionRepoFor = (chainId: number) => ({
   },
 
   finalizeChainMeta(address: Hex, chainMeta: Partial<NFTCollectionChainMeta>) {
-    return nftCollectionRepo.finalizeChainMeta(chainId, address, chainMeta)
+    return nftCollectionRepo.finalizeChainMeta({ chainId, address, chainMeta })
   },
 
-  markChainMetaFailed(address: Hex, err: string) {
-    return nftCollectionRepo.markChainMetaFailed(chainId, address, err)
+  markChainMetaFailed(address: Hex, error: string) {
+    return nftCollectionRepo.markChainMetaFailed({ chainId, address, error })
   },
 
   patchMeta(address: Hex, patch: NFTCollectionMetaPatch) {
-    return nftCollectionRepo.patchMeta(chainId, address, patch)
+    return nftCollectionRepo.patchMeta({ chainId, address, patch })
   },
 })
