@@ -32,14 +32,14 @@ const inMock = {
 
 describe('applySettlementCreated', () => {
   const genericError = new Error('db down')
-  let spy: ReturnType<typeof vi.spyOn>
+  let errorSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   const expectLogged = (fnName: string, err: Error) => {
-    expect(spy).toHaveBeenCalledWith(`[settlement:created] ${fnName} failed`, err)
+    expect(errorSpy).toHaveBeenCalledWith(`[settlement:created] ${fnName} failed`, err)
   }
 
   /* temporarily commented out in action (recordSettlement is never called => test fails) */

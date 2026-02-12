@@ -1,9 +1,5 @@
 import { ObjectId } from 'mongodb'
 
-// check direction $gt $lt
-
-// then have the field and direction or filter (cursor is or)
-
 type CursorDir = 1 | -1
 
 type BuildCursorArgs = {
@@ -12,7 +8,16 @@ type BuildCursorArgs = {
   cursor?: string | null
 }
 
+export const walkPath = (obj: any, path: string) => {
+  return path.split('.').reduce((curr, k) => curr[k], obj)
+}
+
 export const encodeCursor = (value: number, id: ObjectId) => `${value}_${id.toString()}`
+
+export const buildSortSpec = (field: string, dir: CursorDir) => ({
+  [field]: dir,
+  _id: dir,
+})
 
 export const buildCursorFilter = ({ field, dir, cursor }: BuildCursorArgs) => {
   if (!cursor) return null
@@ -24,6 +29,6 @@ export const buildCursorFilter = ({ field, dir, cursor }: BuildCursorArgs) => {
   const cmp = dir === 1 ? '$gt' : '$lt'
 
   return {
-    $or: [{ [field]: { cmp: value } }, { [field]: { value, id: { cmp: id } } }],
+    $or: [{ [field]: { [cmp]: value } }, { [field]: { value, id: { [cmp]: id } } }],
   }
 }

@@ -26,7 +26,7 @@ export const orderRepo = {
 
   async findPage({ filters, from, to, cursor, limit }: FindPageArgs) {
     const createdTs = 'createdAt'
-    const { status, ...query } = filters
+    const { ...query } = filters
 
     if (cursor) {
       const [ts, id] = cursor.split('_')

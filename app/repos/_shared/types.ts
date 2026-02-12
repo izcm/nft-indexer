@@ -3,5 +3,7 @@ export type FindPageArgs = {
   from?: number
   to?: number
   cursor?: string
+  sortField: string
+  sortDir: 1 | -1
   limit: number
 }

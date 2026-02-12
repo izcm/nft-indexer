@@ -4,6 +4,8 @@ import { ObjectId } from 'mongodb'
 import { settlements } from '#app/db/collections.js'
 import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
 import { FindPageArgs } from '#app/repos/_shared/types.js'
+import { buildCursorFilter, buildSortSpec, walkPath } from './_shared/cursor.js'
+import { findPageGeneric } from './_shared/paginate.js'
 
 type SettlementKey = {
   chainId: number
@@ -25,7 +27,7 @@ export const settlementRepo = {
     return settlements().find({ chainId, metaStatus: 'PENDING' }).limit(limit).toArray()
   },
 
-  async findPage({ filters, from, to, cursor, limit }: FindPageArgs) {
+  async findPage({ filters, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {
     const blockTs = 'execution.block.timestamp'
     const query = { ...filters }
 
@@ -35,36 +37,14 @@ export const settlementRepo = {
       if (to) query[blockTs].$lte = to
     }
 
-    if (cursor) {
-      const [ts, id] = cursor.split('_')
-
-      query.$and = [
-        {
-          $or: [
-            { [blockTs]: { $lt: Number(ts) } },
-            { [blockTs]: Number(ts), _id: { $lt: new ObjectId(id as string) } },
-          ],
-        },
-      ]
-    }
-
-    const docs = await settlements()
-      .find(query)
-      .sort({ [blockTs]: -1, _id: -1 })
-      .limit(limit + 1)
-      .toArray()
-
-    let nextCursor: string | null = null
-
-    if (docs.length > limit) {
-      const last = docs[limit - 1]
-      nextCursor = `${last.execution.block.timestamp}_${last._id.toString()}`
-    }
-
-    return {
-      items: docs.slice(0, limit),
-      nextCursor,
-    }
+    return findPageGeneric({
+      collection: settlements(),
+      baseQuery: query,
+      sortField,
+      sortDir,
+      cursor,
+      limit,
+    })
   },
 
   // === write ===

@@ -56,6 +56,8 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
         from,
         to,
         cursor,
+        sortField: 'execution.block.timestamp',
+        sortDir: -1,
         limit: limit ?? DEFAULT_PAGE_LIMIT,
       })
     }
