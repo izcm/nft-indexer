@@ -1,12 +1,5 @@
 import { ObjectId } from 'mongodb'
-
-type CursorDir = 1 | -1
-
-type BuildCursorArgs = {
-  field: string
-  dir: CursorDir
-  cursor?: string | null
-}
+import { CursorPageCore, CursorDir } from './types.js'
 
 export const walkPath = (obj: any, path: string) => {
   return path.split('.').reduce((curr, k) => curr[k], obj)
@@ -19,7 +12,11 @@ export const buildSortSpec = (field: string, dir: CursorDir) => ({
   _id: dir,
 })
 
-export const buildCursorFilter = ({ field, dir, cursor }: BuildCursorArgs) => {
+export const buildCursorFilter = ({
+  sortField: field,
+  sortDir: dir,
+  cursor,
+}: Omit<CursorPageCore, 'limit'>) => {
   if (!cursor) return null
 
   const [rawVal, rawId] = cursor.split('_')

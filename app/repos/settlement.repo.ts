@@ -4,7 +4,6 @@ import { ObjectId } from 'mongodb'
 import { settlements } from '#app/db/collections.js'
 import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
 import { FindPageArgs } from '#app/repos/_shared/types.js'
-import { buildCursorFilter, buildSortSpec, walkPath } from './_shared/cursor.js'
 import { findPageGeneric } from './_shared/paginate.js'
 
 type SettlementKey = {

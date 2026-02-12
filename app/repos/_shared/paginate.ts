@@ -1,14 +1,5 @@
-import { Collection } from 'mongodb'
 import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from './cursor.js'
-
-type GenericPageArgs = {
-  collection: Collection<any>
-  baseQuery: Record<string, any>
-  sortField: string
-  sortDir: 1 | -1
-  cursor?: string
-  limit: number
-}
+import { GenericPageArgs } from './types.js'
 
 export const findPageGeneric = async ({
   collection,
@@ -20,7 +11,7 @@ export const findPageGeneric = async ({
 }: GenericPageArgs) => {
   const query = { ...baseQuery }
 
-  const cursorFilter = buildCursorFilter({ field: sortField, dir: sortDir, cursor })
+  const cursorFilter = buildCursorFilter({ sortField, sortDir, cursor })
 
   if (cursorFilter) {
     query.$and = [...(query.$and ?? []), cursorFilter]
