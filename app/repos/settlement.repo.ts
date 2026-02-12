@@ -12,7 +12,7 @@ export const settlementRepo = {
   },
 
   async findPendingMeta(chainId: number, limit: number) {
-    return settlements().find({ metaStatus: 'PENDING' }).limit(limit).toArray()
+    return settlements().find({ chainId, metaStatus: 'PENDING' }).limit(limit).toArray()
   },
 
   async findPage({ filters, from, to, cursor, limit }: FindPageArgs) {

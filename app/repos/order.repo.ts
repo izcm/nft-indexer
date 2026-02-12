@@ -20,25 +20,25 @@ export const orderRepo = {
   },
 
   async findPage({ filters, from, to, cursor, limit }: FindPageArgs) {
+    const createdTs = 'createdAt'
     const { status, ...query } = filters
 
     if (cursor) {
-      // todo: implement cursor with some timestamp
       const [ts, id] = cursor.split('_')
     }
 
     const docs = await orders()
       .find(query)
-      // .sort({ [blockTs]: -1, _id: -1 })
+      .sort({ ['order.start']: -1, _id: -1 })
       .limit(limit + 1)
       .toArray()
 
     let nextCursor: string | null = null
 
-    // if (docs.length > limit) {
-    //   const last = docs[limit - 1]
-    //   nextCursor = `${last.execution.block.timestamp}_${last._id.toString()}`
-    // }
+    if (docs.length > limit) {
+      const last = docs[limit - 1]
+      nextCursor = `${last.createdAt}_${last._id.toString()}`
+    }
 
     return {
       items: docs.slice(0, limit),

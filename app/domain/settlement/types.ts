@@ -10,8 +10,10 @@ export type Settlement = {
 
   collection: Hex
   tokenId: string
+
   seller: Hex
   buyer: Hex
+
   currency: Hex
   price: string
 

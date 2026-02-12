@@ -16,8 +16,6 @@ export type NFTCollectionStats = {
 
 // chainMetaStatus tracks status of the meta derived from contract calls
 
-type statusOptions = 'DONE' | 'PENDING' | 'FAILED'
-
 export type NFTCollectionBase = {
   chainId: number
   address: Hex

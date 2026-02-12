@@ -18,9 +18,9 @@ export async function applySettlementCreated({
 }: SettlementCreatedInput) {
   const tag = 'settlement:created'
 
-  void statsRepo
-    .recordSettlement({ chainId, collection, timestamp, price })
-    .catch(err => console.error(`[${tag}] recordSettlement failed`, err))
+  // void statsRepo
+  //   .recordSettlement({ chainId, collection, timestamp, price })
+  //   .catch(err => console.error(`[${tag}] recordSettlement failed`, err))
 
   void nftCollectionRepo
     .noteCollection(chainId, collection)

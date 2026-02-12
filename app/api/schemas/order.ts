@@ -5,19 +5,15 @@ const UNIX_SECONDS_MAX = 1e11 // year ~5138
 export const orderQueryableFields = {
   actor: { type: 'string', pattern: ADDR_REGEX },
   collection: { type: 'string', pattern: ADDR_REGEX },
+  tokenId: { type: 'string' },
   currency: { type: 'string', pattern: ADDR_REGEX },
   price: { type: 'string' },
-  nonce: { type: 'string' },
   side: { type: 'integer', minimum: 0 },
+  isCollectionBid: { type: 'boolean' },
   start: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
   end: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
-  tokenId: { type: 'string' },
-  isCollectionBid: { type: 'boolean' },
 
-  // order-state queryableFields
   status: { enum: ['active', 'filled', 'cancelled', 'expired'] },
-  // chainId:
-  // orderHash: { type: 'string', pattern: BYTES32_REGEX },
 }
 
 export const orderCreateBody = {
