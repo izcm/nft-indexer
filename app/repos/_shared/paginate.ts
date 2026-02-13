@@ -19,7 +19,6 @@ export async function findPageGeneric({
 
   const sortSpec = buildSortSpec(sortField, sortDir)
 
-  // now we have the cursorfilters and can query db
   const docs = await collection
     .find(query)
     .sort(sortSpec)
