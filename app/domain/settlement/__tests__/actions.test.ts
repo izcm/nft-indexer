@@ -2,9 +2,10 @@ import { Hex } from 'viem'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { statsRepo } from '#app/repos/stats.repo.js'
 import { applySettlementCreated } from '../actions.js'
 import { applyOrderFilled } from '#app/domain/order/actions.js'
+
+// --- mocks ---
 
 vi.mock('#app/repos/nft-collection.repo.js', () => ({
   nftCollectionRepo: {
@@ -22,43 +23,63 @@ vi.mock('#app/domain/order/actions.ts', () => ({
   applyOrderFilled: vi.fn().mockResolvedValue(undefined),
 }))
 
-const inMock = {
-  chainId: 1,
-  orderHash: '0xabc' as Hex,
-  collection: '0xabc' as Hex,
-  price: '1',
-  timestamp: 0,
-}
-
 describe('applySettlementCreated', () => {
-  const genericError = new Error('db down')
-  let errorSpy: ReturnType<typeof vi.spyOn>
+  // --- shared ---
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
 
   beforeEach(() => {
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
+  const genericError = new Error('db down')
+  let errorSpy: ReturnType<typeof vi.spyOn>
+
+  const inMock = {
+    chainId: 1,
+    orderHash: '0xabc' as Hex,
+    collection: '0xabc' as Hex,
+    price: '1',
+    timestamp: 0,
+  }
+
   const expectLogged = (fnName: string, err: Error) => {
     expect(errorSpy).toHaveBeenCalledWith(`[settlement:created] ${fnName} failed`, err)
   }
 
-  /* temporarily commented out in action (recordSettlement is never called => test fails) */
-
-  // it('logs if recordSettlement fails', async () => {
-  //   vi.mocked(statsRepo).recordSettlement.mockRejectedValueOnce(genericError)
-  //   await applySettlementCreated(inMock)
-  //   expectLogged('recordSettlement', genericError)
-  // })
-
   it('logs if noteCollection fails', async () => {
-    vi.mocked(nftCollectionRepo).noteCollection.mockRejectedValueOnce(genericError)
+    const fn = vi.mocked(nftCollectionRepo).noteCollection
+    fn.mockRejectedValueOnce(genericError)
+
     await applySettlementCreated(inMock)
+
+    expect(fn).toHaveBeenCalledExactlyOnceWith({
+      chainId: inMock.chainId,
+      address: inMock.collection,
+    })
     expectLogged('noteCollection', genericError)
   })
 
   it('logs if applyOrderFilled fails', async () => {
-    vi.mocked(applyOrderFilled).mockRejectedValue(genericError)
+    const fn = vi.mocked(applyOrderFilled)
+    fn.mockRejectedValueOnce(genericError)
+
     await applySettlementCreated(inMock)
+
+    expect(fn).toHaveBeenCalledExactlyOnceWith(inMock.chainId, inMock.orderHash)
     expectLogged('applyOrderFilled', genericError)
+  })
+
+  it('calls dependencies with correct params on success', async () => {
+    await applySettlementCreated(inMock)
+
+    expect(nftCollectionRepo.noteCollection).toHaveBeenCalledWith({
+      chainId: inMock.chainId,
+      address: inMock.collection,
+    })
+    expect(applyOrderFilled).toHaveBeenCalledWith(inMock.chainId, inMock.orderHash)
+    expect(errorSpy).not.toHaveBeenCalled()
   })
 })

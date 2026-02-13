@@ -246,7 +246,7 @@ describe('nftCollectionRepo', () => {
     const forChainId = TEST_CHAIN_ID
     const wrapper = nftCollectionRepoFor(forChainId)
 
-    it('forwards to repo.findMissingChainMeta with expected params', async () => {
+    it('findMissingChainMeta forwards expected params', async () => {
       const spy = vi.spyOn(nftCollectionRepo, 'findMissingChainMeta').mockResolvedValue([])
 
       await wrapper.findMissingChainMeta(10)
@@ -254,7 +254,7 @@ describe('nftCollectionRepo', () => {
       expect(spy).toHaveBeenCalledExactlyOnceWith(forChainId, 10)
     })
 
-    it('forwards to repo.finalizeChainMeta with expected params', async () => {
+    it('finalizeChainMeta forwards expected params', async () => {
       const spy = vi.spyOn(nftCollectionRepo, 'finalizeChainMeta').mockResolvedValue({} as any)
 
       await wrapper.finalizeChainMeta(TEST_ADDR, {})
@@ -266,7 +266,7 @@ describe('nftCollectionRepo', () => {
       })
     })
 
-    it('forwards to repo.markChainMetaFailed with expected params', async () => {
+    it('markChainMetaFailed forwards expected params', async () => {
       const spy = vi.spyOn(nftCollectionRepo, 'markChainMetaFailed').mockResolvedValue({} as any)
 
       await wrapper.markChainMetaFailed(TEST_ADDR, 'error')
@@ -278,7 +278,7 @@ describe('nftCollectionRepo', () => {
       })
     })
 
-    it('forwards to repo.patchMeta with expected params', async () => {
+    it('patchMeta forwards expected paramss', async () => {
       const spy = vi.spyOn(nftCollectionRepo, 'patchMeta').mockResolvedValue({} as any)
 
       await wrapper.patchMeta(TEST_ADDR, {})
