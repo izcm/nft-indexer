@@ -12,11 +12,11 @@ export const buildSortSpec = (field: string, dir: CursorDir) => ({
   _id: dir,
 })
 
-export const buildCursorFilter = ({
+export function buildCursorFilter({
   sortField: field,
   sortDir: dir,
   cursor,
-}: Omit<CursorPageCore, 'limit'>) => {
+}: Omit<CursorPageCore, 'limit'>) {
   if (!cursor) return null
 
   const [rawVal, rawId] = cursor.split('_')

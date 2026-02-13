@@ -8,7 +8,7 @@ import { orders } from '#app/db/collections.js'
 const s = (x: number | bigint) => x.toString()
 
 // super fake orders
-export const seedOrders = async (
+export async function seedOrders(
   chainId: number,
   collections: Hex[],
   countPerCollection: number,
@@ -22,7 +22,7 @@ export const seedOrders = async (
     isCollectionBid: boolean
   },
   patch: Partial<Omit<OrderRecord, 'order' | 'orderHash'>> = {}
-) => {
+) {
   const byCollection: Record<Hex, Order[]> = {}
 
   for (const collection of collections) {
@@ -49,13 +49,13 @@ export const seedOrders = async (
   return orders().insertMany(orderRecords)
 }
 
-const buildFakeOrder = (
+function buildFakeOrder(
   collection: Hex,
   i: number,
   seed: string,
   now: number,
   shapeFn?: (i: number) => { side: Side; isCollectionBid: boolean }
-): Order => {
+): Order {
   const orderSeed = `order:${i}:${seed}`
   const seedNum = Number(bytes32n(orderSeed))
 

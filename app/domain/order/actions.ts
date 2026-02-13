@@ -14,7 +14,7 @@ export async function applyOrderCreated(chainId: number, order: OrderCore) {
 export async function applyOrderFilled(chainId: number, orderHash: Hex) {
   const repo = orderRepoFor(chainId)
 
-  // skip if order not registered
+  // order not registered ? skip
   const orderRecord = await repo.findByHash(orderHash)
   if (!orderRecord) return
 

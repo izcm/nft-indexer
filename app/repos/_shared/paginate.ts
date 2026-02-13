@@ -1,14 +1,14 @@
 import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from './cursor.js'
 import { GenericPageArgs } from './types.js'
 
-export const findPageGeneric = async ({
+export async function findPageGeneric({
   collection,
   baseQuery,
   sortField,
   sortDir,
   cursor,
   limit,
-}: GenericPageArgs) => {
+}: GenericPageArgs) {
   const query = { ...baseQuery }
 
   const cursorFilter = buildCursorFilter({ sortField, sortDir, cursor })
@@ -17,10 +17,12 @@ export const findPageGeneric = async ({
     query.$and = [...(query.$and ?? []), cursorFilter]
   }
 
+  const sortSpec = buildSortSpec(sortField, sortDir)
+
   // now we have the cursorfilters and can query db
   const docs = await collection
     .find(query)
-    .sort(buildSortSpec(sortField, sortDir))
+    .sort(sortSpec)
     .limit(limit + 1)
     .toArray()
 
