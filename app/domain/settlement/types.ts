@@ -34,6 +34,7 @@ export type Settlement = {
 // atomic metadata eg. fetched in one request ( no partial data )
 
 export type SettlementMeta = {
+  // todo: add currency?
   order: {
     side: OrderType
     signer: Hex

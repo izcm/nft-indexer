@@ -1,6 +1,6 @@
 import { Hex } from 'viem'
 
-import { addrOf, bytes32, bytes32n, priceWei } from '../hash.js'
+import { addrOf, bytes32, bytes32n, priceWei } from '../../../app/lib/utils/evm-primitives.js'
 import { Order, OrderRecord, OrderSignature, Side } from '#app/domain/order/types.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { orders } from '#app/db/collections.js'
@@ -21,7 +21,7 @@ export async function seedOrders(
     side: Side
     isCollectionBid: boolean
   },
-  patch: Partial<Omit<OrderRecord, 'order' | 'orderHash'>> = {}
+  overrides: Partial<Omit<OrderRecord, 'order' | 'orderHash'>> = {}
 ) {
   const byCollection: Record<Hex, Order[]> = {}
 
@@ -43,7 +43,7 @@ export async function seedOrders(
     updatedAt: now,
     createdAt: now,
 
-    ...patch,
+    ...overrides,
   }))
 
   return orders().insertMany(orderRecords)
@@ -56,7 +56,7 @@ function buildFakeOrder(
   now: number,
   shapeFn?: (i: number) => { side: Side; isCollectionBid: boolean }
 ): Order {
-  const orderSeed = `order:${i}:${seed}`
+  const orderSeed = `${i}:${seed}`
   const seedNum = Number(bytes32n(orderSeed))
 
   const startTs = now + i * 60
@@ -75,7 +75,7 @@ function buildFakeOrder(
     collection,
     tokenId: s(seedNum % 10000),
     currency: addrOf('currency'),
-    price: s(priceWei(orderSeed)),
+    price: s(priceWei(`price:${orderSeed}`)),
     actor: addrOf(orderSeed),
     start: s(startTs),
     end: s(endTs),

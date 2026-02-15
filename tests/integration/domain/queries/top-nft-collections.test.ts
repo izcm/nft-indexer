@@ -2,17 +2,15 @@ import { Hex } from 'viem'
 import { afterAll, beforeAll, beforeEach, expect, describe, it } from 'vitest'
 
 import { nftCollections, orders } from '#app/db/collections.js'
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
 import { Side } from '#app/domain/order/types.js'
-import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
-import { addrOf } from '#tests/helpers/hash.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
+import { seedCollections as _seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
+import { seedOrders as _seedOrders } from '#tests/helpers/seed/seed-orders.js'
+import { addrOf } from '#app/lib/utils/evm-primitives.js'
 import {
   ActiveCounts,
   topNFTCollectionsByActiveOrders,
 } from '#app/domain/queries/top-nft-collections.js'
-
-const CHAIN_ID = 1
 
 beforeAll(async () => {
   await startTestMongo()
@@ -28,10 +26,27 @@ beforeEach(async () => {
 })
 
 describe('topCollectionsByActiveOrders query', () => {
+  const CHAIN_ID = 1
+
   type Counts = {
     ask: number
     bid: number
     cb: number
+  }
+
+  const seedCollections = (count: number, seed: string) => {
+    return _seedCollections(CHAIN_ID, count, seed)
+  }
+
+  const seedOrders = (
+    collections: Hex[],
+    perCollection: number,
+    seed: string,
+    now?: number,
+    shapeFn?: Parameters<typeof _seedOrders>[5],
+    patch?: Parameters<typeof _seedOrders>[6]
+  ) => {
+    return _seedOrders(CHAIN_ID, collections, perCollection, seed, now ?? 0, shapeFn, patch)
   }
 
   const makeShapeFn = (ask: number, bid: number, cb: number) => (i: number) => {
@@ -47,7 +62,7 @@ describe('topCollectionsByActiveOrders query', () => {
 
     const colN = 3
 
-    await seedCollections(CHAIN_ID, colN, 'seed')
+    await seedCollections(colN, 'seed')
 
     const cols = await nftCollections().find({}).toArray()
 
@@ -60,8 +75,7 @@ describe('topCollectionsByActiveOrders query', () => {
     }
 
     for (const [addr, c] of Object.entries(plan)) {
-      seedOrders(
-        CHAIN_ID,
+      await seedOrders(
         [addr as Hex],
         c.ask + c.bid + c.cb,
         addr,
@@ -99,12 +113,11 @@ describe('topCollectionsByActiveOrders query', () => {
     const colN = 10
     const limit = 3
 
-    await seedCollections(CHAIN_ID, colN, 'seed')
+    await seedCollections(colN, 'seed')
 
     const cols = await nftCollections().find({}).toArray()
 
     await seedOrders(
-      CHAIN_ID,
       cols.map(c => c.address),
       5,
       'seed'
@@ -119,12 +132,12 @@ describe('topCollectionsByActiveOrders query', () => {
     const activeCount = 5
     const inactiveCount = 2
 
-    await seedCollections(CHAIN_ID, 1, 'seed')
+    await seedCollections(1, 'seed')
 
     const col = (await nftCollections().find({}).toArray())[0]
 
-    await seedOrders(CHAIN_ID, [col.address], activeCount, 'active')
-    await seedOrders(CHAIN_ID, [col.address], inactiveCount, 'inactive', 0, undefined, {
+    await seedOrders([col.address], activeCount, 'active')
+    await seedOrders([col.address], inactiveCount, 'inactive', 0, undefined, {
       status: 'cancelled',
     })
 
@@ -141,12 +154,12 @@ describe('topCollectionsByActiveOrders query', () => {
     const otherChainId = 1337
     const otherChainCount = 2
 
-    await seedCollections(CHAIN_ID, 1, 'seed')
+    await seedCollections(1, 'seed')
 
     const col = (await nftCollections().find({}).toArray())[0]
 
-    await seedOrders(CHAIN_ID, [col.address], matchingChainCount, 'match')
-    await seedOrders(otherChainId, [col.address], otherChainCount, 'other')
+    await _seedOrders(matchChainId, [col.address], matchingChainCount, 'match')
+    await _seedOrders(otherChainId, [col.address], otherChainCount, 'other') //
 
     const queryResult = await topNFTCollectionsByActiveOrders(matchChainId, 100)
 
@@ -160,14 +173,13 @@ describe('topCollectionsByActiveOrders query', () => {
 
     const limit = 3
 
-    await seedCollections(CHAIN_ID, colN, 'seed')
+    await seedCollections(colN, 'seed')
     const storedCols = await nftCollections().find({}).toArray()
 
     const missingColAddr = addrOf('missing')
 
     // seed stored collections with same order-count
     await seedOrders(
-      CHAIN_ID,
       storedCols.map(c => c.address),
       perCol,
       'col_stored'
@@ -176,7 +188,7 @@ describe('topCollectionsByActiveOrders query', () => {
     // seed orders for a collection address that is NOT present in nft-collections
     // -> has double order count to ensure its place in top 3
     // -> lookup will return empty → unwind drops it
-    await seedOrders(CHAIN_ID, [missingColAddr], perCol * 2, 'col_missing')
+    await seedOrders([missingColAddr], perCol * 2, 'col_missing')
 
     const queryResult = await topNFTCollectionsByActiveOrders(CHAIN_ID, limit)
 

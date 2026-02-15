@@ -3,7 +3,7 @@ import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 
 import { seedOrders } from '../seed-orders.js'
 import { orders } from '#app/db/collections.js'
-import { addrOf, bytes32n } from '#tests/helpers/hash.js'
+import { addrOf, bytes32n } from '#app/lib/utils/evm-primitives.js'
 import { Side } from '#app/domain/order/types.js'
 
 beforeAll(async () => {
@@ -111,7 +111,7 @@ describe('seed-orders', () => {
     }
   })
 
-  it('sets expected fields when patch is passed', async () => {
+  it('sets expected fields when root-level patch is passed', async () => {
     const colN = 1
     const perCol = 1
 
@@ -124,4 +124,20 @@ describe('seed-orders', () => {
     expect(docs).toHaveLength(1)
     expect(docs[0].status).toBe('cancelled')
   })
+
+  // it('sets expected fields when deep patch is passed', async () => {
+  //   const colN = 1
+  //   const perCol = 1
+
+  //   const cols = mockAddresses(colN)
+
+  //   await seedOrders(CHAIN_ID, cols, perCol, 'seed', 0, undefined, {
+  //     order: { collection: '0xabc' },
+  //   })
+
+  //   const docs = await orders().find({}).toArray()
+
+  //   expect(docs).toHaveLength(1)
+  //   expect(docs[0].status).toBe('cancelled')
+  // })
 })

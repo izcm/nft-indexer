@@ -1,12 +1,12 @@
 import { nftCollections } from '#app/db/collections.js'
 import { NFTCollection } from '#app/domain/nft-collection/types.js'
-import { addrOf } from '../hash.js'
+import { addrOf } from '../../../app/lib/utils/evm-primitives.js'
 
 export const seedCollections = async (
   chainId: number,
   count: number,
   seed: string,
-  patch: Partial<NFTCollection> = {}
+  overrides: Partial<NFTCollection> = {}
 ) => {
   const collections: NFTCollection[] = Array.from({ length: count }).map((_, i) => ({
     chainId,
@@ -14,7 +14,7 @@ export const seedCollections = async (
     metaStatus: 'PENDING',
     chainMetaStatus: 'PENDING',
     updatedAt: i,
-    ...patch,
+    ...overrides,
   }))
 
   return nftCollections().insertMany(collections)

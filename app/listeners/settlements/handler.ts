@@ -1,11 +1,11 @@
-import { settlementFromLog as fromLog } from './logic.js'
 import { ListenerItem } from '../types/context.js'
 import { processSettlement } from '#app/domain/settlement/actions.js'
-import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
+import { settlementFromLog } from './logic.js'
+import { settlementRepo } from '#app/repos/settlement.repo.js'
 
 export function handleSettlement(item: ListenerItem) {
-  const settlement = fromLog(item.log, item.chainId)
+  const settlement = settlementFromLog(item.log, item.chainId)
 
-  void repo.save(settlement)
+  void settlementRepo.save(settlement)
   void processSettlement({ ...settlement, timestamp: item.log.blockTimestamp })
 }

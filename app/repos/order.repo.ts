@@ -58,13 +58,6 @@ export const orderRepo = {
     const orderHash = hashOrderStruct(orderCore)
 
     const now = Date.now()
-    // todo:
-    // - return insertedId if upsert null if not
-    // - api returns 201 on upserted - 200 if already exists
-    // - if exist => return id of existing item
-
-    // method ensures the order exists
-    // no need to throw error on duplicates
 
     const res = await orders().findOneAndUpdate(
       { chainId, orderHash },

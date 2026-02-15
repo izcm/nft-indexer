@@ -11,7 +11,7 @@ import {
 import { NFTCollectionChainMeta } from '#app/domain/nft-collection/types.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
-import { addrOf } from '#tests/helpers/hash.js'
+import { addrOf } from '#app/lib/utils/evm-primitives.js'
 import { Status } from '#app/domain/enum.js'
 
 beforeAll(async () => {
