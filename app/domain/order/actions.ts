@@ -7,7 +7,7 @@ const TAG = 'order'
 
 export async function applyOrderCreated(chainId: number, order: OrderCore) {
   void nftCollectionRepo
-    .noteCollection({ chainId, address: order.collection })
+    .noteNFTCollection({ chainId, address: order.collection })
     .catch(err => console.error(`[${TAG}:created] noteCollection failed`, err))
 }
 

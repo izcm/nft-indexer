@@ -30,7 +30,7 @@ export const nftCollectionRepo = {
    * Avoids repeated DB upserts using in-memory tracking
    */
 
-  async noteCollection(key: NFTCollectionKey) {
+  async noteNFTCollection(key: NFTCollectionKey) {
     const { chainId, address } = key
 
     const cacheKey = stringifyKey(key)

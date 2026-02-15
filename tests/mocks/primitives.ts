@@ -1,11 +1,14 @@
 import type { Hex } from 'viem'
 
-import { OrderCore, OrderRecord } from '#app/domain/order/types.js'
-import { Settlement } from '#app/domain/settlement/types.js'
+import { OrderCore, OrderRecord, Side } from '#app/domain/order/types.js'
+import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
 import { SettlementLog } from '#app/listeners/types/logs.js'
 
 import { addrOf, bytes32, bytes32n, bytesOf, priceWei } from '../../app/lib/utils/evm-primitives.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
+import { TxContext } from '#app/listeners/types/context.js'
+
+const s = (x: number | bigint) => x.toString()
 
 /* -------------------------------------------------
    Primitive identities
@@ -23,6 +26,15 @@ export const mockReceipt = {
   gasUsed: bytes32('receipt:used'),
   effectiveGasPrice: bytes32('receipt:price'),
 } as const
+
+export const mockTxContext: TxContext = {
+  index: 0,
+  gasUsed: s(priceWei('tx-context:gas-used')),
+  effectiveGasPrice: s(priceWei('tx-context:gas-price')),
+  functionSelector: '0xab12ef34',
+  functionName: 'fn',
+  contractAddress: addrOf('tx-context:contract'),
+}
 
 export const mockTx = (input: Hex) => ({
   to: addrOf('tx:txTo'),
@@ -91,6 +103,14 @@ export const mockSettlement = (overrides: Partial<Settlement>): Settlement => ({
   ingestedAt: 0,
   ...overrides,
 })
+
+export const mockSettlementMeta: SettlementMeta = {
+  order: {
+    side: 'ASK',
+    signer: addrOf('meta:order:signer'),
+  },
+  txContext: mockTxContext,
+}
 
 export const mockSettlementLog = (): SettlementLog => ({
   eventName: 'Settlement',

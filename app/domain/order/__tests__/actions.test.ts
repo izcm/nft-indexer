@@ -14,7 +14,7 @@ vi.mock('#app/repos/order.repo.js', () => ({
 
 vi.mock('#app/repos/nft-collection.repo.js', () => ({
   nftCollectionRepo: {
-    noteCollection: vi.fn(),
+    noteNFTCollection: vi.fn(),
   },
 }))
 
@@ -25,7 +25,7 @@ const fmtError = (action: string, fnName: string) => `[order:${action}] ${fnName
 describe('applyOrderCreated', () => {
   it('logs if noteCollection fails', async () => {
     const err = new Error('db down')
-    vi.mocked(nftCollectionRepo).noteCollection.mockRejectedValueOnce(err)
+    vi.mocked(nftCollectionRepo).noteNFTCollection.mockRejectedValueOnce(err)
 
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
     await applyOrderCreated(1, mockOrderCore())

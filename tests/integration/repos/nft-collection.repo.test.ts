@@ -110,7 +110,7 @@ describe('nftCollectionRepo', () => {
           vi.useFakeTimers()
           vi.setSystemTime(0)
 
-          await repo.noteCollection({ chainId, address })
+          await repo.noteNFTCollection({ chainId, address })
 
           const rows = await nftCollections().find({}).toArray()
 
@@ -130,8 +130,8 @@ describe('nftCollectionRepo', () => {
         it('does not insert duplicate when chainId + address pair cached in memory', async () => {
           const { chainId, address } = makeParams()
 
-          await repo.noteCollection({ chainId, address })
-          await repo.noteCollection({ chainId, address })
+          await repo.noteNFTCollection({ chainId, address })
+          await repo.noteNFTCollection({ chainId, address })
 
           const rows = await nftCollections().find({}).toArray()
 
@@ -141,9 +141,9 @@ describe('nftCollectionRepo', () => {
         it('does not insert duplicate when cache is cleared', async () => {
           const { chainId, address } = makeParams()
 
-          await repo.noteCollection({ chainId, address })
+          await repo.noteNFTCollection({ chainId, address })
           __resetSeenCollectionsForTest()
-          await repo.noteCollection({ chainId, address })
+          await repo.noteNFTCollection({ chainId, address })
 
           const rows = await nftCollections().find({}).toArray()
 
@@ -152,8 +152,6 @@ describe('nftCollectionRepo', () => {
       })
 
       describe('meta / status writers', () => {
-        const { finalizeChainMeta, markChainMetaFailed, patchMeta } = nftCollectionRepo
-
         const startTime = 0
         const writeTime = 100
 
@@ -169,7 +167,7 @@ describe('nftCollectionRepo', () => {
           vi.useRealTimers()
         })
 
-        it('finalizeChainMeta sets status DONE + meta fields', async () => {
+        it('finalizeChainMeta updates an nft-collection with chain meta and marks it DONE', async () => {
           const col = mockNFTCollection()
 
           await nftCollections().insertOne(col)
@@ -184,7 +182,7 @@ describe('nftCollectionRepo', () => {
           const { chainId, address } = col
           vi.setSystemTime(writeTime)
 
-          await finalizeChainMeta({ chainId, address, chainMeta })
+          await repo.finalizeChainMeta({ chainId, address, chainMeta })
 
           const row = await nftCollections().findOne({ chainId, address })
           if (!row) throw new Error('row missing')
@@ -196,29 +194,31 @@ describe('nftCollectionRepo', () => {
           })
         })
 
-        it('markChainMetaFailed sets FAILED + error', async () => {
-          const col = mockNFTCollection()
+        describe('markChainMetaFailed', () => {
+          it('marks an existing nft-collection as FAILED + sets error', async () => {
+            const col = mockNFTCollection()
 
-          await nftCollections().insertOne(col)
+            await nftCollections().insertOne(col)
 
-          const error = 'error msg'
+            const error = 'error msg'
 
-          const { chainId, address } = col
-          vi.setSystemTime(writeTime)
+            const { chainId, address } = col
+            vi.setSystemTime(writeTime)
 
-          await markChainMetaFailed({ chainId, address, error })
+            await repo.markChainMetaFailed({ chainId, address, error })
 
-          const row = await nftCollections().findOne({ chainId, address })
-          if (!row) throw new Error('row missing')
+            const row = await nftCollections().findOne({ chainId, address })
+            if (!row) throw new Error('row missing')
 
-          expect(row).toMatchObject({
-            chainMetaStatus: Status.FAILED,
-            chainMetaError: error,
-            updatedAt: writeTime,
+            expect(row).toMatchObject({
+              chainMetaStatus: Status.FAILED,
+              chainMetaError: error,
+              updatedAt: writeTime,
+            })
           })
         })
 
-        it('patchMeta updates partial fields', async () => {
+        it('patchMeta updates partial fields on an existing nft-collection', async () => {
           const col = mockNFTCollection()
 
           await nftCollections().insertOne({
@@ -232,7 +232,7 @@ describe('nftCollectionRepo', () => {
           const { chainId, address } = col
           vi.setSystemTime(writeTime)
 
-          await patchMeta({ chainId, address, patch: { imageUrl: 'new-image' } })
+          await repo.patchMeta({ chainId, address, patch: { imageUrl: 'new-image' } })
 
           const row = await nftCollections().findOne({ chainId, address })
           if (!row) throw new Error('row missing')

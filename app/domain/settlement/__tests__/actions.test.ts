@@ -9,7 +9,7 @@ import { applyOrderFilled } from '#app/domain/order/actions.js'
 
 vi.mock('#app/repos/nft-collection.repo.js', () => ({
   nftCollectionRepo: {
-    noteCollection: vi.fn().mockResolvedValue(undefined),
+    noteNFTCollection: vi.fn().mockResolvedValue(undefined),
   },
 }))
 
@@ -50,7 +50,7 @@ describe('applySettlementCreated', () => {
   }
 
   it('logs if noteCollection fails', async () => {
-    const fn = vi.mocked(nftCollectionRepo).noteCollection
+    const fn = vi.mocked(nftCollectionRepo).noteNFTCollection
     fn.mockRejectedValueOnce(genericError)
 
     await processSettlement(inMock)
@@ -75,7 +75,7 @@ describe('applySettlementCreated', () => {
   it('calls dependencies with correct params on success', async () => {
     await processSettlement(inMock)
 
-    expect(nftCollectionRepo.noteCollection).toHaveBeenCalledWith({
+    expect(nftCollectionRepo.noteNFTCollection).toHaveBeenCalledWith({
       chainId: inMock.chainId,
       address: inMock.collection,
     })

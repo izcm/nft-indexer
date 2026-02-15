@@ -23,7 +23,7 @@ export async function processSettlement({
   //   .catch(err => console.error(`[${tag}] recordSettlement failed`, err))
 
   void nftCollectionRepo
-    .noteCollection({ chainId, address: collection })
+    .noteNFTCollection({ chainId, address: collection })
     .catch(err => console.error(`[${tag}] noteCollection failed`, err))
 
   void applyOrderFilled(chainId, orderHash).catch(err =>

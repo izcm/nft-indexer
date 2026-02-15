@@ -8,6 +8,9 @@ export type TopNFTCollectionByActiveOrders = NFTCollection & {
   summary: ActiveCounts
 }
 
+// todo:
+// add floorprice &
+// order actor
 export type ActiveCounts = {
   activeAskCount: number
   activeBidCount: number

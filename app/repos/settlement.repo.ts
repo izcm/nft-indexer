@@ -48,7 +48,7 @@ export const settlementRepo = {
 
   // === write ===
 
-  // settlement must never be overwritten => insertOne + unique indexes
+  // settlement should never be overwritten => insertOne + unique indexes
   async save(settlement: Settlement) {
     return settlements().insertOne({
       ...settlement,

@@ -6,8 +6,9 @@ import { settlements } from '#app/db/collections.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { seedSettlements } from '#tests/helpers/seed/seed-settlements.js'
 import { Settlement } from '#app/domain/settlement/types.js'
-import { mockSettlement } from '#tests/mocks/primitives.js'
+import { mockSettlement, mockSettlementMeta } from '#tests/mocks/primitives.js'
 import { ObjectId } from 'mongodb'
+import { bytes32 } from '#app/lib/utils/evm-primitives.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -29,12 +30,14 @@ describe('settlementRepo', () => {
   const mockSettlementForChain = (chainId: number = CHAIN_ID) => mockSettlement({ chainId })
 
   async function givenSettlementExists(overrides: Partial<Settlement> = {}) {
-    const settlement = mockSettlementForChain()
-    const { insertedId } = await settlements().insertOne({ ...settlement, ...overrides })
+    const raw = mockSettlementForChain()
+    const final = { ...raw, ...overrides }
+
+    const { insertedId } = await settlements().insertOne(final)
 
     return {
       insertedId,
-      settlement: { ...settlement, ...overrides },
+      settlement: final,
     }
   }
 
@@ -155,7 +158,65 @@ describe('settlementRepo', () => {
         await expect(repo.save(settlement)).rejects.toThrow() // attempt second insert
       })
 
-      it('allows same orderHash on different chains')
+      it('allows same orderHash on different chains', async () => {
+        const base = mockSettlementForChain(1)
+        const other = { ...base, chainId: 31337 }
+
+        await repo.save(base)
+        await repo.save(other)
+
+        const rows = await settlements().find({ orderHash: base.orderHash }).toArray()
+
+        expect(rows).toHaveLength(2)
+
+        const chainIds = rows.map(r => r.chainId).sort((a, b) => a - b) // ascending
+        expect(chainIds).toEqual([1, 31337])
+      })
+    })
+
+    describe('meta / status writers', () => {
+      describe('finalizeMeta', () => {
+        it('updates an existing settlement with metadata and marks it DONE', async () => {})
+
+        it('does not upsert settlement when no match is found', async () => {
+          const res = await repo.finalizeMeta({
+            chainId: CHAIN_ID,
+            orderHash: bytes32('o_hash'),
+            meta: mockSettlementMeta,
+          })
+
+          expect(res.acknowledged).toBe(true)
+          expect(res.matchedCount).toBe(0)
+
+          expect(res.modifiedCount).toBe(0)
+          expect(res.upsertedCount).toBe(0)
+
+          const rows = await settlements().find({}).toArray()
+          expect(rows).toHaveLength(0)
+        })
+
+        it('does not overwrite existing execution data ', async () => {})
+      })
+
+      describe('markMetaFailed', () => {
+        it('marks an existing settlement meta as FAILED and stores the error message')
+
+        it('does not modify execution data or orderAttributes', async () => {
+          const existingExecution = {
+            blockNumber: 100,
+            logIndex: 2,
+            block: { timestamp: 123456 },
+          }
+
+          const existingAttributes = {
+            collection: 'Kitz',
+            tokenId: '1',
+          }
+
+          const meta = mockSettlementMeta
+        })
+        it('overwrites the previous metaError on retry')
+      })
     })
   })
 })
