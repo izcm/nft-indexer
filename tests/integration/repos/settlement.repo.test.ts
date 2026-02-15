@@ -176,9 +176,29 @@ describe('settlementRepo', () => {
 
     describe('meta / status writers', () => {
       describe('finalizeMeta', () => {
-        it('updates an existing settlement with metadata and marks it DONE', async () => {})
+        it('updates an existing settlement with metadata and marks it DONE', async () => {
+          const { settlement } = await givenSettlementExists({ metaStatus: 'PENDING' })
+          const meta = mockSettlementMeta
 
-        it('does not upsert settlement when no match is found', async () => {
+          const res = await repo.finalizeMeta({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+            meta,
+          })
+
+          expect(res.modifiedCount).toBe(1)
+
+          const updated = await settlements().findOne({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+          })
+
+          expect(updated?.metaStatus).toBe('DONE')
+          expect(updated?.orderAttributes).toEqual(meta.order)
+          expect(updated?.execution.txContext).toEqual(meta.txContext)
+        })
+
+        it('does not upsert settlement does not exist', async () => {
           const res = await repo.finalizeMeta({
             chainId: CHAIN_ID,
             orderHash: bytes32('o_hash'),
@@ -195,27 +215,123 @@ describe('settlementRepo', () => {
           expect(rows).toHaveLength(0)
         })
 
-        it('does not overwrite existing execution data ', async () => {})
+        it('does not overwrite existing execution data ', async () => {
+          const existingExecution = {
+            logIndex: 5,
+            txHash: bytes32('existing:tx'),
+            block: {
+              number: 100,
+              timestamp: 123456,
+            },
+          }
+
+          const { settlement } = await givenSettlementExists({
+            metaStatus: 'PENDING',
+            execution: existingExecution,
+          })
+
+          const meta = mockSettlementMeta
+
+          await repo.finalizeMeta({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+            meta,
+          })
+
+          const updated = await settlements().findOne({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+          })
+          if (!updated) throw new Error('row missing')
+
+          expect(updated.execution.logIndex).toBe(existingExecution.logIndex)
+          expect(updated.execution.txHash).toBe(existingExecution.txHash)
+          expect(updated.execution.block).toEqual(existingExecution.block)
+        })
       })
 
       describe('markMetaFailed', () => {
-        it('marks an existing settlement meta as FAILED and stores the error message')
+        it('marks an existing settlement meta as FAILED and stores the error message', async () => {
+          const { settlement } = await givenSettlementExists({ metaStatus: 'PENDING' })
+          const errorMessage = 'first'
+
+          const res = await repo.markMetaFailed({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+            error: errorMessage,
+          })
+
+          expect(res.modifiedCount).toBe(1)
+
+          const updated = await settlements().findOne({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+          })
+          if (!updated) throw new Error('row missing')
+
+          expect(updated.metaStatus).toBe('FAILED')
+          expect(updated.metaError).toBe(errorMessage)
+        })
 
         it('does not modify execution data or orderAttributes', async () => {
           const existingExecution = {
-            blockNumber: 100,
             logIndex: 2,
-            block: { timestamp: 123456 },
+            txHash: bytes32('existing:tx'),
+            block: {
+              number: 100,
+              timestamp: 123456,
+            },
           }
 
-          const existingAttributes = {
-            collection: 'Kitz',
-            tokenId: '1',
-          }
+          const existingAttributes = mockSettlementMeta.order
 
-          const meta = mockSettlementMeta
+          const { settlement } = await givenSettlementExists({
+            metaStatus: 'DONE',
+            execution: existingExecution,
+            orderAttributes: existingAttributes,
+          })
+
+          const errorMessage = 'second'
+
+          await repo.markMetaFailed({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+            error: errorMessage,
+          })
+
+          const updated = await settlements().findOne({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+          })
+          if (!updated) throw new Error('row missing')
+
+          expect(updated.execution).toEqual(existingExecution)
+          expect(updated.orderAttributes).toEqual(existingAttributes)
         })
-        it('overwrites the previous metaError on retry')
+
+        it('overwrites the previous metaError on retry', async () => {
+          const firstError = 'first'
+          const secondError = 'second'
+
+          const { settlement } = await givenSettlementExists({
+            metaStatus: 'FAILED',
+            metaError: firstError,
+          })
+
+          await repo.markMetaFailed({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+            error: secondError,
+          })
+
+          const updated = await settlements().findOne({
+            chainId: settlement.chainId,
+            orderHash: settlement.orderHash,
+          })
+          if (!updated) throw new Error('row missing')
+
+          expect(updated?.metaError).toBe(secondError)
+        })
       })
     })
   })
