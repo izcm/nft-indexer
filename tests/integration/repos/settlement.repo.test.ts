@@ -149,7 +149,11 @@ describe('settlementRepo', () => {
         })
       })
 
-      it('throws error on duplicate chainId + orderHash pair')
+      it('throws error on duplicate chainId + orderHash pair', async () => {
+        const { settlement, insertedId } = await givenSettlementExists() // first insert
+
+        await expect(repo.save(settlement)).rejects.toThrow() // attempt second insert
+      })
 
       it('allows same orderHash on different chains')
     })
