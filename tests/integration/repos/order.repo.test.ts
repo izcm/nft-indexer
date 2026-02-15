@@ -64,27 +64,45 @@ describe('orderRepo', () => {
       vi.useRealTimers()
     })
 
-    describe('save', () => {
+    describe('ensure', () => {
       it('inserts order doc for new chainId + orderHash pair', async () => {
         const { chainId, order } = baseDoc
-        await repo.save(chainId, order)
 
+        const { id, didUpsert } = await repo.ensure(chainId, order)
+
+        // expectations on repo return values
+        expect(id).toBeDefined()
+        expect(id).toBeInstanceOf(ObjectId)
+        expect(didUpsert).toBe(true)
+
+        // expectations on inserted row
         const rows = await orders().find({}).toArray()
-
         expect(rows.length).toBe(1)
-        const inserted = rows[0]
 
-        expect(inserted).toMatchObject(baseDoc)
+        const inserted = rows[0]
+        expect(rows[0]).toMatchObject({
+          _id: id,
+          ...baseDoc,
+        })
         expect(inserted._id).toBeInstanceOf(ObjectId)
       })
 
       it('throws error for duplicate chainId + orderHash pair', async () => {
         const { chainId, order } = baseDoc
 
-        const { save } = orderRepo
+        const first = await repo.ensure(chainId, order)
 
-        await save(chainId, order)
-        await expect(save(chainId, order)).rejects.toThrow()
+        expect(first.didUpsert).toBe(true)
+        expect(first.id).toBeDefined()
+
+        // repo assesses didUpsert based on time => forward timer
+        vi.setSystemTime(startTime + 1)
+        const second = await repo.ensure(chainId, order)
+
+        expect(second.id).toBeDefined()
+        expect(second.didUpsert).toBe(false)
+
+        expect(second.id).toEqual(first.id)
 
         const rows = await orders().find({}).toArray()
         expect(rows.length).toBe(1)

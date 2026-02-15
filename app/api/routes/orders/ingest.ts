@@ -30,12 +30,16 @@ export const ordersIngest = (fastify: FastifyInstance) => {
         return API_ERRORS.INVALID_ORDER
       }
 
-      const insertedId = await orderRepo.save(chainId, orderCore)
+      const { id, didUpsert } = await orderRepo.ensure(chainId, orderCore)
       void applyOrderCreated(chainId, orderCore)
 
-      res.code(201).header('Location', `/api/orders/${insertedId}`)
+      const code = didUpsert ? 201 : 200
 
-      return insertedId
+      res.code(code).header('Location', `/api/orders/${id}`)
+
+      return {
+        id,
+      }
     }
   )
 }

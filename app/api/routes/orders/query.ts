@@ -45,7 +45,15 @@ export const ordersQuery = (fastify: FastifyInstance) => {
     async req => {
       const { from, to, limit, cursor, ...filters } = req.query as Record<string, any>
 
-      return repo.findPage({ filters, from, to, cursor, limit: limit ?? DEFAULT_PAGE_LIMIT })
+      return repo.findPage({
+        filters,
+        from,
+        to,
+        cursor,
+        sortField: 'execution.block.timestamp',
+        sortDir: -1,
+        limit: limit ?? DEFAULT_PAGE_LIMIT,
+      })
     }
   )
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { findPageGeneric } from '../paginate.js'
 import { buildCursorFilter, encodeCursor, walkPath } from '../cursor.js'
 import { GenericPageArgs } from '../types.js'
@@ -11,6 +11,12 @@ vi.mock(import('../cursor.js'), () => ({
 }))
 
 describe('findPageGeneric', () => {
+  // --- ctx ---
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   // --- test helpers ---
 
   const makeDocs = (count: number = 3) =>

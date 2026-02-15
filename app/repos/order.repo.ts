@@ -53,21 +53,46 @@ export const orderRepo = {
 
   // === write ===
 
-  async save(chainId: number, order: Order) {
+  async ensure(chainId: number, order: Order) {
     const { signature, ...orderCore } = order
     const orderHash = hashOrderStruct(orderCore)
 
-    return orders().insertOne({
-      orderHash,
-      chainId,
-      order: {
-        ...orderCore,
-        signature,
+    const now = Date.now()
+    // todo:
+    // - return insertedId if upsert null if not
+    // - api returns 201 on upserted - 200 if already exists
+    // - if exist => return id of existing item
+
+    // method ensures the order exists
+    // no need to throw error on duplicates
+
+    const res = await orders().findOneAndUpdate(
+      { chainId, orderHash },
+      {
+        $setOnInsert: {
+          orderHash,
+          chainId,
+          order: {
+            ...orderCore,
+            signature,
+          },
+          status: 'active',
+          createdAt: now,
+          updatedAt: now, // updatedAt only updates when order.status is modified
+        },
       },
-      status: 'active',
-      updatedAt: Date.now(),
-      createdAt: Date.now(),
-    })
+      {
+        upsert: true,
+        returnDocument: 'after',
+      }
+    )
+
+    const doc = res!
+
+    const id = doc._id
+    const didUpsert = doc.createdAt === now
+
+    return { id, didUpsert }
   },
 
   async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {

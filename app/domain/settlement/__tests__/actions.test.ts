@@ -2,7 +2,7 @@ import { Hex } from 'viem'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { applySettlementCreated } from '../actions.js'
+import { processSettlement } from '../actions.js'
 import { applyOrderFilled } from '#app/domain/order/actions.js'
 
 // --- mocks ---
@@ -53,7 +53,7 @@ describe('applySettlementCreated', () => {
     const fn = vi.mocked(nftCollectionRepo).noteCollection
     fn.mockRejectedValueOnce(genericError)
 
-    await applySettlementCreated(inMock)
+    await processSettlement(inMock)
 
     expect(fn).toHaveBeenCalledExactlyOnceWith({
       chainId: inMock.chainId,
@@ -66,14 +66,14 @@ describe('applySettlementCreated', () => {
     const fn = vi.mocked(applyOrderFilled)
     fn.mockRejectedValueOnce(genericError)
 
-    await applySettlementCreated(inMock)
+    await processSettlement(inMock)
 
     expect(fn).toHaveBeenCalledExactlyOnceWith(inMock.chainId, inMock.orderHash)
     expectLogged('applyOrderFilled', genericError)
   })
 
   it('calls dependencies with correct params on success', async () => {
-    await applySettlementCreated(inMock)
+    await processSettlement(inMock)
 
     expect(nftCollectionRepo.noteCollection).toHaveBeenCalledWith({
       chainId: inMock.chainId,

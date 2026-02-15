@@ -9,7 +9,7 @@ type SettlementCreatedInput = Pick<Settlement, 'chainId' | 'collection' | 'order
   timestamp: number
 }
 
-export async function applySettlementCreated({
+export async function processSettlement({
   chainId,
   orderHash,
   collection,
