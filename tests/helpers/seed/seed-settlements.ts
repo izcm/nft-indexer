@@ -4,16 +4,12 @@ import { addrOf, bytes32, priceWei } from '#app/lib/utils/evm-primitives.js'
 
 const s = (x: number | bigint) => x.toString()
 
-export type DeepPartial<T> = {
-  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
-}
-
 export async function seedSettlements(
   chainId: number,
   seed: string,
   count: number,
   now: number = 0,
-  overrides: DeepPartial<Settlement> = {}
+  overrides: Partial<Settlement> = {}
 ) {
   const allSettlements: Settlement[] = Array.from({ length: count }).map((_, i) => {
     return {

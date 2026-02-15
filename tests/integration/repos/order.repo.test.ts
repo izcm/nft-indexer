@@ -126,11 +126,16 @@ describe('orderRepo', () => {
     it('sets status and date', async () => {
       const startTime = 0
 
-      const { chainId, orderHash } = (await givenOrderRecordExists({ updatedAt: startTime }))
-        .orderRecord
+      const { chainId, orderHash } = (
+        await givenOrderRecordExists({ status: 'active', updatedAt: startTime })
+      ).orderRecord
 
       const rowBefore = await orders().findOne({ chainId, orderHash })
       if (!rowBefore) throw Error('row missing')
+
+      // sanity checks
+      expect(rowBefore.updatedAt).toBe(startTime)
+      expect(rowBefore.status).toBe('active')
 
       vi.setSystemTime(startTime + 1)
 
@@ -144,8 +149,7 @@ describe('orderRepo', () => {
     })
 
     it('does nothing if order not found', async () => {
-      const orderRecord = mockOrderRecord()
-      const { chainId, orderHash } = orderRecord
+      const { chainId, orderHash } = mockOrderRecord()
 
       const result = await repo.updateStatus({ chainId, orderHash, status: 'filled' })
 

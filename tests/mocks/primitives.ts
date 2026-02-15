@@ -70,8 +70,8 @@ export const mockOrderCore = (): OrderCore => ({
   nonce: bytes32('order:nonce'),
 })
 
-export const mockSettlement = (chainId: number = 1, now: number = 0): Settlement => ({
-  chainId,
+export const mockSettlement = (overrides: Partial<Settlement>): Settlement => ({
+  chainId: 1,
   orderHash: bytes32('settlement:orderHash'),
   collection: addrOf('settlement:collection'),
   tokenId: bytes32n('settlement:tokenId').toString(),
@@ -84,11 +84,12 @@ export const mockSettlement = (chainId: number = 1, now: number = 0): Settlement
     txHash: bytes32('settlement:txHash'),
     block: {
       number: 0,
-      timestamp: now,
+      timestamp: 0,
     },
   },
   metaStatus: 'PENDING',
-  ingestedAt: now,
+  ingestedAt: 0,
+  ...overrides,
 })
 
 export const mockSettlementLog = (): SettlementLog => ({

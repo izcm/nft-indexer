@@ -28,6 +28,7 @@ export type Settlement = {
 
   metaStatus: Status
   metaError?: string
+
   ingestedAt: number
 }
 

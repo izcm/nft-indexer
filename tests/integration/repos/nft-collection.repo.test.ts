@@ -37,156 +37,13 @@ describe('nftCollectionRepo', () => {
 
   const makeParams = () => ({ chainId: 1, address: TEST_ADDR })
 
-  const baseDoc = {
+  // new instance per call
+  const mockNFTCollection = () => ({
     chainId: TEST_CHAIN_ID,
     address: TEST_ADDR,
     metaStatus: Status.PENDING,
     chainMetaStatus: Status.PENDING,
     updatedAt: 0,
-  }
-
-  // === test repo write  ===
-
-  describe('write', () => {
-    describe('noteCollection', () => {
-      it('creates collection doc for new chainId + address pair', async () => {
-        const { chainId, address } = makeParams()
-
-        vi.useFakeTimers()
-        vi.setSystemTime(0)
-
-        await repo.noteCollection({ chainId, address })
-
-        const rows = await nftCollections().find({}).toArray()
-
-        expect(rows.length).toBe(1)
-
-        const row = rows[0]
-        expect(row._id).toBeInstanceOf(ObjectId)
-        expect(row).toMatchObject({
-          chainId,
-          address,
-          metaStatus: Status.PENDING,
-          chainMetaStatus: Status.PENDING,
-          updatedAt: 0,
-        })
-      })
-
-      it('does not insert duplicate when chainId + address pair cached in memory', async () => {
-        const { chainId, address } = makeParams()
-
-        await repo.noteCollection({ chainId, address })
-        await repo.noteCollection({ chainId, address })
-
-        const rows = await nftCollections().find({}).toArray()
-
-        expect(rows.length).toBe(1)
-      })
-
-      it('does not insert duplicate when cache is cleared', async () => {
-        const { chainId, address } = makeParams()
-
-        await repo.noteCollection({ chainId, address })
-        __resetSeenCollectionsForTest()
-        await repo.noteCollection({ chainId, address })
-
-        const rows = await nftCollections().find({}).toArray()
-
-        expect(rows.length).toBe(1)
-      })
-    })
-
-    describe('meta / status writers', () => {
-      const { finalizeChainMeta, markChainMetaFailed, patchMeta } = nftCollectionRepo
-
-      const startTime = 0
-      const writeTime = 100
-
-      beforeAll(() => {
-        vi.useFakeTimers()
-      })
-
-      beforeEach(() => {
-        vi.setSystemTime(startTime)
-      })
-
-      afterAll(() => {
-        vi.useRealTimers()
-      })
-
-      it('finalizeChainMeta sets status DONE + meta fields', async () => {
-        await nftCollections().insertOne(baseDoc)
-
-        const chainMeta: NFTCollectionChainMeta = {
-          name: 'NAME',
-          symbol: 'SYMBOL',
-          tokenType: 'ERC721',
-          totalSupply: '100',
-        }
-
-        const { chainId, address } = baseDoc
-        vi.setSystemTime(writeTime)
-
-        await finalizeChainMeta({ chainId, address, chainMeta })
-
-        const row = await nftCollections().findOne({ chainId, address })
-        if (!row) throw new Error('row missing')
-
-        expect(row).toMatchObject({
-          ...chainMeta,
-          chainMetaStatus: Status.DONE,
-          updatedAt: writeTime,
-        })
-      })
-
-      it('markChainMetaFailed sets FAILED + error', async () => {
-        await nftCollections().insertOne(baseDoc)
-
-        const error = 'error msg'
-
-        const { chainId, address } = baseDoc
-        vi.setSystemTime(writeTime)
-
-        await markChainMetaFailed({ chainId, address, error })
-
-        const row = await nftCollections().findOne({ chainId, address })
-        if (!row) throw new Error('row missing')
-
-        expect(row).toMatchObject({
-          chainMetaStatus: Status.FAILED,
-          chainMetaError: error,
-          updatedAt: writeTime,
-        })
-      })
-
-      it('patchMeta updates partial fields', async () => {
-        await nftCollections().insertOne({
-          ...baseDoc,
-          imageUrl: 'old-image',
-          bannerImageUrl: 'old-banner',
-          marketData: { floorPrice: 123 },
-          socials: { twitterUsername: 'old-tw', externalUrl: 'old-url' },
-        })
-
-        const { chainId, address } = baseDoc
-        vi.setSystemTime(writeTime)
-
-        await patchMeta({ chainId, address, patch: { imageUrl: 'new-image' } })
-
-        const row = await nftCollections().findOne({ chainId, address })
-        if (!row) throw new Error('row missing')
-
-        expect(row).toMatchObject({
-          imageUrl: 'new-image',
-          bannerImageUrl: 'old-banner',
-          marketData: { floorPrice: 123 },
-          socials: { twitterUsername: 'old-tw', externalUrl: 'old-url' },
-          metaStatus: Status.PENDING,
-          chainMetaStatus: Status.PENDING,
-          updatedAt: writeTime,
-        })
-      })
-    })
   })
 
   // === test repo read ===
@@ -199,19 +56,23 @@ describe('nftCollectionRepo', () => {
     } = nftCollectionRepo
 
     it('findById returns expected doc', async () => {
-      const { insertedId } = await nftCollections().insertOne(baseDoc)
+      const col = mockNFTCollection()
+
+      const { insertedId } = await nftCollections().insertOne(col)
 
       const row = await findById(insertedId)
       if (!row) throw new Error('row missing')
 
       expect(row).toBeDefined()
-      expect(row).toMatchObject(baseDoc)
+      expect(row).toMatchObject(col)
     })
 
     it('findByChainIdAndAddress returns expected doc', async () => {
-      await nftCollections().insertOne(baseDoc)
+      const col = mockNFTCollection()
 
-      const { chainId, address } = baseDoc
+      await nftCollections().insertOne(col)
+
+      const { chainId, address } = col
 
       const row = await findByChainIdAndAddress({ chainId, address })
       if (!row) throw new Error('row missing')
@@ -237,6 +98,156 @@ describe('nftCollectionRepo', () => {
 
       expect(rows.length).toBe(3)
       expect(rows.every(r => r.chainMetaStatus === Status.PENDING)).toBe(true)
+    })
+
+    // === test repo write  ===
+
+    describe('write', () => {
+      describe('noteCollection', () => {
+        it('creates collection doc for new chainId + address pair', async () => {
+          const { chainId, address } = makeParams()
+
+          vi.useFakeTimers()
+          vi.setSystemTime(0)
+
+          await repo.noteCollection({ chainId, address })
+
+          const rows = await nftCollections().find({}).toArray()
+
+          expect(rows.length).toBe(1)
+
+          const row = rows[0]
+          expect(row._id).toBeInstanceOf(ObjectId)
+          expect(row).toMatchObject({
+            chainId,
+            address,
+            metaStatus: Status.PENDING,
+            chainMetaStatus: Status.PENDING,
+            updatedAt: 0,
+          })
+        })
+
+        it('does not insert duplicate when chainId + address pair cached in memory', async () => {
+          const { chainId, address } = makeParams()
+
+          await repo.noteCollection({ chainId, address })
+          await repo.noteCollection({ chainId, address })
+
+          const rows = await nftCollections().find({}).toArray()
+
+          expect(rows.length).toBe(1)
+        })
+
+        it('does not insert duplicate when cache is cleared', async () => {
+          const { chainId, address } = makeParams()
+
+          await repo.noteCollection({ chainId, address })
+          __resetSeenCollectionsForTest()
+          await repo.noteCollection({ chainId, address })
+
+          const rows = await nftCollections().find({}).toArray()
+
+          expect(rows.length).toBe(1)
+        })
+      })
+
+      describe('meta / status writers', () => {
+        const { finalizeChainMeta, markChainMetaFailed, patchMeta } = nftCollectionRepo
+
+        const startTime = 0
+        const writeTime = 100
+
+        beforeAll(() => {
+          vi.useFakeTimers()
+        })
+
+        beforeEach(() => {
+          vi.setSystemTime(startTime)
+        })
+
+        afterAll(() => {
+          vi.useRealTimers()
+        })
+
+        it('finalizeChainMeta sets status DONE + meta fields', async () => {
+          const col = mockNFTCollection()
+
+          await nftCollections().insertOne(col)
+
+          const chainMeta: NFTCollectionChainMeta = {
+            name: 'NAME',
+            symbol: 'SYMBOL',
+            tokenType: 'ERC721',
+            totalSupply: '100',
+          }
+
+          const { chainId, address } = col
+          vi.setSystemTime(writeTime)
+
+          await finalizeChainMeta({ chainId, address, chainMeta })
+
+          const row = await nftCollections().findOne({ chainId, address })
+          if (!row) throw new Error('row missing')
+
+          expect(row).toMatchObject({
+            ...chainMeta,
+            chainMetaStatus: Status.DONE,
+            updatedAt: writeTime,
+          })
+        })
+
+        it('markChainMetaFailed sets FAILED + error', async () => {
+          const col = mockNFTCollection()
+
+          await nftCollections().insertOne(col)
+
+          const error = 'error msg'
+
+          const { chainId, address } = col
+          vi.setSystemTime(writeTime)
+
+          await markChainMetaFailed({ chainId, address, error })
+
+          const row = await nftCollections().findOne({ chainId, address })
+          if (!row) throw new Error('row missing')
+
+          expect(row).toMatchObject({
+            chainMetaStatus: Status.FAILED,
+            chainMetaError: error,
+            updatedAt: writeTime,
+          })
+        })
+
+        it('patchMeta updates partial fields', async () => {
+          const col = mockNFTCollection()
+
+          await nftCollections().insertOne({
+            ...col,
+            imageUrl: 'old-image',
+            bannerImageUrl: 'old-banner',
+            marketData: { floorPrice: 123 },
+            socials: { twitterUsername: 'old-tw', externalUrl: 'old-url' },
+          })
+
+          const { chainId, address } = col
+          vi.setSystemTime(writeTime)
+
+          await patchMeta({ chainId, address, patch: { imageUrl: 'new-image' } })
+
+          const row = await nftCollections().findOne({ chainId, address })
+          if (!row) throw new Error('row missing')
+
+          expect(row).toMatchObject({
+            imageUrl: 'new-image',
+            bannerImageUrl: 'old-banner',
+            marketData: { floorPrice: 123 },
+            socials: { twitterUsername: 'old-tw', externalUrl: 'old-url' },
+            metaStatus: Status.PENDING,
+            chainMetaStatus: Status.PENDING,
+            updatedAt: writeTime,
+          })
+        })
+      })
     })
   })
 

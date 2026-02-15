@@ -147,24 +147,28 @@ describe('topCollectionsByActiveOrders query', () => {
     expect(queryResult[0].summary.totalActive).toBe(activeCount)
   })
 
-  it('does not count orders with different chainId', async () => {
-    const matchChainId = 1
-    const matchingChainCount = 5
+  it('only counts orders for target chainId', async () => {
+    const target = {
+      chainId: 1,
+      count: 5,
+    }
 
-    const otherChainId = 1337
-    const otherChainCount = 2
+    const other = {
+      chainId: 31337,
+      count: 2,
+    }
 
     await seedCollections(1, 'seed')
 
     const col = (await nftCollections().find({}).toArray())[0]
 
-    await _seedOrders(matchChainId, [col.address], matchingChainCount, 'match')
-    await _seedOrders(otherChainId, [col.address], otherChainCount, 'other') //
+    await _seedOrders(target.chainId, [col.address], target.count, 'match')
+    await _seedOrders(other.chainId, [col.address], other.count, 'other') //
 
-    const queryResult = await topNFTCollectionsByActiveOrders(matchChainId, 100)
+    const queryResult = await topNFTCollectionsByActiveOrders(target.chainId, 100)
 
     expect(queryResult).toHaveLength(1)
-    expect(queryResult[0].summary.totalActive).toBe(matchingChainCount)
+    expect(queryResult[0].summary.totalActive).toBe(target.count)
   })
 
   it('handles missing nft-collection while respecting limit', async () => {

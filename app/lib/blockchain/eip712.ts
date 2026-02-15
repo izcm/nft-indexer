@@ -9,6 +9,7 @@ export const dmrktDomain = {
   chainId: CHAIN_ID,
   verifyingContract: VERIFYING_CONTRACT,
 }
+
 export const dmrktTypes = {
   Order: [
     { name: 'side', type: 'uint8' },
