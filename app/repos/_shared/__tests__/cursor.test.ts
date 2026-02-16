@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildSortSpec, encodeCursor, walkPath } from '../cursor.js'
+import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from '../cursor.js'
 import { a } from 'node_modules/vitest/dist/chunks/suite.d.BJWk38HB.js'
 import { ObjectId } from 'mongodb'
 
@@ -8,6 +8,8 @@ import { ObjectId } from 'mongodb'
 ====================================== */
 
 describe('walkPath', () => {
+  // --- happy paths ---
+
   it('returns value at top-level property', () => {
     const obj = { a: 5 }
 
@@ -20,17 +22,44 @@ describe('walkPath', () => {
     expect(walkPath(obj, 'a.b.c')).toBe('hello')
   })
 
-  it('returns undefined when a segment does not exist', () => {
-    const obj = { a: { b: 2 } }
-
-    expect(walkPath(obj, 'a.c')).toBeUndefined()
-  })
-
   it('does not mutate original object', () => {
     const obj = { a: { b: 2 } }
     walkPath(obj, 'a.b')
 
     expect(obj).toEqual({ a: { b: 2 } })
+  })
+
+  // --- unhappy paths ---
+
+  it('returns undefined when path segment does not exist', () => {
+    const obj = { a: { b: 2 } }
+
+    expect(() => walkPath(obj, 'a.c')).not.toThrow()
+    expect(walkPath(obj, 'a.c')).toBeUndefined()
+  })
+
+  it('returns undefined when intermediate value is null', () => {
+    const obj = { a: { b: null } }
+
+    expect(walkPath(obj, 'a.b.c')).toBeUndefined()
+  })
+
+  it('returns undefined when intermediate value is null', () => {
+    const obj = { a: null }
+
+    expect(walkPath(obj, 'a.b')).toBeUndefined()
+  })
+
+  it('returns undefined when object is empty', () => {
+    const obj = {}
+
+    expect(walkPath(obj, 'a.b')).toBeUndefined()
+  })
+
+  it('supports numeric keys (arrays)', () => {
+    const obj = { a: [{ b: 10 }] }
+
+    expect(walkPath(obj, 'a.0.b')).toBe(10)
   })
 })
 
@@ -67,9 +96,46 @@ describe('buildSortSpec', () => {
   it('sets primary and secondary sort field as expected', () => {
     const spec = buildSortSpec('primary', 1)
 
-    const specKeys = Array.from(Object.keys(spec))
+    const specKeys = Object.keys(spec)
 
     expect(specKeys[0]).toBe('primary')
     expect(specKeys[1]).toBe('_id')
+  })
+
+  function testDirection(dir: 1 | -1) {
+    const spec = buildSortSpec('sortField', dir)
+    const dirs = Object.values(spec)
+    expect(dirs).toEqual([dir, dir])
+  }
+
+  it('sets ascending direction', () => {
+    testDirection(1)
+  })
+
+  it('sets descending direction', () => {
+    testDirection(-1)
+  })
+})
+
+/* =======================================================
+   buildCursorFilter
+======================================================= */
+
+describe('buildCursorFilter', () => {
+  it('returns null when cursor is not provided', () => {
+    const res = buildCursorFilter({ sortField: 'field', sortDir: 1, cursor: null })
+
+    expect(res).toBeNull()
+  })
+
+  it('uses $gt for ascending order', () => {
+    const id = new ObjectId()
+    const cursor = `5_${id}`
+
+    const res = buildCursorFilter({ sortField: 'sortField', sortDir: 1, cursor })
+    if (!res) throw new Error("didn't build cursor")
+
+    expect(res.$or[0]).toStrictEqual({ sortField: { $gt: 5 } })
+    expect(res.$or[1]).toStrictEqual({ sortField: 5, _id: { $gt: id } })
   })
 })

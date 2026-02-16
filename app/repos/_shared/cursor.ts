@@ -2,7 +2,12 @@ import { ObjectId } from 'mongodb'
 import { CursorPageCore, CursorDir } from './types.js'
 
 export const walkPath = (obj: any, path: string) => {
-  return path.split('.').reduce((curr, k) => curr[k], obj)
+  if (Object.keys(obj).length === 0) return undefined
+
+  return path.split('.').reduce((curr, k) => {
+    if (curr === null) return undefined
+    return curr[k]
+  }, obj)
 }
 
 export const encodeCursor = (value: number, id: ObjectId) => `${value}_${id.toString()}`
@@ -26,6 +31,6 @@ export function buildCursorFilter({
   const cmp = dir === 1 ? '$gt' : '$lt'
 
   return {
-    $or: [{ [field]: { [cmp]: value } }, { [field]: { value, id: { [cmp]: id } } }],
+    $or: [{ [field]: { [cmp]: value } }, { [field]: value, _id: { [cmp]: id } }],
   }
 }
