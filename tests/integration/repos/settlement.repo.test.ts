@@ -192,10 +192,11 @@ describe('settlementRepo', () => {
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
           })
+          if (!updated) throw new Error('row missing')
 
-          expect(updated?.metaStatus).toBe('DONE')
-          expect(updated?.orderAttributes).toEqual(meta.order)
-          expect(updated?.execution.txContext).toEqual(meta.txContext)
+          expect(updated.metaStatus).toBe('DONE')
+          expect(updated.orderAttributes).toEqual(meta.order)
+          expect(updated.execution.txContext).toEqual(meta.txContext)
         })
 
         it('does not upsert settlement does not exist', async () => {

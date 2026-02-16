@@ -24,33 +24,6 @@ export const orderRepo = {
     return orders().findOne({ chainId, orderHash })
   },
 
-  async findPage({ filters, from, to, cursor, limit }: FindPageArgs) {
-    const createdTs = 'createdAt'
-    const { ...query } = filters
-
-    if (cursor) {
-      const [ts, id] = cursor.split('_')
-    }
-
-    const docs = await orders()
-      .find(query)
-      .sort({ ['order.start']: -1, _id: -1 })
-      .limit(limit + 1)
-      .toArray()
-
-    let nextCursor: string | null = null
-
-    if (docs.length > limit) {
-      const last = docs[limit - 1]
-      nextCursor = `${last.createdAt}_${last._id.toString()}`
-    }
-
-    return {
-      items: docs.slice(0, limit),
-      nextCursor,
-    }
-  },
-
   // === write ===
 
   async ensure(chainId: number, order: Order) {
@@ -77,10 +50,11 @@ export const orderRepo = {
       {
         upsert: true,
         returnDocument: 'after',
+        includeResultMetadata: true,
       }
     )
 
-    const doc = res!
+    const doc = res.value!
 
     const id = doc._id
     const didUpsert = doc.createdAt === now

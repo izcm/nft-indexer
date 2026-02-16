@@ -34,10 +34,12 @@ describe('orderRepo', () => {
     return { insertedId, orderRecord }
   }
 
-  // === test repo read ===
+  /* ======================================
+    repo read
+  ====================================== */
 
-  describe('read', async () => {
-    it('findById returns expected doc', async () => {
+  describe('findById', () => {
+    it('returns expected doc', async () => {
       const { insertedId, orderRecord } = await givenOrderRecordExists()
 
       const row = await repo.findById(insertedId)
@@ -47,6 +49,16 @@ describe('orderRepo', () => {
       expect(row).toMatchObject(orderRecord)
     })
 
+    it('returns null when id does not exist', async () => {
+      const id = new ObjectId()
+
+      const row = await repo.findById(id)
+
+      expect(row).toBeNull()
+    })
+  })
+
+  describe('findByOrderKey', () => {
     it('findByOrderKey returns expected doc for chainId + orderHash', async () => {
       const { orderRecord } = await givenOrderRecordExists()
       const { chainId, orderHash } = orderRecord
@@ -56,9 +68,20 @@ describe('orderRepo', () => {
 
       expect(row).toMatchObject(orderRecord)
     })
+
+    it('findByOrderKey returns null when not found', async () => {
+      const row = await repo.findByOrderKey({
+        chainId: 1,
+        orderHash: '0x1234' as any,
+      })
+
+      expect(row).toBeNull()
+    })
   })
 
-  // === test repo write ===
+  /* ======================================
+    repo write
+  ====================================== */
 
   describe('write', () => {
     beforeAll(() => {
@@ -71,6 +94,12 @@ describe('orderRepo', () => {
 
     afterAll(() => {
       vi.useRealTimers()
+    })
+
+    it('rejects manual duplicate insertion', async () => {
+      const { orderRecord } = await givenOrderRecordExists()
+
+      await expect(orders().insertOne(orderRecord)).rejects.toThrow()
     })
 
     describe('ensure', () => {
@@ -119,6 +148,28 @@ describe('orderRepo', () => {
         const rows = await orders().find({}).toArray()
         expect(rows.length).toBe(1)
       })
+    })
+
+    it('does not overwrite an existing order', async () => {
+      const { orderRecord } = await givenOrderRecordExists()
+
+      const original = await orders().findOne({
+        chainId: orderRecord.chainId,
+        orderHash: orderRecord.orderHash,
+      })
+      if (!original) throw Error('missing')
+
+      // try ensure again
+      const { chainId, order } = orderRecord
+      await repo.ensure(chainId, order)
+
+      const after = await orders().findOne({
+        chainId: orderRecord.chainId,
+        orderHash: orderRecord.orderHash,
+      })
+      if (!after) throw Error('missing')
+
+      expect(after).toEqual(original)
     })
   })
 
