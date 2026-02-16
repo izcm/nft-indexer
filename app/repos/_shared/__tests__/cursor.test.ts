@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from '../cursor.js'
 import { a } from 'node_modules/vitest/dist/chunks/suite.d.BJWk38HB.js'
 import { ObjectId } from 'mongodb'
+import { CursorPageCore } from '../types.js'
 
 /* ======================================
     walkPath
@@ -90,7 +91,21 @@ describe('encodeCursor', () => {
 
     expect(c1).not.toBe(c2)
   })
+
+  it('can be parsed back into value and objectId', () => {
+    const id = new ObjectId()
+    const cursor = encodeCursor(5, id)
+
+    const [value, rawId] = cursor.split('_')
+
+    expect(Number(value)).toBe(5)
+    expect(new ObjectId(id)).toEqual(id)
+  })
 })
+
+/* =======================================================
+   buildSortSpec
+======================================================= */
 
 describe('buildSortSpec', () => {
   it('sets primary and secondary sort field as expected', () => {
@@ -108,11 +123,11 @@ describe('buildSortSpec', () => {
     expect(dirs).toEqual([dir, dir])
   }
 
-  it('sets ascending direction', () => {
+  it('sets ascending direction for primary and secondary sort key', () => {
     testDirection(1)
   })
 
-  it('sets descending direction', () => {
+  it('sets descending direction for primary and secondary sort key', () => {
     testDirection(-1)
   })
 })
@@ -122,20 +137,46 @@ describe('buildSortSpec', () => {
 ======================================================= */
 
 describe('buildCursorFilter', () => {
+  function buildBaseTest(overrides: Partial<Omit<CursorPageCore, 'limit'>> = {}): {
+    id: ObjectId
+    sortKeyValue: number
+    cursor: string
+    sortKeyName: string
+    res: any
+  } {
+    const id = new ObjectId()
+    const sortKeyValue = 5
+
+    const sortKeyName = overrides.sortField ?? 'sortField'
+    const cursor = overrides.cursor ?? `${sortKeyValue}_${id}`
+    const sortDir = overrides.sortDir ?? 1
+
+    const res = buildCursorFilter({ sortField: sortKeyName, sortDir, cursor })
+    if (!res) throw new Error("didn't build cursor")
+
+    return { id, sortKeyValue, cursor, sortKeyName, res }
+  }
+
   it('returns null when cursor is not provided', () => {
     const res = buildCursorFilter({ sortField: 'field', sortDir: 1, cursor: null })
-
     expect(res).toBeNull()
   })
 
   it('uses $gt for ascending order', () => {
-    const id = new ObjectId()
-    const cursor = `5_${id}`
+    const { id, sortKeyValue, sortKeyName, res } = buildBaseTest()
 
-    const res = buildCursorFilter({ sortField: 'sortField', sortDir: 1, cursor })
-    if (!res) throw new Error("didn't build cursor")
+    expect(res.$or[0]).toStrictEqual({ [sortKeyName]: { $gt: sortKeyValue } })
+    expect(res.$or[1]).toStrictEqual({ [sortKeyName]: sortKeyValue, _id: { $gt: id } })
+  })
 
-    expect(res.$or[0]).toStrictEqual({ sortField: { $gt: 5 } })
-    expect(res.$or[1]).toStrictEqual({ sortField: 5, _id: { $gt: id } })
+  it('uses $lt for descending order', () => {
+    const { id, sortKeyValue, sortKeyName, res } = buildBaseTest({ sortDir: -1 })
+
+    expect(res.$or[0]).toStrictEqual({ [sortKeyName]: { $lt: sortKeyValue } })
+    expect(res.$or[1]).toStrictEqual({ [sortKeyName]: sortKeyValue, _id: { $lt: id } })
+  })
+
+  it('throws on malformed cursor', () => {
+    expect(() => buildCursorFilter({ sortField: 'x', sortDir: 1, cursor: 'bad_cursor' })).toThrow()
   })
 })
