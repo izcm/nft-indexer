@@ -9,6 +9,8 @@ export async function findPageGeneric({
   cursor,
   limit,
 }: GenericPageArgs) {
+  if (!Number.isInteger(limit) || limit < 1) throw new Error('Invalid pagination limit')
+
   const query = { ...baseQuery }
 
   const cursorFilter = buildCursorFilter({ sortField, sortDir, cursor })
