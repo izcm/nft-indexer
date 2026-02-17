@@ -13,6 +13,7 @@ type SettlementKey = {
 
 export const settlementRepo = {
   // === read ===
+
   async findById(id: ObjectId) {
     return settlements().findOne({ _id: id })
   },

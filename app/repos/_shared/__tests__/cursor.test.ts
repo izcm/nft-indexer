@@ -145,7 +145,7 @@ describe('buildCursorFilter', () => {
     res: any
   } {
     const id = new ObjectId()
-    const sortKeyValue = 5
+    const sortKeyValue = 1
 
     const sortKeyName = overrides.sortField ?? 'sortField'
     const cursor = overrides.cursor ?? `${sortKeyValue}_${id}`
