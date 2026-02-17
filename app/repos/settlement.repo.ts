@@ -38,7 +38,7 @@ export const settlementRepo = {
     }
 
     return findPageGeneric({
-      collection: settlements(),
+      dbCollection: settlements(),
       baseQuery: query,
       sortField,
       sortDir,

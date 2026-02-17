@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { findPageGeneric } from '../paginate.js'
-import { buildCursorFilter, encodeCursor, walkPath } from '../cursor.js'
+import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from '../cursor.js'
 import { GenericPageArgs } from '../types.js'
 
 vi.mock(import('../cursor.js'), () => ({
@@ -21,11 +21,11 @@ describe('findPageGeneric', () => {
     Array.from({ length: count }).map((_, i) => ({ _id: `abc_${i}`, ts: i }))
 
   const makeArgs = (
-    collection: any,
+    dbCollection: any,
     docs: any[],
     overrides: Partial<GenericPageArgs> = {}
   ): GenericPageArgs => ({
-    collection,
+    dbCollection,
     baseQuery: {},
     sortField: 'ts',
     sortDir: -1,
@@ -50,25 +50,21 @@ describe('findPageGeneric', () => {
   function setup(docs = makeDocs()) {
     const queryCursor = mockQueryCursor(docs)
     const find = vi.fn().mockReturnValue(queryCursor)
-    const collection = { find } as any
+    const dbCollection = { find } as any
 
-    return { docs, queryCursor, find, collection }
+    return { docs, queryCursor, find, dbCollection }
   }
 
   async function runPage({
     docs = makeDocs(),
-    cursorFilter = null,
     args = {},
   }: {
     docs?: any[]
-    cursorFilter?: any
     args?: Partial<GenericPageArgs>
-  }) {
+  } = {}) {
     const ctx = setup(docs)
 
-    vi.mocked(buildCursorFilter).mockReturnValueOnce(cursorFilter)
-
-    const result = await findPageGeneric(makeArgs(ctx.collection, docs, args))
+    const result = await findPageGeneric(makeArgs(ctx.dbCollection, docs, args))
 
     return { ...ctx, result }
   }
@@ -78,30 +74,43 @@ describe('findPageGeneric', () => {
   ====================================== */
 
   describe('query building', () => {
+    const setCursorFilter = (cf: any) => vi.mocked(buildCursorFilter).mockReturnValueOnce(cf as any)
+
     it('does not create nextCursor when page is final', async () => {
       const { result } = await runPage({ docs: makeDocs(1), args: { limit: 2 } })
 
       expect(result.nextCursor).toBeNull()
     })
 
-    it('adds cursor filter to query when cursor is provided', async () => {
+    it('adds cursor filter to query $and condition when cursor is provided', async () => {
       const cursorFilter = { foo: 1 }
-      const { find } = await runPage({ cursorFilter })
+      setCursorFilter(cursorFilter)
 
-      expect(find).toHaveBeenCalledWith({
-        $and: [cursorFilter],
-      })
+      const { find } = await runPage()
+
+      const [query] = find.mock.lastCall!
+      expect(query.$and).toEqual([{ foo: 1 }])
+    })
+
+    it('does not add $and when cursor filter is null', async () => {
+      setCursorFilter(null)
+
+      const { find } = await runPage({ args: { baseQuery: { foo: 'bar' } } })
+
+      const [query] = find.mock.lastCall!
+      expect(query.$and).toBeUndefined()
     })
 
     it.each([
       // case 1: baseQuery has normal fields, no $and
-      [{ foo1: 123 }, { foo1: 123, $and: [{ foo: 1 }] }],
+      [{ foo1: 123 }, { foo1: 123, $and: [{ baz: 1 }] }],
 
       // case 2: baseQuery already has $and
-      [{ $and: [{ foo2: 'bar' }] }, { $and: [{ foo2: 'bar' }, { foo: 1 }] }],
+      [{ $and: [{ foo: 'bar' }] }, { $and: [{ foo: 'bar' }, { baz: 1 }] }],
     ])('merges cursor filter into $and correctly', async (baseQuery, expectedQuery) => {
+      setCursorFilter({ baz: 1 })
+
       const { find } = await runPage({
-        cursorFilter: { foo: 1 },
         args: {
           baseQuery,
         },
@@ -113,14 +122,38 @@ describe('findPageGeneric', () => {
   })
 
   /* ======================================
+    query cursor usage
+  ====================================== */
+
+  describe('query cursor usage', () => {
+    it('calls sort with sortSpec', async () => {
+      const sortSpec = { foo: -1, bar: -1 }
+
+      vi.mocked(buildSortSpec).mockReturnValueOnce(sortSpec as any)
+
+      const { queryCursor } = await runPage()
+
+      expect(queryCursor.sort).toHaveBeenCalledExactlyOnceWith(sortSpec)
+    })
+
+    it('requests limit + 1 documents', async () => {
+      const limit = 100
+
+      const { queryCursor } = await runPage({ args: { limit } })
+
+      expect(queryCursor.limit).toHaveBeenCalledExactlyOnceWith(limit + 1)
+    })
+  })
+
+  /* ======================================
     pagination result
   ====================================== */
 
   describe('pagination result', () => {
     it('returns null nextCursor when results do not exceed limit', async () => {
-      const { collection, docs } = setup()
+      const { dbCollection, docs } = setup()
 
-      const res = await findPageGeneric(makeArgs(collection, docs, { limit: docs.length + 1 }))
+      const res = await findPageGeneric(makeArgs(dbCollection, docs, { limit: docs.length + 1 }))
 
       expect(res.items).toEqual(docs)
       expect(res.nextCursor).toBeNull()
@@ -130,12 +163,12 @@ describe('findPageGeneric', () => {
       const limit = 2
       const docs = makeDocs(limit + 1)
 
-      const { collection } = setup(docs)
+      const { dbCollection } = setup(docs)
 
       vi.mocked(walkPath).mockReturnValueOnce(123)
       vi.mocked(encodeCursor).mockReturnValueOnce('CURSOR')
 
-      const res = await findPageGeneric(makeArgs(collection, docs, { limit }))
+      const res = await findPageGeneric(makeArgs(dbCollection, docs, { limit }))
 
       expect(res.nextCursor).toBe('CURSOR')
     })
@@ -144,9 +177,9 @@ describe('findPageGeneric', () => {
       const limit = 5
       const docs = makeDocs(limit + 1)
 
-      const { collection } = setup(docs)
+      const { dbCollection } = setup(docs)
 
-      const res = await findPageGeneric(makeArgs(collection, docs, { limit }))
+      const res = await findPageGeneric(makeArgs(dbCollection, docs, { limit }))
 
       expect(res.items).toHaveLength(limit)
       expect(res.items).toEqual(docs.slice(0, limit))

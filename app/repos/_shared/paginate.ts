@@ -2,7 +2,7 @@ import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from './curs
 import { GenericPageArgs } from './types.js'
 
 export async function findPageGeneric({
-  collection,
+  dbCollection,
   baseQuery,
   sortField,
   sortDir,
@@ -19,7 +19,7 @@ export async function findPageGeneric({
 
   const sortSpec = buildSortSpec(sortField, sortDir)
 
-  const docs = await collection
+  const docs = await dbCollection
     .find(query)
     .sort(sortSpec)
     .limit(limit + 1)

@@ -22,6 +22,6 @@ export type FindPageArgs = CursorPageCore & {
 // --------- generic helper ---------
 
 export type GenericPageArgs = CursorPageCore & {
-  collection: Collection<any>
+  dbCollection: Collection<any>
   baseQuery: Record<string, any>
 }
