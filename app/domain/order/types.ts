@@ -20,6 +20,11 @@ export type OrderRecord = {
   updatedAt: number // only mutable field is status field
 
   createdAt: number
+
+  // to not make changes to orderCor
+  // the below fields are added for pagination ease
+  // tokenIdSort: string = padStart(78, '0')
+  // price: decimal128
 }
 
 export type Order = {

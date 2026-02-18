@@ -23,10 +23,6 @@ export const settlementRepo = {
     return settlements().findOne({ chainId, orderHash })
   },
 
-  async findPendingMeta(chainId: number, limit: number) {
-    return settlements().find({ chainId, metaStatus: 'PENDING' }).limit(limit).toArray()
-  },
-
   async findPage({ filters, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {
     const blockTs = 'execution.block.timestamp'
     const query = { ...filters }
@@ -45,6 +41,10 @@ export const settlementRepo = {
       cursor,
       limit,
     })
+  },
+
+  async findPendingMeta(chainId: number, limit: number) {
+    return settlements().find({ chainId, metaStatus: 'PENDING' }).limit(limit).toArray()
   },
 
   // === write ===

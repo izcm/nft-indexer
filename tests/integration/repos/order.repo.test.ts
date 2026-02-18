@@ -115,7 +115,7 @@ describe('orderRepo', () => {
         expect(didUpsert).toBe(true)
 
         // expectations on inserted row
-        const rows = await orders().find({}).toArray()
+        const rows = await orders().find().toArray()
         expect(rows.length).toBe(1)
 
         const inserted = rows[0]
@@ -145,7 +145,7 @@ describe('orderRepo', () => {
 
         expect(second.id).toEqual(first.id)
 
-        const rows = await orders().find({}).toArray()
+        const rows = await orders().find().toArray()
         expect(rows.length).toBe(1)
       })
     })

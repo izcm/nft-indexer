@@ -44,25 +44,50 @@ describe('settlementRepo', () => {
   // === test repo read ===
 
   describe('read', () => {
-    it('findById returns expected doc', async () => {
-      const { insertedId, settlement } = await givenSettlementExists()
+    describe('findBydId', () => {
+      it('returns existing doc id', async () => {
+        const { insertedId, settlement } = await givenSettlementExists()
 
-      const row = await repo.findById(insertedId)
-      if (!row) throw new Error('row missing')
+        const found = await repo.findById(insertedId)
+        if (!found) throw new Error('row missing')
 
-      expect(row._id).toBeInstanceOf(ObjectId)
-      expect(row).toMatchObject(settlement)
+        expect(found._id).toBeInstanceOf(ObjectId)
+        expect(found).toMatchObject(settlement)
+      })
+
+      it('returns null when doc with id does not exist', async () => {
+        const id = new ObjectId()
+
+        const found = await repo.findById(id)
+
+        expect(found).toBeNull()
+      })
     })
 
-    it('findBySettlementKey returns expected doc for chainId + orderHash', async () => {
-      const settlement = (await givenSettlementExists()).settlement
-      const { chainId, orderHash } = settlement
+    describe('findBySettlementKey', () => {
+      it('returns existing doc with chainId + orderHash', async () => {
+        const settlement = (await givenSettlementExists()).settlement
+        const { chainId, orderHash } = settlement
 
-      const row = await repo.findBySettlementKey({ chainId, orderHash })
-      if (!row) throw new Error('row missing')
+        const found = await repo.findBySettlementKey({ chainId, orderHash })
+        if (!found) throw new Error('row missing')
 
-      expect(row).toMatchObject(settlement)
+        expect(found).toMatchObject(settlement)
+      })
+
+      it('returns null when doc with chainId + orderHash does not exist', async () => {
+        const found = await repo.findBySettlementKey({
+          chainId: CHAIN_ID,
+          orderHash: bytes32('seed'),
+        })
+
+        expect(found).toBeNull()
+      })
     })
+
+    // describe('findPage', async () => {
+    //   // test from / to
+    // })
 
     describe('findPendingMeta', () => {
       it('returns only pending settlements for target chain', async () => {
@@ -89,10 +114,10 @@ describe('settlementRepo', () => {
         // Seed pending settlements on other chain
         await seedSettlements(31337, 'ignore', 10, 0, { metaStatus: 'PENDING' })
 
-        const result = await repo.findPendingMeta(target.chainId, 100)
+        const items = await repo.findPendingMeta(target.chainId, 100)
 
-        expect(result).toHaveLength(target.count.pending)
-        expect(result.every(s => s.chainId === target.chainId)).toBe(true)
+        expect(items).toHaveLength(target.count.pending)
+        expect(items.every(s => s.chainId === target.chainId)).toBe(true)
       })
 
       it('respects limit - returns at most limit items', async () => {
@@ -102,18 +127,18 @@ describe('settlementRepo', () => {
         // Seed 5 pending settlements
         await seedSettlements(chainId, 'pending', 5, 0, { metaStatus: 'PENDING' })
 
-        const result = await repo.findPendingMeta(chainId, limit)
+        const items = await repo.findPendingMeta(chainId, limit)
 
-        expect(result).toHaveLength(limit)
+        expect(items).toHaveLength(limit)
       })
 
       it('returns empty array when no pending settlements exist', async () => {
         // seed only non-pending
         await seedSettlements(CHAIN_ID, 'done', 3, 0, { metaStatus: 'DONE' })
 
-        const result = await repo.findPendingMeta(CHAIN_ID, 10)
+        const items = await repo.findPendingMeta(CHAIN_ID, 10)
 
-        expect(result).toEqual([])
+        expect(items).toEqual([])
       })
     })
   })
@@ -142,7 +167,7 @@ describe('settlementRepo', () => {
         const { insertedId } = await repo.save(settlement)
         expect(insertedId).toBeInstanceOf(ObjectId)
 
-        const rows = await settlements().find({}).toArray()
+        const rows = await settlements().find().toArray()
         expect(rows).toHaveLength(1)
 
         const inserted = rows[0]
@@ -180,13 +205,13 @@ describe('settlementRepo', () => {
           const { settlement } = await givenSettlementExists({ metaStatus: 'PENDING' })
           const meta = mockSettlementMeta
 
-          const res = await repo.finalizeMeta({
+          const result = await repo.finalizeMeta({
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
             meta,
           })
 
-          expect(res.modifiedCount).toBe(1)
+          expect(result.modifiedCount).toBe(1)
 
           const updated = await settlements().findOne({
             chainId: settlement.chainId,
@@ -200,19 +225,19 @@ describe('settlementRepo', () => {
         })
 
         it('does not upsert settlement does not exist', async () => {
-          const res = await repo.finalizeMeta({
+          const result = await repo.finalizeMeta({
             chainId: CHAIN_ID,
             orderHash: bytes32('o_hash'),
             meta: mockSettlementMeta,
           })
 
-          expect(res.acknowledged).toBe(true)
-          expect(res.matchedCount).toBe(0)
+          expect(result.acknowledged).toBe(true)
+          expect(result.matchedCount).toBe(0)
 
-          expect(res.modifiedCount).toBe(0)
-          expect(res.upsertedCount).toBe(0)
+          expect(result.modifiedCount).toBe(0)
+          expect(result.upsertedCount).toBe(0)
 
-          const rows = await settlements().find({}).toArray()
+          const rows = await settlements().find().toArray()
           expect(rows).toHaveLength(0)
         })
 
@@ -256,13 +281,13 @@ describe('settlementRepo', () => {
           const { settlement } = await givenSettlementExists({ metaStatus: 'PENDING' })
           const errorMessage = 'first'
 
-          const res = await repo.markMetaFailed({
+          const result = await repo.markMetaFailed({
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
             error: errorMessage,
           })
 
-          expect(res.modifiedCount).toBe(1)
+          expect(result.modifiedCount).toBe(1)
 
           const updated = await settlements().findOne({
             chainId: settlement.chainId,

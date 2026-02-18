@@ -108,7 +108,7 @@ describe('nftCollectionRepo', () => {
 
       await repo.noteNFTCollection({ chainId, address })
 
-      const rows = await nftCollections().find({}).toArray()
+      const rows = await nftCollections().find().toArray()
 
       expect(rows.length).toBe(1)
 
@@ -129,7 +129,7 @@ describe('nftCollectionRepo', () => {
       await repo.noteNFTCollection({ chainId, address })
       await repo.noteNFTCollection({ chainId, address })
 
-      const rows = await nftCollections().find({}).toArray()
+      const rows = await nftCollections().find().toArray()
 
       expect(rows.length).toBe(1)
     })
@@ -141,7 +141,7 @@ describe('nftCollectionRepo', () => {
       __resetSeenCollectionsForTest()
       await repo.noteNFTCollection({ chainId, address })
 
-      const rows = await nftCollections().find({}).toArray()
+      const rows = await nftCollections().find().toArray()
 
       expect(rows.length).toBe(1)
     })
