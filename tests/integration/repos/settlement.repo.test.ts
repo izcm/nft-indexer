@@ -85,9 +85,28 @@ describe('settlementRepo', () => {
       })
     })
 
-    // describe('findPage', async () => {
-    //   // test from / to
-    // })
+    // findPageGeneric is extensively tested with both unit + seperate integration tests
+    describe('findPage', async () => {
+      it('filters settlement by block timestamp range', async () => {
+        // seed three settlements with different timsetamps
+        await seedSettlements(CHAIN_ID, 'a', 1, 100)
+        await seedSettlements(CHAIN_ID, 'b', 1, 200)
+        await seedSettlements(CHAIN_ID, 'c', 1, 300)
+
+        // only from + to are relevant to this test
+        const res = await repo.findPage({
+          from: 150,
+          to: 250,
+          cursor: null,
+          sortDir: 1,
+          sortField: 'createdAt',
+          limit: 100,
+        })
+
+        expect(res.items).toHaveLength(1)
+        expect(res.items[0].execution.block.timestamp).toBe(200)
+      })
+    })
 
     describe('findPendingMeta', () => {
       it('returns only pending settlements for target chain', async () => {

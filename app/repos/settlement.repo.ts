@@ -23,7 +23,7 @@ export const settlementRepo = {
     return settlements().findOne({ chainId, orderHash })
   },
 
-  async findPage({ filters, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {
+  async findPage({ filters = {}, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {
     const blockTs = 'execution.block.timestamp'
     const query = { ...filters }
 

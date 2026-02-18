@@ -14,7 +14,7 @@ export type CursorPageCore = {
 // --------- repo layer ---------
 
 export type FindPageArgs = CursorPageCore & {
-  filters: Record<string, any>
+  filters?: Record<string, any>
   from?: number
   to?: number
 }
