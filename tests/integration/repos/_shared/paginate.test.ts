@@ -69,20 +69,26 @@ describe('findPageGeneric (mongo integration)', () => {
     expect(values).not.equals(sorted)
   }
 
-  it('returns page in correct ascending order', async () => {
-    const count = 10
-    const args = makeArgs({ sortDir: 1, limit: count })
+  describe('sorting', () => {
+    it.each([
+      ['ascending', 1 as const],
+      ['descending', -1 as const],
+    ])('returns page in correct order: %s', async (_, sortDir) => {
+      const count = 10
+      const args = makeArgs({ sortDir, sortField: 'ts', limit: count })
 
-    await seedTestDocs(count)
-    assertNotPreSorted(args.sortField, args.sortDir)
+      await seedTestDocs(count)
+      assertNotPreSorted(args.sortField, args.sortDir)
 
-    const result = await findPageGeneric(args)
+      const res = await findPageGeneric(args)
 
-    const values = result.items.map(d => walkPath(d, args.sortField))
-    const sorted = [...values].sort((a, b) => a - b)
+      const values = res.items.map(d => d.ts)
 
-    expect(result.items).toHaveLength(count)
-    expect(values).toEqual(sorted)
+      const expected =
+        sortDir === 1 ? [...values].sort((a, b) => a - b) : [...values].sort((a, b) => b - a)
+
+      expect(values).toEqual(expected)
+    })
   })
 
   it('returns empty result on empty collection', async () => {
@@ -92,41 +98,85 @@ describe('findPageGeneric (mongo integration)', () => {
     expect(result.nextCursor).toBeNull()
   })
 
-  it('does not duplicate or skip when many docs share same sortField value', async () => {
-    const total = 10
-    const limit = 3
+  describe('cursor traversal', () => {
+    async function walkAllPages(args: Partial<GenericPageArgs>) {
+      let cursor: string | null = null
+      const seen = new Set<string>()
 
-    await collection.insertMany(
-      Array.from({ length: total }).map((_, i) => ({
-        ts: 1000,
-        foo: { bar: i },
-      }))
-    )
+      while (true) {
+        const res = await findPageGeneric(makeArgs({ ...args, cursor }))
 
-    let cursor: string | null = null
-    const seen = new Set<string>()
+        for (const doc of res.items) {
+          const id = String(doc._id)
 
-    while (true) {
-      const res = await findPageGeneric(makeArgs({ sortField: 'ts', limit, cursor }))
+          // duplicate detection
+          expect(seen.has(id)).toBe(false)
+          seen.add(id)
+        }
 
-      for (const doc of res.items) {
-        const id = String(doc._id)
-
-        // duplicate detection
-        expect(seen.has(id)).toBe(false)
-        seen.add(id)
+        if (!res.nextCursor) break
+        cursor = res.nextCursor
       }
 
-      if (!res.nextCursor) break
-      cursor = res.nextCursor
+      return seen
     }
 
-    // skip detection
-    expect(seen.size).toBe(total)
-  })
+    it.each([1 as const, -1 as const])(
+      'walks all pages correctly with sortDir=%i',
+      async sortDir => {
+        const total = 15
+        const limit = 2
 
-  it('walks through all pages without skipping or duplicating', async () => {
-    // keep calling findPageGeneric using the returned nextCursor
-    // until it becomes null, and prove you saw every document exactly once.
+        await seedTestDocs(total)
+
+        // duplicate detection
+        const seen = await walkAllPages({ sortDir, limit })
+
+        // skip detaction
+        expect(seen.size).toBe(total)
+      }
+    )
+
+    it.each([
+      [
+        'normal dataset',
+        {
+          sortField: 'ts',
+          seed: seedTestDocs,
+        },
+      ],
+      [
+        'nested sortField path',
+        {
+          sortField: 'foo.bar',
+          seed: seedTestDocs,
+        },
+      ],
+      [
+        'idential sortField values (requires sort on _id)',
+        {
+          sortField: 'ts',
+          seed: async (total: number) => {
+            await collection.insertMany(
+              Array.from({ length: total }).map((_, i) => ({
+                ts: 1000,
+                foo: { bar: i },
+              }))
+            )
+          },
+        },
+      ],
+    ])('walks all pages without skipping or duplicating: (%s)', async (_, { seed, sortField }) => {
+      const total = 15
+      const limit = 2
+
+      await seed(total)
+
+      // duplicate detection
+      const seen = await walkAllPages({ sortField, limit })
+
+      // skip detection
+      expect(seen.size).toBe(total)
+    })
   })
 })
