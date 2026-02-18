@@ -88,12 +88,14 @@ describe('settlementRepo', () => {
     // findPageGeneric is extensively tested with both unit + seperate integration tests
     describe('findPage', async () => {
       it('filters settlement by block timestamp range', async () => {
-        // seed three settlements with different timsetamps
-        await seedSettlements(CHAIN_ID, 'a', 1, 100)
-        await seedSettlements(CHAIN_ID, 'b', 1, 200)
-        await seedSettlements(CHAIN_ID, 'c', 1, 300)
+        const cid = CHAIN_ID // lower noise
 
-        // only from + to are relevant to this test
+        // different timestamps
+        await seedSettlements(cid, 'a', 1, 100)
+        await seedSettlements(cid, 'b', 1, 200)
+        await seedSettlements(cid, 'c', 1, 300)
+
+        // only from + to are relevant for test
         const res = await repo.findPage({
           from: 150,
           to: 250,
@@ -245,7 +247,7 @@ describe('settlementRepo', () => {
 
         it('does not upsert settlement does not exist', async () => {
           const result = await repo.finalizeMeta({
-            chainId: CHAIN_ID,
+            chainId: 1,
             orderHash: bytes32('o_hash'),
             meta: mockSettlementMeta,
           })

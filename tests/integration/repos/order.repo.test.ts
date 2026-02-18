@@ -7,6 +7,8 @@ import { orderRepo } from '#app/repos/order.repo.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { mockOrderCore, mockOrderRecord } from '#tests/mocks/primitives.js'
 import { OrderRecord } from '#app/domain/order/types.js'
+import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
+import { addrOf } from '#app/lib/utils/evm-primitives.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -76,6 +78,31 @@ describe('orderRepo', () => {
       })
 
       expect(row).toBeNull()
+    })
+  })
+
+  // findPageGeneric is extensively tested with both unit + seperate integration tests
+  describe('findPage', async () => {
+    it('filters settlement createdAt range', async () => {
+      const col = addrOf('col')
+
+      // seed three orders with different createdAt values
+      await seedOrders(1, [col], 1, 'a', 100)
+      await seedOrders(1, [col], 1, 'b', 200)
+      await seedOrders(1, [col], 1, 'c', 300)
+
+      // only from + to are relevant to this test
+      const res = await repo.findPage({
+        from: 150,
+        to: 250,
+        cursor: null,
+        sortDir: 1,
+        sortField: 'createdAt',
+        limit: 100,
+      })
+
+      expect(res.items).toHaveLength(1)
+      expect(res.items[0].createdAt).toBe(200)
     })
   })
 

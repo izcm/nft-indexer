@@ -7,6 +7,7 @@ import { Order } from '#app/domain/order/types.js'
 import { orders } from '#app/db/collections.js'
 import { OrderStatus } from '#app/domain/order/types.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
+import { findPageGeneric } from './_shared/paginate.js'
 
 type OrderKey = {
   chainId: number
@@ -22,6 +23,26 @@ export const orderRepo = {
   async findByOrderKey(key: OrderKey) {
     const { chainId, orderHash } = key
     return orders().findOne({ chainId, orderHash })
+  },
+
+  async findPage({ filters = {}, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {
+    // from / to refers to createdAt
+    const query = { ...filters }
+
+    if (from || to) {
+      query.createdAt = {}
+      if (from) query.createdAt.$gte = from
+      if (to) query.createdAt.$lte = to
+    }
+
+    return findPageGeneric({
+      dbCollection: orders(),
+      baseQuery: query,
+      sortField,
+      sortDir,
+      cursor,
+      limit,
+    })
   },
 
   // === write ===
