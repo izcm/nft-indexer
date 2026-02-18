@@ -9,11 +9,10 @@ import { findPageGeneric } from '#app/repos/_shared/paginate.js'
 import { walkPath } from '#app/repos/_shared/cursor.js'
 
 type TestDoc = {
-  price: number
-  block: {
-    timestamp: number
+  foo: {
+    bar: number
   }
-  createdAt: number
+  ts: number
 }
 
 let collection: Collection<TestDoc>
@@ -35,29 +34,24 @@ describe('findPageGeneric (mongo integration)', () => {
   const makeArgs = (overrides: Partial<GenericPageArgs> = {}): GenericPageArgs => ({
     dbCollection: collection,
     baseQuery: {},
-    sortField: 'createdAt',
+    sortField: 'ts',
     sortDir: 1,
     cursor: null,
     limit: 5,
     ...overrides,
   })
 
-  async function seedTestDocs(
-    count: number = 5,
-    seed: string = 'seed',
-    overrides: Partial<TestDoc> = {}
-  ) {
+  async function seedTestDocs(count: number = 5, seed: string = 'seed') {
     const testDocs = Array.from({ length: count }).map((_, i) => {
       const iSeed = `${seed}:${i}`
 
       const determine = (x: string) => Number(bytes32n(x) % 9_000_000_000_000_000n) // js number 2^53
 
       return {
-        price: determine(`price:${iSeed}`),
-        block: {
-          timestamp: determine(`b:ts:${iSeed}`),
+        foo: {
+          bar: determine(`b:ts:${iSeed}`),
         },
-        createdAt: determine(`c:ts:${iSeed}`),
+        ts: determine(`c:ts:${iSeed}`),
       }
     })
     return collection.insertMany(testDocs)
@@ -97,9 +91,42 @@ describe('findPageGeneric (mongo integration)', () => {
     expect(result.items).toHaveLength(0)
     expect(result.nextCursor).toBeNull()
   })
+
   it('does not duplicate or skip when many docs share same sortField value', async () => {
+    const total = 10
+    const limit = 3
+
+    await collection.insertMany(
+      Array.from({ length: total }).map((_, i) => ({
+        ts: 1000,
+        foo: { bar: i },
+      }))
+    )
+
+    let cursor: string | null = null
+    const seen = new Set<string>()
+
+    while (true) {
+      const res = await findPageGeneric(makeArgs({ sortField: 'ts', limit, cursor }))
+
+      for (const doc of res.items) {
+        const id = String(doc._id)
+
+        // duplicate detection
+        expect(seen.has(id)).toBe(false)
+        seen.add(id)
+      }
+
+      if (!res.nextCursor) break
+      cursor = res.nextCursor
+    }
+
+    // skip detection
+    expect(seen.size).toBe(total)
+  })
+
+  it('walks through all pages without skipping or duplicating', async () => {
     // keep calling findPageGeneric using the returned nextCursor
     // until it becomes null, and prove you saw every document exactly once.
   })
-  it('walks through all pages without skipping or duplicating', async () => {})
 })
