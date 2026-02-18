@@ -91,7 +91,15 @@ describe('findPageGeneric (mongo integration)', () => {
     expect(values).toEqual(sorted)
   })
 
-  it('returns empty result on empty collection')
-  it('does not duplicate or skip when many docs share same sortField value')
+  it('returns empty result on empty collection', async () => {
+    const result = await findPageGeneric(makeArgs())
+
+    expect(result.items).toHaveLength(0)
+    expect(result.nextCursor).toBeNull()
+  })
+  it('does not duplicate or skip when many docs share same sortField value', async () => {
+    // keep calling findPageGeneric using the returned nextCursor
+    // until it becomes null, and prove you saw every document exactly once.
+  })
   it('walks through all pages without skipping or duplicating', async () => {})
 })
