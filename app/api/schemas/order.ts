@@ -2,6 +2,8 @@ import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 
 const UNIX_SECONDS_MAX = 1e11 // year ~5138
 
+// TODO: make order sortableFields
+
 export const orderQueryableFields = {
   actor: { type: 'string', pattern: ADDR_REGEX },
   collection: { type: 'string', pattern: ADDR_REGEX },
@@ -34,6 +36,7 @@ export const orderCreateBody = {
   ],
   properties: {
     ...orderQueryableFields,
+    nonce: { type: 'string' },
     signature: {
       type: 'object',
       required: ['r', 's', 'v'],

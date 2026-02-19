@@ -22,6 +22,7 @@
   "type": "module",
   "dependencies": {
     "@a2zb/packages": "github:izcm/a2zblocks-packages",
+    "@fastify/cors": "^11.2.0",
     "dotenv": "^17.2.3",
     "fastify": "^5.6.2",
     "mongodb": "^7.0.0",

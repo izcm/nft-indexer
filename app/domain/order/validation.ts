@@ -4,16 +4,16 @@ import { Order, Side } from './types.js'
 import { isUintString } from '#app/lib/utils/string.js'
 import { isUnixSeconds } from '#app/lib/utils/time.js'
 
-const MAX_ORDER_LIFETIME = 90 * 24 * 60 * 60 // 90 days
+const MAX_ORDER_LIFETIME = 180 * 24 * 60 * 60 // 90 days
 
-const validTimespan = (end: number, now: number): boolean => end <= BigInt(now + MAX_ORDER_LIFETIME)
+// const validTimespan = (end: number, now: number): boolean => end <= BigInt(now + MAX_ORDER_LIFETIME)
 
 export const validOrder = (o: Order, anchorTs: number): boolean => {
   return (
     BigInt(o.price) > 0 &&
     BigInt(o.end) > BigInt(o.start) &&
     (o.side === Side.ASK || o.side === Side.BID) &&
-    validTimespan(Number(o.end), anchorTs) &&
+    // validTimespan(Number(o.end), anchorTs) &&
     isUintString(o.price) &&
     isUnixSeconds(Number(o.start)) &&
     isUnixSeconds(Number(o.end)) &&

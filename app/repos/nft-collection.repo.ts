@@ -16,6 +16,7 @@ const stringifyKey = (key: NFTCollectionKey) => {
 
 // === cache ===
 
+// todo: test findByContracts
 const seenCollections = new Set<string>()
 
 export const __resetSeenCollectionsForTest = () => {
@@ -59,9 +60,17 @@ export const nftCollectionRepo = {
     return nftCollections().findOne({ _id: id })
   },
 
-  async findByNFTCollectionKey(key: NFTCollectionKey) {
+  async findByKey(key: NFTCollectionKey) {
     const { chainId, address } = key
     return nftCollections().findOne({ chainId, address })
+  },
+
+  async findByKeys(keys: NFTCollectionKey[]) {
+    if (!keys.length) return []
+
+    return nftCollections()
+      .find({ $or: keys.map(k => ({ chainId: k.chainId, address: k.address })) })
+      .toArray()
   },
 
   async findMissingChainMeta(chainId: number, limit: number) {

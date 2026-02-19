@@ -66,7 +66,7 @@ describe('nftCollectionRepo', () => {
 
       const { chainId, address } = col
 
-      const row = await repo.findByNFTCollectionKey({ chainId, address })
+      const row = await repo.findByKey({ chainId, address })
       if (!row) throw new Error('row missing')
 
       expect(row).toBeDefined()

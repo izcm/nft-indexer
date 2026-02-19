@@ -65,14 +65,14 @@ describe('orderRepo', () => {
       const { orderRecord } = await givenOrderRecordExists()
       const { chainId, orderHash } = orderRecord
 
-      const row = await repo.findByOrderKey({ chainId, orderHash })
+      const row = await repo.findByKey({ chainId, orderHash })
       if (!row) throw new Error('row missing')
 
       expect(row).toMatchObject(orderRecord)
     })
 
     it('findByOrderKey returns null when not found', async () => {
-      const row = await repo.findByOrderKey({
+      const row = await repo.findByKey({
         chainId: 1,
         orderHash: '0x1234' as any,
       })

@@ -1,7 +1,7 @@
-import { BlockTime, TxContext } from '#app/listeners/types/context.js'
 import type { Hex } from 'viem'
 
-import { OrderType, SideLabel } from '../order/types.js'
+import { BlockTime, TxContext } from '#app/listeners/types/context.js'
+import { OrderType, Side, SideLabel } from '../order/types.js'
 import { Status } from '../enum.js'
 
 export type Settlement = {
@@ -35,9 +35,13 @@ export type Settlement = {
 // atomic metadata eg. fetched in one request ( no partial data )
 
 export type SettlementMeta = {
-  // todo: add currency?
   order: {
-    side: OrderType
+    type: OrderType
+
+    // added to make queries easier
+    side: Side
+    isCollectionBid: boolean
+
     signer: Hex
   }
   txContext: TxContext

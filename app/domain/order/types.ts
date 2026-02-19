@@ -21,7 +21,7 @@ export type OrderRecord = {
 
   createdAt: number
 
-  // to not make changes to orderCor
+  // to not make changes to orderCore
   // the below fields are added for pagination ease
   // tokenIdSort: string = padStart(78, '0')
   // price: decimal128

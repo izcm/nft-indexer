@@ -20,13 +20,12 @@ export const orderRepo = {
     return orders().findOne({ _id: id })
   },
 
-  async findByOrderKey(key: OrderKey) {
+  async findByKey(key: OrderKey) {
     const { chainId, orderHash } = key
     return orders().findOne({ chainId, orderHash })
   },
 
   async findPage({ filters = {}, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {
-    // from / to refers to createdAt
     const query = { ...filters }
 
     if (from || to) {
@@ -103,7 +102,7 @@ export const orderRepo = {
 
 export const orderRepoFor = (chainId: number) => ({
   findByHash(orderHash: Hex) {
-    return orderRepo.findByOrderKey({ chainId, orderHash })
+    return orderRepo.findByKey({ chainId, orderHash })
   },
 
   markFilled(orderHash: Hex) {

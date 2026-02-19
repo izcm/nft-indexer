@@ -7,7 +7,7 @@ import { settlementMetaFromTx as metaFromTx } from '#app/workers/settlements/log
 import { settlementRepoFor } from '#app/repos/settlement.repo.js'
 import { readTxMeta } from '#app/lib/blockchain/calls/tx-meta.js'
 
-export const runSettlementWorker = async (client: AppClient) => {
+export async function runSettlementWorker(client: AppClient) {
   const chainId = client.chain.id
   const repo = settlementRepoFor(chainId)
 

@@ -1,4 +1,6 @@
 import Fastify from 'fastify'
+// @ts-ignore
+import cors from '@fastify/cors'
 
 // api routes - SETTLEMENTS
 import { settlementsQuery } from './routes/settlements/query.js'
@@ -20,6 +22,12 @@ const app = Fastify({
 // ------------------
 
 export const start = async () => {
+  await app.register(cors as any, {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT'],
+    credentials: false,
+  })
+
   // register all defined bodies
   app.addSchema(orderCreateBody)
 

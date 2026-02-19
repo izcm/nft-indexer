@@ -6,6 +6,7 @@ import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/api.js'
 import { byIdParams, paginationQueryParams } from '#app/api/schemas/shared.js'
 import { orderQueryableFields } from '#app/api/schemas/order.js'
 
+import * as orderQuery from '#app/domain/queries/order.query.js'
 import { orderRepo as repo } from '#app/repos/order.repo.js'
 
 export const ordersQuery = (fastify: FastifyInstance) => {
@@ -38,22 +39,30 @@ export const ordersQuery = (fastify: FastifyInstance) => {
           properties: {
             ...orderQueryableFields,
             ...paginationQueryParams,
+            include: { type: 'string' },
           },
         },
       },
     },
     async req => {
-      const { from, to, limit, cursor, ...filters } = req.query as Record<string, any>
+      const { from, to, limit, cursor, include, ...filters } = req.query as Record<string, any>
 
-      return repo.findPage({
-        filters,
-        from,
-        to,
-        cursor,
-        sortField: 'execution.block.timestamp',
-        sortDir: -1,
-        limit: limit ?? DEFAULT_PAGE_LIMIT,
-      })
+      const includeCollection = (include as string) && include.split(',').includes('collection')
+
+      return orderQuery.findPage(
+        {
+          filters,
+          from,
+          to,
+          cursor,
+          sortField: 'createdAt',
+          sortDir: -1,
+          limit: limit ?? DEFAULT_PAGE_LIMIT,
+        },
+        {
+          includeCollection,
+        }
+      )
     }
   )
 }

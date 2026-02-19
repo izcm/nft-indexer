@@ -1,12 +1,12 @@
 import { encodeAbiParameters, Hex, keccak256, toBytes } from 'viem'
 
-import { APP_NAME, APP_VERSION, CHAIN_ID, VERIFYING_CONTRACT } from '#app/domain/constants/app.js'
+import { APP_NAME, APP_VERSION, APP_CHAINS, VERIFYING_CONTRACT } from '#app/domain/constants/app.js'
 import { OrderCore } from '#app/domain/order/types.js'
 
 export const dmrktDomain = {
   name: APP_NAME,
   version: APP_VERSION,
-  chainId: CHAIN_ID,
+  chainId: APP_CHAINS[0], // per now only one chain
   verifyingContract: VERIFYING_CONTRACT,
 }
 

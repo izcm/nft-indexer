@@ -58,7 +58,7 @@ describe('tx input => SettlementMeta logic', () => {
     // extract meta
     const meta = await settlementMetaFromTx(tx, receipt, abi)
 
-    expect(meta.order.side).toBe(Side[order.side] as SideLabel)
+    expect(meta.order.type).toBe(Side[order.side] as SideLabel)
     expect(meta.order.signer).toBe(signerAcount.address)
   })
 })

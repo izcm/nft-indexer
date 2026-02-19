@@ -106,7 +106,9 @@ export const mockSettlement = (overrides: Partial<Settlement>): Settlement => ({
 
 export const mockSettlementMeta: SettlementMeta = {
   order: {
-    side: 'ASK',
+    type: 'ASK',
+    side: 0,
+    isCollectionBid: false,
     signer: addrOf('meta:order:signer'),
   },
   txContext: mockTxContext,

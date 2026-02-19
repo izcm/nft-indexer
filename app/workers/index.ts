@@ -24,10 +24,10 @@ const workers = (client: AppClient): Worker[] => [
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-export const start = async (client: AppClient) => {
+export async function start(client: AppClient) {
   const list = workers(client)
 
-  const loop = async () => {
+  while (true) {
     for (const worker of list) {
       try {
         await worker.run()
@@ -38,8 +38,5 @@ export const start = async (client: AppClient) => {
     }
 
     await sleep(10_000)
-    loop()
   }
-
-  loop()
 }

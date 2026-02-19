@@ -59,7 +59,11 @@ export const settlementMetaFromTx = async (
 
   return {
     order: {
-      side: Side[order.side] as SideLabel,
+      type: Side[order.side] as SideLabel,
+
+      side: order.side,
+      isCollectionBid: order.isCollectionBid,
+
       signer: signer,
     },
     txContext: {

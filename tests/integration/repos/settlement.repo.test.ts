@@ -69,14 +69,14 @@ describe('settlementRepo', () => {
         const settlement = (await givenSettlementExists()).settlement
         const { chainId, orderHash } = settlement
 
-        const found = await repo.findBySettlementKey({ chainId, orderHash })
+        const found = await repo.findByKey({ chainId, orderHash })
         if (!found) throw new Error('row missing')
 
         expect(found).toMatchObject(settlement)
       })
 
       it('returns null when doc with chainId + orderHash does not exist', async () => {
-        const found = await repo.findBySettlementKey({
+        const found = await repo.findByKey({
           chainId: CHAIN_ID,
           orderHash: bytes32('seed'),
         })

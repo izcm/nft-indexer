@@ -18,7 +18,7 @@ export const settlementRepo = {
     return settlements().findOne({ _id: id })
   },
 
-  async findBySettlementKey(key: SettlementKey) {
+  async findByKey(key: SettlementKey) {
     const { chainId, orderHash } = key
     return settlements().findOne({ chainId, orderHash })
   },
