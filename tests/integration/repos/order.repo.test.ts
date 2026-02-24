@@ -7,6 +7,7 @@ import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
 import { mockOrderCore, mockOrderRecord } from '#tests/mocks/primitives.js'
 import { ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+
 beforeAll(async () => {
   await startTestMongo()
 })
@@ -23,8 +24,6 @@ describe('orderRepo', () => {
   const repo = orderRepo
 
   // === defaults ===
-
-  const core = mockOrderCore()
 
   async function givenOrderRecordExists(overrides: Partial<OrderRecord> = {}) {
     const orderRecord = mockOrderRecord(overrides)
@@ -128,7 +127,7 @@ describe('orderRepo', () => {
 
     describe('ensure', () => {
       it('inserts order doc for new chainId + orderHash pair', async () => {
-        const { orderRecord } = await givenOrderRecordExists()
+        const orderRecord = mockOrderRecord()
 
         const { chainId, order } = orderRecord
         const { id, didUpsert } = await repo.ensure(chainId, order)
@@ -157,7 +156,7 @@ describe('orderRepo', () => {
 
         const first = await repo.ensure(chainId, order)
 
-        expect(first.didUpsert).toBe(true)
+        expect(first.didUpsert).toBe(false)
         expect(first.id).toBeDefined()
 
         vi.setSystemTime(startTime + 1)

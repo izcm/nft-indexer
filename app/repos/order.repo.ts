@@ -13,6 +13,7 @@ export type OrderKey = {
 
 export const orderRepo = {
   // === read ===
+
   async findById(id: ObjectId) {
     return orders().findOne({ _id: id })
   },
@@ -74,7 +75,7 @@ export const orderRepo = {
     const doc = res.value!
 
     const id = doc._id
-    const didUpsert = doc.createdAt === now
+    const didUpsert = res.lastErrorObject?.updatedExisting === false
 
     return { id, didUpsert }
   },

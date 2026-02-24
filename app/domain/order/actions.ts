@@ -1,13 +1,20 @@
 import { NFTCollectionKey, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { OrderKey, orderRepoFor } from '#app/repos/order.repo.js'
+import { OrderKey, orderRepo, orderRepoFor } from '#app/repos/order.repo.js'
+import type { Order } from './types.js'
 
 const TAG = 'order'
 
-// === INGESTION ===
+// === PRIMARY ACTIONS ===
 
-export async function ingestOrder() {}
+export async function ingestOrder(chainId: number, order: Order) {
+  const { id, didUpsert } = await orderRepo.ensure(chainId, order)
 
-// === REACTIONS ===
+  void onOrderCreated({ chainId, address: order.collection })
+
+  return { id, didUpsert }
+}
+
+// === SECONDARY ACTIONS ===
 
 export async function onOrderCreated({ chainId, address }: NFTCollectionKey) {
   void nftCollectionRepo

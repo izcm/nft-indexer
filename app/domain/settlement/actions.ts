@@ -6,7 +6,7 @@ import { Settlement, SettlementMeta } from './types.js'
 
 const TAG = 'settlement'
 
-// === INGESTION ===
+// === PRIMARY ACTIONS ===
 
 export async function ingestSettlement(settlement: Settlement) {
   await settlementRepo.save(settlement)
@@ -22,12 +22,15 @@ export async function ingestSettlementMeta({
 }: SettlementKey & { meta: SettlementMeta }) {
   try {
     await settlementRepo.finalizeMeta({ chainId, orderHash, meta })
+    // then do void orderRepo.ensure
+    // corresponding order for settlement is a 'nice to have'
+    //  => fire and forget
   } catch (err) {
     throw new Error(`[${TAG}:meta] failed to finalize settlement metadata`, { cause: err })
   }
 }
 
-// === REACTIONS ===
+// === SECONDARY ACTIONS ===
 
 export async function onSettlementCreated({
   chainId,
