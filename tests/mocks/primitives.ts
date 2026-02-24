@@ -80,7 +80,7 @@ export const mockOrderCore = (): OrderCore => ({
   nonce: bytes32('order:nonce'),
 })
 
-export const mockSettlement = (overrides: Partial<Settlement>): Settlement => ({
+export const mockSettlement = (overrides: Partial<Settlement> = {}): Settlement => ({
   chainId: 1,
   orderHash: bytes32('settlement:orderHash'),
   collection: addrOf('settlement:collection'),

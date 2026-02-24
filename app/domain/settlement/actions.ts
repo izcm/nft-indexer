@@ -1,11 +1,12 @@
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import { orderRepoFor } from '#app/repos/order.repo.js'
 import { SettlementKey, settlementRepo } from '#app/repos/settlement.repo.js'
-import { onOrderFilled } from '../order/actions.js'
 import type { Address } from '../shared/eth.js'
 import { Settlement, SettlementMeta } from './types.js'
+
 const TAG = 'settlement'
 
-// === SETTLEMENT CORE ===
+// === INGESTION ===
 
 export async function ingestSettlement(settlement: Settlement) {
   await settlementRepo.save(settlement)
@@ -13,24 +14,6 @@ export async function ingestSettlement(settlement: Settlement) {
   const { chainId, orderHash, collection } = settlement
   void onSettlementCreated({ chainId, orderHash, collection })
 }
-
-export async function onSettlementCreated({
-  chainId,
-  orderHash,
-  collection,
-}: SettlementKey & { collection: Address }) {
-  const tag = `${TAG}:created`
-
-  void nftCollectionRepo
-    .noteNFTCollection({ chainId, address: collection })
-    .catch(err => console.error(`[${tag}] noteCollection failed`, err))
-
-  void onOrderFilled({ chainId, orderHash }).catch(err =>
-    console.error(`[${tag}] applyOrderFilled failed`, err)
-  )
-}
-
-// === SETTLEMENT META ===
 
 export async function ingestSettlementMeta({
   chainId,
@@ -40,6 +23,32 @@ export async function ingestSettlementMeta({
   try {
     await settlementRepo.finalizeMeta({ chainId, orderHash, meta })
   } catch (err) {
-    throw new Error(`[${TAG}:meta] finalizeMeta failed`, { cause: err })
+    throw new Error(`[${TAG}:meta] failed to finalize settlement metadata`, { cause: err })
   }
+}
+
+// === REACTIONS ===
+
+export async function onSettlementCreated({
+  chainId,
+  orderHash,
+  collection,
+}: SettlementKey & { collection: Address }) {
+  const tag = `${TAG}:created`
+
+  const orderRepo = orderRepoFor(chainId)
+
+  // note collection
+  void nftCollectionRepo
+    .noteNFTCollection({ chainId, address: collection })
+    .catch(err => console.error(`[${tag}] failed to note NFT collection`, err))
+
+  // mark order as filled
+  void orderRepo
+    .findByHash(orderHash)
+    .then(order => {
+      if (!order) return
+      return orderRepo.markFilled(orderHash)
+    })
+    .catch(err => console.error(`[${tag}] failed to mark order as filled`, err))
 }

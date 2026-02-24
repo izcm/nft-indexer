@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import { describe, expect, it } from 'vitest'
 import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from '../cursor.js'
 import { CursorPageCore } from '../types.js'
+
 /* ======================================
     walkPath
 ====================================== */

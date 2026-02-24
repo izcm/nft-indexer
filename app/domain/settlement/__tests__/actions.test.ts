@@ -1,10 +1,21 @@
-import { onOrderFilled } from '#app/domain/order/actions.js'
 import { asAddress, asHash } from '#app/domain/shared/eth.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import { orderRepoFor } from '#app/repos/order.repo.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { onSettlementCreated } from '../actions.js'
+import { mockSettlement } from '#tests/mocks/primitives.js'
 
 // --- mocks ---
+
+const findByHash = vi.fn()
+const markFilled = vi.fn()
+
+vi.mock('#app/repos/order.repo.js', () => ({
+  orderRepoFor: vi.fn(() => ({
+    findByHash,
+    markFilled,
+  })),
+}))
 
 vi.mock('#app/repos/nft-collection.repo.js', () => ({
   nftCollectionRepo: {
@@ -12,41 +23,22 @@ vi.mock('#app/repos/nft-collection.repo.js', () => ({
   },
 }))
 
-vi.mock('#app/domain/order/actions.ts', () => ({
-  onOrderFilled: vi.fn().mockResolvedValue(undefined),
-}))
-
 describe('domain actions - settlements', () => {
-  // --- shared ---
+  let errorSpy: ReturnType<typeof vi.spyOn>
+  const genericError = new Error('db down')
 
   beforeEach(() => {
     vi.clearAllMocks()
-  })
-
-  beforeEach(() => {
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    // IMPORTANT: default behavior
+    findByHash.mockResolvedValue(null)
   })
 
-  const genericError = new Error('db down')
-  let errorSpy: ReturnType<typeof vi.spyOn>
+  const mock = mockSettlement()
 
-  const mock = {
-    chainId: 1,
-    orderHash: asHash('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-    collection: asAddress('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-    price: '1',
-    timestamp: 0,
-  }
-
-  function expectSettlementLogged(action: string, fnName: string, err: Error) {
-    expect(errorSpy).toHaveBeenCalledWith(`[settlement:${action}] ${fnName} failed`, err)
-  }
-
-  describe('applySettlementCreated', () => {
-    const expectLogged = (fnName: string, err: Error) =>
-      expectSettlementLogged('created', fnName, err)
-
-    it('logs if noteCollection fails', async () => {
+  describe('onSettlementCreated', () => {
+    it('logs if failed to note collection', async () => {
       const fn = vi.mocked(nftCollectionRepo).noteNFTCollection
       fn.mockRejectedValueOnce(genericError)
 
@@ -57,32 +49,63 @@ describe('domain actions - settlements', () => {
         chainId,
         address: collection,
       })
-      expectLogged('noteCollection', genericError)
+
+      expect(errorSpy).toHaveBeenCalledWith(
+        `[settlement:created] failed to note NFT collection`,
+        genericError
+      )
     })
 
-    it('logs if applyOrderFilled fails', async () => {
-      const fn = vi.mocked(onOrderFilled)
-      fn.mockRejectedValueOnce(genericError)
+    it('marks order filled when order exists', async () => {
+      findByHash.mockResolvedValueOnce({ hash: mock.orderHash })
 
       await onSettlementCreated(mock)
 
-      expect(fn).toHaveBeenCalledExactlyOnceWith({
-        chainId: mock.chainId,
-        orderHash: mock.orderHash,
-      })
-      expectLogged('applyOrderFilled', genericError)
+      expect(orderRepoFor).toHaveBeenCalledWith(mock.chainId)
+      expect(findByHash).toHaveBeenCalledWith(mock.orderHash)
+      expect(markFilled).toHaveBeenCalledWith(mock.orderHash)
     })
 
-    it('calls dependencies with correct params on success', async () => {
-      const { chainId, orderHash, collection } = mock
+    it('does nothing if order not found', async () => {
+      findByHash.mockResolvedValueOnce(null)
 
-      await onSettlementCreated({ chainId, orderHash, collection })
+      await onSettlementCreated(mock)
 
-      expect(nftCollectionRepo.noteNFTCollection).toHaveBeenCalledWith({
-        chainId,
-        address: collection,
+      expect(findByHash).toHaveBeenCalledWith(mock.orderHash)
+      expect(markFilled).not.toHaveBeenCalled()
+    })
+
+    it('logs if failed to mark order', async () => {
+      findByHash.mockResolvedValueOnce({ hash: mock.orderHash })
+      markFilled.mockRejectedValueOnce(genericError)
+
+      await onSettlementCreated(mock)
+
+      await vi.waitFor(() => {
+        expect(errorSpy).toHaveBeenCalledWith(
+          `[settlement:created] failed to mark order as filled`,
+          genericError
+        )
       })
-      expect(onOrderFilled).toHaveBeenCalledWith({ chainId, orderHash })
+    })
+
+    it('looks up order and marks it filled when order exists', async () => {
+      findByHash.mockResolvedValueOnce({ hash: mock.orderHash })
+
+      await onSettlementCreated(mock)
+
+      // collection side-effect
+      expect(nftCollectionRepo.noteNFTCollection).toHaveBeenCalledWith({
+        chainId: mock.chainId,
+        address: mock.collection,
+      })
+
+      // order lookup happens
+      expect(findByHash).toHaveBeenCalledWith(mock.orderHash)
+
+      // then it marks as filled
+      expect(markFilled).toHaveBeenCalledWith(mock.orderHash)
+
       expect(errorSpy).not.toHaveBeenCalled()
     })
   })
