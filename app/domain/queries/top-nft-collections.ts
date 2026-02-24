@@ -1,9 +1,6 @@
-import { Hex } from 'viem'
 import { orders, settlements } from '#app/db/collections.js'
-
 import { NFTCollection } from '../nft-collection/types.js'
 import { Side } from '../order/types.js'
-
 export type TopNFTCollectionByActiveOrders = NFTCollection & {
   summary: ActiveCounts
 }

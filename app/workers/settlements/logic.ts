@@ -1,12 +1,12 @@
-import { decodeFunctionData, serializeSignature, recoverTypedDataAddress, getAbiItem } from 'viem'
-import type { AbiFunction, Abi, Hex } from 'viem'
+import type { Abi, AbiFunction, Hex } from 'viem'
+import { decodeFunctionData, getAbiItem, recoverTypedDataAddress, serializeSignature } from 'viem'
 
 // order types & methods
-import { OrderCore, OrderSignature, Side, SideLabel } from '#app/domain/order/types.js'
+import type { OrderCore, OrderSignature, SideLabel } from '#app/domain/order/types.js'
+import { Side } from '#app/domain/order/types.js'
 
 // domain types
-import { SettlementMeta } from '#app/domain/settlement/types.js'
-
+import type { SettlementMeta } from '#app/domain/settlement/types.js'
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 
 export const settlementMetaFromTx = async (
@@ -53,9 +53,6 @@ export const settlementMetaFromTx = async (
     message: toOrder712(order),
     signature: sigHex,
   })
-
-  const direction = Side[order.side] as SideLabel
-  const side = direction === 'BID' && order.isCollectionBid ? 'COLLECTION_BID' : direction
 
   return {
     order: {

@@ -1,11 +1,10 @@
-import { Collection, Document } from 'mongodb'
+import type { Collection, Document } from 'mongodb'
 
 import { COLLECTIONS } from '#app/domain/constants/db.js'
+import type { NFTCollection, NFTCollectionStats } from '#app/domain/nft-collection/types.js'
+import type { OrderRecord } from '#app/domain/order/types.js'
+import type { Settlement } from '#app/domain/settlement/types.js'
 
-import { OrderRecord } from '#app/domain/order/types.js'
-import { Settlement } from '#app/domain/settlement/types.js'
-import { NFTCollection } from '#app/domain/nft-collection/types.js'
-import { NFTCollectionStats } from '#app/domain/nft-collection/types.js'
 import { getDb } from './mongo.js'
 
 export const orders = () => col<OrderRecord>(COLLECTIONS.ORDERS)

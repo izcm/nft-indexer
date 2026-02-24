@@ -1,16 +1,16 @@
-import { Hex } from 'viem'
-
-import { addrOf, bytes32, bytes32n, priceWei } from '../../../app/lib/utils/evm-primitives.js'
-import { Order, OrderRecord, OrderSignature, Side } from '#app/domain/order/types.js'
-import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { orders } from '#app/db/collections.js'
+import type { Order, OrderRecord, OrderSignature } from '#app/domain/order/types.js'
+import { Side } from '#app/domain/order/types.js'
+import type { Address } from '#app/domain/shared/eth.js'
+import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
+import { addrOf, bytes32, bytes32n, priceWei } from '../../../app/lib/utils/evm-primitives.js'
 
 const s = (x: number | bigint) => x.toString()
 
 // super fake orders
 export async function seedOrders(
   chainId: number,
-  collections: Hex[],
+  collections: Address[],
   countPerCollection: number,
   seed: string,
   now: number = 0,
@@ -23,7 +23,7 @@ export async function seedOrders(
   },
   overrides: Partial<Omit<OrderRecord, 'order' | 'orderHash'>> = {}
 ) {
-  const byCollection: Record<Hex, Order[]> = {}
+  const byCollection: Record<Address, Order[]> = {}
 
   for (const collection of collections) {
     byCollection[collection] = Array.from({ length: countPerCollection }).map((_, i) =>
@@ -50,7 +50,7 @@ export async function seedOrders(
 }
 
 function buildFakeOrder(
-  collection: Hex,
+  collection: Address,
   i: number,
   seed: string,
   now: number,

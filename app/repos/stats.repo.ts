@@ -1,9 +1,9 @@
-import { Hex } from 'viem'
 import { nftCollectionsStats as stats } from '#app/db/collections.js'
+import type { Address } from '#app/domain/shared/eth.js'
 
 type CollectionStatsKey = {
   chainId: number
-  collection: Hex
+  collection: Address
   timestamp: number
 }
 

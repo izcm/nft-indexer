@@ -1,11 +1,8 @@
-import { FastifyInstance } from 'fastify'
-
 import { API_ERRORS } from '#app/domain/constants/api.js'
-import { Order } from '#app/domain/order/types.js'
-
-import { orderRepo } from '#app/repos/order.repo.js'
-import { applyOrderCreated } from '#app/domain/order/actions.js'
+import type { Order } from '#app/domain/order/types.js'
 import { validOrder } from '#app/domain/order/validation.js'
+import { orderRepo } from '#app/repos/order.repo.js'
+import type { FastifyInstance } from 'fastify'
 
 // TODO: index orderhash on `order_status`
 export const ordersIngest = (fastify: FastifyInstance) => {
@@ -31,7 +28,7 @@ export const ordersIngest = (fastify: FastifyInstance) => {
       }
 
       const { id, didUpsert } = await orderRepo.ensure(chainId, orderCore)
-      void applyOrderCreated(chainId, orderCore)
+      //void onOrderCreated(chainId, orderCore)
 
       const code = didUpsert ? 201 : 200
 

@@ -1,10 +1,9 @@
-import { afterAll, beforeAll, beforeEach, expect, describe, it } from 'vitest'
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-
-import { seedOrders } from '../seed-orders.js'
 import { orders } from '#app/db/collections.js'
-import { addrOf, bytes32n } from '#app/lib/utils/evm-primitives.js'
 import { Side } from '#app/domain/order/types.js'
+import { addrOf, bytes32n } from '#app/lib/utils/evm-primitives.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { seedOrders } from '../seed-orders.js'
 
 beforeAll(async () => {
   await startTestMongo()

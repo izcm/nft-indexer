@@ -1,9 +1,8 @@
-import { FastifyInstance } from 'fastify'
-
 import {
   topNFTCollectionsByActiveOrders,
   topNFTCollectionsBySettlements,
 } from '#app/domain/queries/top-nft-collections.js'
+import type { FastifyInstance } from 'fastify'
 
 const handlers = {
   'active-orders': topNFTCollectionsByActiveOrders,
@@ -11,9 +10,12 @@ const handlers = {
 } as const
 
 export const nftCollectionsQuery = (fastify: FastifyInstance) => {
-  fastify.get('/:chainId/:address', async (req, res) => {
-    // return repo.find
-  })
+  fastify.get<{ Params: { chainId: number; address: string } }>(
+    '/:chainId/:address',
+    async (_req, _res) => {
+      // return repo.find
+    }
+  )
 
   fastify.get<{ Querystring: { chainId: number; by?: keyof typeof handlers; limit: number } }>(
     '/top',

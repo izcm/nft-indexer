@@ -1,8 +1,6 @@
-import { encodeAbiParameters, Hex, keccak256, toBytes } from 'viem'
-
-import { APP_NAME, APP_VERSION, APP_CHAINS, VERIFYING_CONTRACT } from '#app/domain/constants/app.js'
+import { APP_CHAINS, APP_NAME, APP_VERSION, VERIFYING_CONTRACT } from '#app/domain/constants/app.js'
 import { OrderCore } from '#app/domain/order/types.js'
-
+import { encodeAbiParameters, Hex, keccak256, toBytes } from 'viem'
 export const dmrktDomain = {
   name: APP_NAME,
   version: APP_VERSION,

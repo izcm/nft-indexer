@@ -1,4 +1,4 @@
-import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
+import { ADDR_REGEX } from '#app/domain/constants/regex.js'
 
 const UNIX_SECONDS_MAX = 1e11 // year ~5138
 

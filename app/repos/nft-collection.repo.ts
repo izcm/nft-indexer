@@ -1,13 +1,15 @@
-import { ObjectId } from 'mongodb'
-import { Hex } from 'viem'
-
 import { nftCollections } from '#app/db/collections.js'
-import { NFTCollectionChainMeta, NFTCollectionMetaPatch } from '#app/domain/nft-collection/types.js'
-import { Status } from '#app/domain/enum.js'
+import type {
+  NFTCollectionChainMeta,
+  NFTCollectionMetaPatch,
+} from '#app/domain/nft-collection/types.js'
+import { Status } from '#app/domain/shared/enum.js'
+import type { Address } from '#app/domain/shared/eth.js'
+import { ObjectId } from 'mongodb'
 
-type NFTCollectionKey = {
+export type NFTCollectionKey = {
   chainId: number
-  address: Hex
+  address: Address
 }
 
 const stringifyKey = (key: NFTCollectionKey) => {
@@ -139,15 +141,15 @@ export const nftCollectionRepoFor = (chainId: number) => ({
     return nftCollectionRepo.findMissingChainMeta(chainId, limit)
   },
 
-  finalizeChainMeta(address: Hex, chainMeta: Partial<NFTCollectionChainMeta>) {
+  finalizeChainMeta(address: Address, chainMeta: Partial<NFTCollectionChainMeta>) {
     return nftCollectionRepo.finalizeChainMeta({ chainId, address, chainMeta })
   },
 
-  markChainMetaFailed(address: Hex, error: string) {
+  markChainMetaFailed(address: Address, error: string) {
     return nftCollectionRepo.markChainMetaFailed({ chainId, address, error })
   },
 
-  patchMeta(address: Hex, patch: NFTCollectionMetaPatch) {
+  patchMeta(address: Address, patch: NFTCollectionMetaPatch) {
     return nftCollectionRepo.patchMeta({ chainId, address, patch })
   },
 })

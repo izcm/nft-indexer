@@ -1,14 +1,13 @@
-import { Hex } from 'viem'
-import { ObjectId } from 'mongodb'
-
 import { settlements } from '#app/db/collections.js'
-import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
-import { FindPageArgs } from './_shared/types.js'
+import type { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
+import type { Hash } from '#app/domain/shared/eth.js'
+import type { ObjectId } from 'mongodb'
 import { findPageGeneric } from './_shared/paginate.js'
+import type { FindPageArgs } from './_shared/types.js'
 
 export type SettlementKey = {
   chainId: number
-  orderHash: Hex
+  orderHash: Hash
 }
 
 export const settlementRepo = {
@@ -93,11 +92,11 @@ export const settlementRepoFor = (chainId: number) => ({
     return settlementRepo.findPendingMeta(chainId, limit)
   },
 
-  finalizeMeta(orderHash: Hex, meta: SettlementMeta) {
+  finalizeMeta(orderHash: Hash, meta: SettlementMeta) {
     return settlementRepo.finalizeMeta({ chainId, orderHash, meta })
   },
 
-  markMetaFailed(orderHash: Hex, error: string) {
+  markMetaFailed(orderHash: Hash, error: string) {
     return settlementRepo.markMetaFailed({ chainId, orderHash, error })
   },
 })

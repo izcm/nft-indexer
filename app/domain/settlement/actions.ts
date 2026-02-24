@@ -1,37 +1,38 @@
-import { Hex } from 'viem'
-
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import { SettlementKey, settlementRepo } from '#app/repos/settlement.repo.js'
+import { onOrderFilled } from '../order/actions.js'
+import type { Address } from '../shared/eth.js'
 import { Settlement, SettlementMeta } from './types.js'
-import { applyOrderFilled } from '../order/actions.js'
-import { SettlementKey, settlementRepo, settlementRepoFor } from '#app/repos/settlement.repo.js'
+const TAG = 'settlement'
 
-export async function applySettlementObserved(settlement: Settlement) {
-  try {
-    await settlementRepo.save(settlement)
+// === SETTLEMENT CORE ===
 
-    const { chainId, orderHash, collection } = settlement
-    void applySettlementCreated({ chainId, orderHash, collection })
-  } catch (err) {
-    throw new Error('[settlement:observed] save failed')
-  }
+export async function ingestSettlement(settlement: Settlement) {
+  await settlementRepo.save(settlement)
+
+  const { chainId, orderHash, collection } = settlement
+  void onSettlementCreated({ chainId, orderHash, collection })
 }
-export async function applySettlementCreated({
+
+export async function onSettlementCreated({
   chainId,
   orderHash,
   collection,
-}: SettlementKey & { collection: Hex }) {
-  const tag = 'settlement:created'
+}: SettlementKey & { collection: Address }) {
+  const tag = `${TAG}:created`
 
   void nftCollectionRepo
     .noteNFTCollection({ chainId, address: collection })
     .catch(err => console.error(`[${tag}] noteCollection failed`, err))
 
-  void applyOrderFilled(chainId, orderHash).catch(err =>
+  void onOrderFilled({ chainId, orderHash }).catch(err =>
     console.error(`[${tag}] applyOrderFilled failed`, err)
   )
 }
 
-export async function applySettlementMeta({
+// === SETTLEMENT META ===
+
+export async function ingestSettlementMeta({
   chainId,
   orderHash,
   meta,
@@ -39,6 +40,6 @@ export async function applySettlementMeta({
   try {
     await settlementRepo.finalizeMeta({ chainId, orderHash, meta })
   } catch (err) {
-    throw new Error('[settlement:meta] finalizeMeta failed', { cause: err })
+    throw new Error(`[${TAG}:meta] finalizeMeta failed`, { cause: err })
   }
 }

@@ -1,8 +1,7 @@
-import type { Hex } from 'viem'
-import { encodeAbiParameters, keccak256, toBytes, zeroAddress } from 'viem'
-import { Order, Side } from './types.js'
 import { isUintString } from '#app/lib/utils/string.js'
 import { isUnixSeconds } from '#app/lib/utils/time.js'
+import { zeroAddress } from 'viem'
+import { Order, Side } from './types.js'
 
 const MAX_ORDER_LIFETIME = 180 * 24 * 60 * 60 // 90 days
 

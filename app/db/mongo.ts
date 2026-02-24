@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection, Document } from 'mongodb'
+import { Db, MongoClient } from 'mongodb'
 
 // db config
 import { ensureIndexes } from './config/ensure-indexes.js'

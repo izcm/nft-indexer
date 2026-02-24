@@ -1,18 +1,7 @@
 // TODO: https://vitest.dev/config/ **define import aliases in vitest config**
-import { describe, expect, it, vi } from 'vitest'
-
-import { SettlementLog } from '#app/listeners/types/logs.js'
 import { settlementFromLog } from '#app/listeners/settlements/logic.js'
-
-// test helpers
-
-import {
-  mockSettlementLog,
-  mockTx,
-  mockReceipt,
-  mockFill,
-  mockOrderCore,
-} from '#tests/mocks/primitives.js'
+import { mockSettlementLog } from '#tests/mocks/primitives.js'
+import { describe, expect, it } from 'vitest'
 
 describe('Settlement log => Settlement domain mapping', () => {
   it('creates a Settlement from a Settlement event log', () => {

@@ -1,9 +1,8 @@
-import { Hex } from 'viem'
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-
+import { onOrderFilled } from '#app/domain/order/actions.js'
+import { asAddress, asHash } from '#app/domain/shared/eth.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { applySettlementCreated } from '../actions.js'
-import { applyOrderFilled } from '#app/domain/order/actions.js'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { onSettlementCreated } from '../actions.js'
 
 // --- mocks ---
 
@@ -14,10 +13,10 @@ vi.mock('#app/repos/nft-collection.repo.js', () => ({
 }))
 
 vi.mock('#app/domain/order/actions.ts', () => ({
-  applyOrderFilled: vi.fn().mockResolvedValue(undefined),
+  onOrderFilled: vi.fn().mockResolvedValue(undefined),
 }))
 
-describe('settlement domain actions', () => {
+describe('domain actions - settlements', () => {
   // --- shared ---
 
   beforeEach(() => {
@@ -33,8 +32,8 @@ describe('settlement domain actions', () => {
 
   const mock = {
     chainId: 1,
-    orderHash: '0xabc' as Hex,
-    collection: '0xabc' as Hex,
+    orderHash: asHash('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
+    collection: asAddress('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
     price: '1',
     timestamp: 0,
   }
@@ -52,7 +51,7 @@ describe('settlement domain actions', () => {
       fn.mockRejectedValueOnce(genericError)
 
       const { chainId, orderHash, collection } = mock
-      await applySettlementCreated({ chainId, orderHash, collection })
+      await onSettlementCreated({ chainId, orderHash, collection })
 
       expect(fn).toHaveBeenCalledExactlyOnceWith({
         chainId,
@@ -62,25 +61,28 @@ describe('settlement domain actions', () => {
     })
 
     it('logs if applyOrderFilled fails', async () => {
-      const fn = vi.mocked(applyOrderFilled)
+      const fn = vi.mocked(onOrderFilled)
       fn.mockRejectedValueOnce(genericError)
 
-      await applySettlementCreated(mock)
+      await onSettlementCreated(mock)
 
-      expect(fn).toHaveBeenCalledExactlyOnceWith(mock.chainId, mock.orderHash)
+      expect(fn).toHaveBeenCalledExactlyOnceWith({
+        chainId: mock.chainId,
+        orderHash: mock.orderHash,
+      })
       expectLogged('applyOrderFilled', genericError)
     })
 
     it('calls dependencies with correct params on success', async () => {
       const { chainId, orderHash, collection } = mock
 
-      await applySettlementCreated({ chainId, orderHash, collection })
+      await onSettlementCreated({ chainId, orderHash, collection })
 
       expect(nftCollectionRepo.noteNFTCollection).toHaveBeenCalledWith({
         chainId,
         address: collection,
       })
-      expect(applyOrderFilled).toHaveBeenCalledWith(chainId, orderHash)
+      expect(onOrderFilled).toHaveBeenCalledWith({ chainId, orderHash })
       expect(errorSpy).not.toHaveBeenCalled()
     })
   })

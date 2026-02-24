@@ -1,8 +1,8 @@
-import type { Hex } from 'viem'
-
-import { BlockTime, TxContext } from '#app/listeners/types/context.js'
-import { OrderType, Side, SideLabel } from '../order/types.js'
-import { Status } from '../enum.js'
+import type { BlockTime, TxContext } from '#app/listeners/types/context.js'
+import type { OrderType } from '../order/types.js'
+import { Side } from '../order/types.js'
+import { Status } from '../shared/enum.js'
+import type { Address, Hash } from '../shared/eth.js'
 
 // todo: on settlement ingest, parse the order and fill
 // - if order doesnt exist in db => create new with status = "filled"
@@ -10,22 +10,22 @@ import { Status } from '../enum.js'
 
 export type Settlement = {
   chainId: number
-  orderHash: Hex
+  orderHash: Hash
 
-  collection: Hex
+  collection: Address
   tokenId: string
 
-  seller: Hex
-  buyer: Hex
+  seller: Address
+  buyer: Address
 
-  currency: Hex
+  currency: Address
   price: string
 
   orderAttributes?: SettlementMeta['order']
 
   execution: {
     logIndex: number
-    txHash: Hex
+    txHash: Hash
     block: BlockTime
     txContext?: SettlementMeta['txContext']
   }
@@ -46,7 +46,7 @@ export type SettlementMeta = {
     side: Side
     isCollectionBid: boolean
 
-    signer: Hex
+    signer: Address
   }
   txContext: TxContext
 }

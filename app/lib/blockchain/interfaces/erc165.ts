@@ -1,4 +1,4 @@
-import { Abi, Hex, parseAbi, PublicClient } from 'viem'
+import { Hex, parseAbi, PublicClient } from 'viem'
 
 // ERC-165 ABI
 const abi = parseAbi(['function supportsInterface(bytes4 interfaceId) view returns (bool)'])

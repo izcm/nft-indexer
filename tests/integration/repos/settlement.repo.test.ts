@@ -1,14 +1,12 @@
-import { vi, afterAll, beforeAll, beforeEach, describe, it, expect } from 'vitest'
-import { Hex } from 'viem'
-
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { settlements } from '#app/db/collections.js'
+import type { Settlement } from '#app/domain/settlement/types.js'
+import { bytes32 } from '#app/lib/utils/evm-primitives.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedSettlements } from '#tests/helpers/seed/seed-settlements.js'
-import { Settlement } from '#app/domain/settlement/types.js'
 import { mockSettlement, mockSettlementMeta } from '#tests/mocks/primitives.js'
 import { ObjectId } from 'mongodb'
-import { bytes32 } from '#app/lib/utils/evm-primitives.js'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 beforeAll(async () => {
   await startTestMongo()

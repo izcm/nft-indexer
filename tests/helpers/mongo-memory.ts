@@ -1,8 +1,7 @@
-import { MongoMemoryServer } from 'mongodb-memory-server'
-import { Db, MongoClient } from 'mongodb'
-
-import { setDb } from '#app/db/mongo.js'
 import { ensureIndexes } from '#app/db/config/ensure-indexes.js'
+import { setDb } from '#app/db/mongo.js'
+import { Db, MongoClient } from 'mongodb'
+import { MongoMemoryServer } from 'mongodb-memory-server'
 
 let mongod: MongoMemoryServer
 

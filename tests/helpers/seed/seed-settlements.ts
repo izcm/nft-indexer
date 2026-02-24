@@ -1,7 +1,6 @@
 import { settlements } from '#app/db/collections.js'
 import { Settlement } from '#app/domain/settlement/types.js'
 import { addrOf, bytes32, priceWei } from '#app/lib/utils/evm-primitives.js'
-
 const s = (x: number | bigint) => x.toString()
 
 export async function seedSettlements(

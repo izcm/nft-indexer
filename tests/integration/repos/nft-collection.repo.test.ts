@@ -1,15 +1,12 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ObjectId } from 'mongodb'
-
 import { nftCollections } from '#app/db/collections.js'
-import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-
 import { NFTCollectionChainMeta } from '#app/domain/nft-collection/types.js'
+import { Status } from '#app/domain/shared/enum.js'
+import { addrOf } from '#app/lib/utils/evm-primitives.js'
+import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
-import { addrOf } from '#app/lib/utils/evm-primitives.js'
-import { Status } from '#app/domain/enum.js'
-
+import { ObjectId } from 'mongodb'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 beforeAll(async () => {
   await startTestMongo()
 })

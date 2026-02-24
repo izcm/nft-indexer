@@ -1,9 +1,9 @@
-import { Hex } from 'viem'
-import { Status } from '../enum.js'
+import type { Status } from '../shared/enum.js'
+import type { Address } from '../shared/eth.js'
 
 export type NFTCollectionStats = {
   chainId: number
-  collection: Hex
+  collection: Address
   day: number // unix timestamp at 00:00 UTC
   volume: string // wei
   floorPrice: string
@@ -18,7 +18,7 @@ export type NFTCollectionStats = {
 
 export type NFTCollectionBase = {
   chainId: number
-  address: Hex
+  address: Address
 
   // BASE META
   imageUrl?: string

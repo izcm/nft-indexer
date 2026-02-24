@@ -1,6 +1,5 @@
 import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from './cursor.js'
 import { GenericPageArgs } from './types.js'
-
 export async function findPageGeneric({
   dbCollection,
   baseQuery,

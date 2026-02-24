@@ -1,13 +1,10 @@
-import { FastifyInstance } from 'fastify'
-import { ObjectId } from 'mongodb'
-
-import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/api.js'
-
-import { byIdParams, paginationQueryParams } from '#app/api/schemas/shared.js'
 import { orderQueryableFields } from '#app/api/schemas/order.js'
-
+import { byIdParams, paginationQueryParams } from '#app/api/schemas/shared.js'
+import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/api.js'
 import * as orderQuery from '#app/domain/queries/order.query.js'
 import { orderRepo as repo } from '#app/repos/order.repo.js'
+import type { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 export const ordersQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(

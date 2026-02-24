@@ -1,4 +1,4 @@
-import { Hex, keccak256, encodeAbiParameters, parseAbiParameters } from 'viem'
+import { encodeAbiParameters, Hex, keccak256, parseAbiParameters } from 'viem'
 
 const hash = (label: string, params: string[], values: readonly unknown[]) => {
   const paramStr = `string label` + (params.length === 0 ? '' : ', ' + params.join(', '))

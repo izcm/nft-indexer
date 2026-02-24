@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { CursorPageCore, CursorDir } from './types.js'
-
+import { CursorDir, CursorPageCore } from './types.js'
 export const walkPath = (obj: any, path: string) => {
   if (Object.keys(obj).length === 0) return undefined
 

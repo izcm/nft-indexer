@@ -1,8 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
-
-import { dmrktDomain, toOrder712, dmrktTypes } from '#app/lib/blockchain/eip712.js'
 import { OrderCore } from '#app/domain/order/types.js'
-
+import { toOrder712 } from '#app/lib/blockchain/eip712.js'
+import { describe, expect, it } from 'vitest'
 describe('eip712 library', () => {
   it('toOrder712 converts correctly', () => {
     const o712 = toOrder712(order)

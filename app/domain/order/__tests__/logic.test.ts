@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
 import { Side } from '#app/domain/order/types.js'
+import { describe, expect, it } from 'vitest'
 import { toOrderType } from '../logic.js'
 
 // === tests ===

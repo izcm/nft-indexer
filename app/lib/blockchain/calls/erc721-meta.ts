@@ -1,7 +1,7 @@
-import { Hex, parseAbi, PublicClient } from 'viem'
 import { erc721For } from '#app/lib/blockchain/interfaces/erc721.js'
+import { Hex, parseAbi, PublicClient } from 'viem'
 
-import { NFTCollectionChainMeta } from '#app/domain/nft-collection/types.js'
+import type { NFTCollectionChainMeta } from '#app/domain/nft-collection/types.js'
 
 const totalSupplyAbi = parseAbi(['function totalSupply() view returns (uint256)'])
 

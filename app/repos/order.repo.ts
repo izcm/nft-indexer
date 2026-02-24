@@ -1,17 +1,14 @@
-import { Hex } from 'viem'
-import { ObjectId } from 'mongodb'
-
-import { FindPageArgs } from '#app/repos/_shared/types.js'
-import { Order } from '#app/domain/order/types.js'
-
 import { orders } from '#app/db/collections.js'
-import { OrderStatus } from '#app/domain/order/types.js'
+import type { Order, OrderStatus } from '#app/domain/order/types.js'
+import type { Hash } from '#app/domain/shared/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
+import type { FindPageArgs } from '#app/repos/_shared/types.js'
+import { ObjectId } from 'mongodb'
 import { findPageGeneric } from './_shared/paginate.js'
 
-type OrderKey = {
+export type OrderKey = {
   chainId: number
-  orderHash: Hex
+  orderHash: Hash
 }
 
 export const orderRepo = {
@@ -101,19 +98,19 @@ export const orderRepo = {
  */
 
 export const orderRepoFor = (chainId: number) => ({
-  findByHash(orderHash: Hex) {
+  findByHash(orderHash: Hash) {
     return orderRepo.findByKey({ chainId, orderHash })
   },
 
-  markFilled(orderHash: Hex) {
+  markFilled(orderHash: Hash) {
     return orderRepo.updateStatus({ chainId, orderHash, status: 'filled' })
   },
 
-  markCancelled(orderHash: Hex) {
+  markCancelled(orderHash: Hash) {
     return orderRepo.updateStatus({ chainId, orderHash, status: 'cancelled' })
   },
 
-  markExpired(orderHash: Hex) {
+  markExpired(orderHash: Hash) {
     return orderRepo.updateStatus({ chainId, orderHash, status: 'expired' })
   },
 })

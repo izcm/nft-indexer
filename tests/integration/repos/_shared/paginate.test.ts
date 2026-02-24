@@ -1,12 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { Collection } from 'mongodb'
-
 import { getDb } from '#app/db/mongo.js'
-import { GenericPageArgs } from '#app/repos/_shared/types.js'
-import { bytes32n, priceWei } from '#app/lib/utils/evm-primitives.js'
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-import { findPageGeneric } from '#app/repos/_shared/paginate.js'
+import { bytes32n } from '#app/lib/utils/evm-primitives.js'
 import { walkPath } from '#app/repos/_shared/cursor.js'
+import { findPageGeneric } from '#app/repos/_shared/paginate.js'
+import type { GenericPageArgs } from '#app/repos/_shared/types.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
+import type { Collection } from 'mongodb'
 
 type TestDoc = {
   foo: {

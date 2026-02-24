@@ -1,10 +1,9 @@
+import type { AppClient } from '#app/clients.js'
 import { parseAbi } from 'viem'
-import { AppClient } from '#app/clients.js'
-
 import { SETTLEMENT_EVENT_EMITTER } from '#app/domain/constants/app.js'
 
 import { handleSettlement } from './settlements/handler.js'
-import { ListenerItem } from './types/context.js'
+import type { ListenerItem } from './types/context.js'
 
 // ------------------
 // LISTENERS
@@ -30,17 +29,26 @@ export const start = (client: AppClient) => {
   console.log(`Watching contract: ${SETTLEMENT_EVENT_EMITTER}`)
 }
 
-const routers: Record<string, (item: ListenerItem) => void> = {
+const routers: Record<string, (item: ListenerItem) => Promise<void>> = {
   Settlement: handleSettlement,
   // OrderCancelled: handleOrderCancelled,
 }
 
-const routeLog = (envelope: ListenerItem) => {
+const routeLog = async (envelope: ListenerItem) => {
   const handler = routers[envelope.log.eventName]
   if (!handler) {
-    console.warn(`[indexer] Unhandled event: ${envelope.log.eventName}`)
+    console.warn(`[indexer] unhandled event: ${envelope.log.eventName}`)
     return
   }
 
-  handler(envelope)
+  try {
+    await handler(envelope)
+  } catch (err) {
+    console.error('[indexer] handler failed', {
+      event: envelope.log.eventName,
+      txHash: envelope.log.transactionHash,
+      chainId: envelope.chainId,
+      err,
+    })
+  }
 }

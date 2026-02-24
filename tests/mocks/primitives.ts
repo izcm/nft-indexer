@@ -1,12 +1,10 @@
-import type { Hex } from 'viem'
-
-import { OrderCore, OrderRecord, Side } from '#app/domain/order/types.js'
-import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
-import { SettlementLog } from '#app/listeners/types/logs.js'
-
-import { addrOf, bytes32, bytes32n, bytesOf, priceWei } from '../../app/lib/utils/evm-primitives.js'
+import type { OrderCore, OrderRecord } from '#app/domain/order/types.js'
+import type { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import { TxContext } from '#app/listeners/types/context.js'
+import type { TxContext } from '#app/listeners/types/context.js'
+import type { SettlementLog } from '#app/listeners/types/logs.js'
+import type { Hex } from 'viem'
+import { addrOf, bytes32, bytes32n, bytesOf, priceWei } from '../../app/lib/utils/evm-primitives.js'
 
 const s = (x: number | bigint) => x.toString()
 
@@ -77,8 +75,8 @@ export const mockOrderCore = (): OrderCore => ({
   currency: addrOf('order:currency'),
   price: bytes32('order:price'),
   actor: addrOf('order:actor'),
-  start: bytesOf('order:start', 8),
-  end: bytesOf('order:end', 8),
+  start: Number(bytesOf('order:start', 8)),
+  end: Number(bytesOf('order:end', 8)),
   nonce: bytes32('order:nonce'),
 })
 
