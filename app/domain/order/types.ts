@@ -16,6 +16,11 @@ export type OrderRecord = {
   orderHash: Hex
 
   order: Order
+  fill?: {
+    tokenId: string
+    actor: Hex
+  } // fill should only (!) exist for orders with status = filled
+
   status: OrderStatus
   updatedAt: number // only mutable field is status field
 
@@ -35,9 +40,8 @@ export type Order = {
   currency: Hex
   price: string
   actor: Hex
-  // end & start = user input => don't cast to number
-  start: string
-  end: string
+  start: number
+  end: number
   nonce: string
 
   signature: {

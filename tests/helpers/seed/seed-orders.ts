@@ -77,8 +77,8 @@ function buildFakeOrder(
     currency: addrOf('currency'),
     price: s(priceWei(`price:${orderSeed}`)),
     actor: addrOf(orderSeed),
-    start: s(startTs),
-    end: s(endTs),
+    start: startTs,
+    end: endTs,
     nonce: s(bytes32n(orderSeed)), // don't use seedNum (bigint => number => bigint creates issues when hashing order)
     signature: dummySignature(orderSeed),
   }

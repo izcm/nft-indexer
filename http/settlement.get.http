@@ -8,5 +8,5 @@ GET http://localhost:5000/api/settlements?limit=50
 GET http://localhost:5000/api/settlements?seller=0x31F1a4B4f9f7CAD3f21bF9F2c3840C5CcF7B85b9&limit=10
 
 ### By date range
-GET http://localhost:5000/api/settlements?from=1700000000&to=1800000000&limit=50
+GET http://localhost:5000/api/settlements
 

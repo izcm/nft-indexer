@@ -1,26 +1,26 @@
-import { statsRepo } from '#app/repos/stats.repo.js'
-import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import { Hex } from 'viem'
 
+import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { Settlement, SettlementMeta } from './types.js'
 import { applyOrderFilled } from '../order/actions.js'
-import { settlementRepoFor } from '#app/repos/settlement.repo.js'
+import { SettlementKey, settlementRepo, settlementRepoFor } from '#app/repos/settlement.repo.js'
 
-type SettlementCreatedInput = Pick<Settlement, 'chainId' | 'collection' | 'orderHash' | 'price'> & {
-  timestamp: number
+export async function applySettlementObserved(settlement: Settlement) {
+  try {
+    await settlementRepo.save(settlement)
+
+    const { chainId, orderHash, collection } = settlement
+    void applySettlementCreated({ chainId, orderHash, collection })
+  } catch (err) {
+    throw new Error('[settlement:observed] save failed')
+  }
 }
-
-export async function processSettlement({
+export async function applySettlementCreated({
   chainId,
   orderHash,
   collection,
-  price,
-  timestamp,
-}: SettlementCreatedInput) {
+}: SettlementKey & { collection: Hex }) {
   const tag = 'settlement:created'
-
-  // void statsRepo
-  //   .recordSettlement({ chainId, collection, timestamp, price })
-  //   .catch(err => console.error(`[${tag}] recordSettlement failed`, err))
 
   void nftCollectionRepo
     .noteNFTCollection({ chainId, address: collection })
@@ -31,13 +31,13 @@ export async function processSettlement({
   )
 }
 
-export async function applySettlementMeta(settlement: Settlement, meta: SettlementMeta) {
-  const { chainId, orderHash, collection, price, execution } = settlement
-
-  const repo = settlementRepoFor(chainId)
-
+export async function applySettlementMeta({
+  chainId,
+  orderHash,
+  meta,
+}: SettlementKey & { meta: SettlementMeta }) {
   try {
-    await repo.finalizeMeta(orderHash, meta)
+    await settlementRepo.finalizeMeta({ chainId, orderHash, meta })
   } catch (err) {
     throw new Error('[settlement:meta] finalizeMeta failed', { cause: err })
   }

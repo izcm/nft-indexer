@@ -4,6 +4,10 @@ import { BlockTime, TxContext } from '#app/listeners/types/context.js'
 import { OrderType, Side, SideLabel } from '../order/types.js'
 import { Status } from '../enum.js'
 
+// todo: on settlement ingest, parse the order and fill
+// - if order doesnt exist in db => create new with status = "filled"
+// - for both existing and new order, attach the fill
+
 export type Settlement = {
   chainId: number
   orderHash: Hex

@@ -6,7 +6,7 @@ import { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
 import { FindPageArgs } from './_shared/types.js'
 import { findPageGeneric } from './_shared/paginate.js'
 
-type SettlementKey = {
+export type SettlementKey = {
   chainId: number
   orderHash: Hex
 }
