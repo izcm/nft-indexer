@@ -1,6 +1,6 @@
 import { settlements } from '#app/db/collections.js'
 import type { Settlement, SettlementCall } from '#app/domain/settlement/types.js'
-import type { Hash } from '#app/domain/shared/types.js'
+import { Status, type Hash } from '#app/domain/shared/types.js'
 import type { ObjectId } from 'mongodb'
 import { findPageGeneric } from './_shared/paginate.js'
 import type { FindPageArgs } from './_shared/types.js'
@@ -8,6 +8,15 @@ import type { FindPageArgs } from './_shared/types.js'
 export type SettlementKey = {
   chainId: number
   orderHash: Hash
+}
+
+// === helpers ===
+
+const crPaths = {
+  status: 'execution.callReconstruction.status',
+  error: 'execution.callReconstruction.error',
+  data: 'execution.callReconstruction.data',
+  txContext: 'execution.callReconstruction.data.txContext',
 }
 
 export const settlementRepo = {
@@ -68,8 +77,8 @@ export const settlementRepo = {
       { chainId, orderHash },
       {
         $set: {
-          'execution.txContext': meta['txContext'],
-          'execution.callReconstruction.status': 'DONE',
+          [crPaths.txContext]: meta['txContext'],
+          [crPaths.status]: Status.DONE,
         },
       }
     )
@@ -84,8 +93,8 @@ export const settlementRepo = {
       { chainId, orderHash },
       {
         $set: {
-          'execution.callReconstruction.status': 'FAILED',
-          metaError: error,
+          [crPaths.status]: Status.FAILED,
+          [crPaths.error]: error,
         },
       }
     )
@@ -102,11 +111,11 @@ export const settlementRepoFor = (chainId: number) => ({
     return settlementRepo.findPendingCallReconstruction(chainId, limit)
   },
 
-  finalizeMeta(orderHash: Hash, meta: SettlementCall) {
+  finalizeCallReconstruction(orderHash: Hash, meta: SettlementCall) {
     return settlementRepo.finalizeCallReconstruction({ chainId, orderHash, meta })
   },
 
-  markMetaFailed(orderHash: Hash, error: string) {
+  markCallReconstructionFailed(orderHash: Hash, error: string) {
     return settlementRepo.markCallReconstructionFailed({ chainId, orderHash, error })
   },
 })
