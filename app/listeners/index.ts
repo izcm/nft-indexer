@@ -3,7 +3,7 @@ import { parseAbi } from 'viem'
 import { SETTLEMENT_EVENT_EMITTER } from '#app/domain/constants/app.js'
 
 import { handleSettlement } from './settlements/handler.js'
-import type { ListenerItem } from './types/context.js'
+import type { ListenerItem } from '#app/domain/shared/chain-context.js'
 
 // ------------------
 // LISTENERS

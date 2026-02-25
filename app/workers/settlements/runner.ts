@@ -2,7 +2,7 @@ import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json
 import { AppClient } from '#app/clients.js'
 import { readTxMeta } from '#app/lib/blockchain/calls/tx-meta.js'
 import { settlementRepoFor } from '#app/repos/settlement.repo.js'
-import { settlementMetaFromTx as metaFromTx } from '#app/workers/settlements/logic.js'
+import { parseTxInputFromTx as metaFromTx } from '#app/workers/settlements/logic.js'
 import type { Abi } from 'viem'
 
 export async function runSettlementWorker(client: AppClient) {

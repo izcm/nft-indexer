@@ -1,6 +1,6 @@
 import { orders } from '#app/db/collections.js'
 import type { Order, OrderStatus } from '#app/domain/order/types.js'
-import type { Hash } from '#app/domain/shared/eth.js'
+import type { Hash } from '#app/domain/shared/types.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import type { FindPageArgs } from '#app/repos/_shared/types.js'
 import { ObjectId } from 'mongodb'

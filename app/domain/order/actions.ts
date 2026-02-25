@@ -1,5 +1,5 @@
 import { NFTCollectionKey, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { OrderKey, orderRepo, orderRepoFor } from '#app/repos/order.repo.js'
+import { orderRepo } from '#app/repos/order.repo.js'
 import { InvalidOrderError } from '../shared/errors.js'
 import { validOrder } from './rules.js'
 import type { Order } from './types.js'
@@ -14,6 +14,9 @@ export async function ingestOrder(chainId: number, order: Order) {
   if (!validOrder(order, now)) {
     throw new InvalidOrderError()
   }
+
+  // Ensure orderHash is valid before saving
+  // Note: You'll need to get orderHash from somewhere - add it as a parameter or derive it
 
   const { id, didUpsert } = await orderRepo.ensure(chainId, order)
 

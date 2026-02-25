@@ -1,16 +1,11 @@
 import type { Abi, AbiFunction, Hex } from 'viem'
 import { decodeFunctionData, getAbiItem, recoverTypedDataAddress, serializeSignature } from 'viem'
 
-import type { OrderCore, OrderSignature, SideLabel } from '#app/domain/order/types.js'
-import { Side } from '#app/domain/order/types.js'
-import type { SettlementMeta } from '#app/domain/settlement/types.js'
+import type { OrderCore, Signature, SideLabel } from '#app/domain/order/types.js'
+import type { SettlementCall } from '#app/domain/settlement/types.js'
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 
-export const settlementMetaFromTx = async (
-  tx: any,
-  receipt: any,
-  abi: Abi
-): Promise<SettlementMeta> => {
+export async function parseTxInputFromTx(tx: any, receipt: any, abi: Abi): Promise<SettlementCall> {
   if (!tx.to) {
     throw new Error('[settlement-meta] unexpected contract creation tx')
   }
@@ -35,7 +30,7 @@ export const settlementMetaFromTx = async (
     throw new Error('[settlement-meta] no args found when parsing tx.inputs')
   }
 
-  const [, order, sig] = args as [unknown, OrderCore, OrderSignature]
+  const [, order, sig] = args as [unknown, OrderCore, Signature]
 
   if (!order || !sig) {
     throw new Error('[settlement-meta] error parsing ORDER or SIGNATURE')
@@ -53,13 +48,10 @@ export const settlementMetaFromTx = async (
 
   return {
     order: {
-      type: Side[order.side] as SideLabel,
-
-      side: order.side,
-      isCollectionBid: order.isCollectionBid,
-
-      signer: signer,
+      ...order,
+      signature: sig,
     },
+
     txContext: {
       index: tx.transactionIndex,
       gasUsed: receipt.gasUsed.toString(),
@@ -68,5 +60,7 @@ export const settlementMetaFromTx = async (
       functionName: fnMatch.name,
       contractAddress: tx.to,
     },
+
+    signer,
   }
 }

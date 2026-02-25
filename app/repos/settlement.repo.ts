@@ -1,6 +1,6 @@
 import { settlements } from '#app/db/collections.js'
-import type { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
-import type { Hash } from '#app/domain/shared/eth.js'
+import type { Settlement, SettlementCall } from '#app/domain/settlement/types.js'
+import type { Hash } from '#app/domain/shared/types.js'
 import type { ObjectId } from 'mongodb'
 import { findPageGeneric } from './_shared/paginate.js'
 import type { FindPageArgs } from './_shared/types.js'
@@ -42,8 +42,11 @@ export const settlementRepo = {
     })
   },
 
-  async findPendingMeta(chainId: number, limit: number) {
-    return settlements().find({ chainId, metaStatus: 'PENDING' }).limit(limit).toArray()
+  async findPendingCallReconstruction(chainId: number, limit: number) {
+    return settlements()
+      .find({ chainId, 'execution.callReconstruction.status': 'PENDING' })
+      .limit(limit)
+      .toArray()
   },
 
   // === write ===
@@ -56,25 +59,32 @@ export const settlementRepo = {
     })
   },
 
-  async finalizeMeta({ chainId, orderHash, meta }: SettlementKey & { meta: SettlementMeta }) {
+  async finalizeCallReconstruction({
+    chainId,
+    orderHash,
+    meta,
+  }: SettlementKey & { meta: SettlementCall }) {
     return settlements().updateOne(
       { chainId, orderHash },
       {
         $set: {
-          orderAttributes: meta['order'],
           'execution.txContext': meta['txContext'],
-          metaStatus: 'DONE',
+          'execution.callReconstruction.status': 'DONE',
         },
       }
     )
   },
 
-  async markMetaFailed({ chainId, orderHash, error }: SettlementKey & { error: string }) {
+  async markCallReconstructionFailed({
+    chainId,
+    orderHash,
+    error,
+  }: SettlementKey & { error: string }) {
     return settlements().updateOne(
       { chainId, orderHash },
       {
         $set: {
-          metaStatus: 'FAILED',
+          'execution.callReconstruction.status': 'FAILED',
           metaError: error,
         },
       }
@@ -89,14 +99,14 @@ export const settlementRepo = {
 
 export const settlementRepoFor = (chainId: number) => ({
   findPendingMeta(limit: number) {
-    return settlementRepo.findPendingMeta(chainId, limit)
+    return settlementRepo.findPendingCallReconstruction(chainId, limit)
   },
 
-  finalizeMeta(orderHash: Hash, meta: SettlementMeta) {
-    return settlementRepo.finalizeMeta({ chainId, orderHash, meta })
+  finalizeMeta(orderHash: Hash, meta: SettlementCall) {
+    return settlementRepo.finalizeCallReconstruction({ chainId, orderHash, meta })
   },
 
   markMetaFailed(orderHash: Hash, error: string) {
-    return settlementRepo.markMetaFailed({ chainId, orderHash, error })
+    return settlementRepo.markCallReconstructionFailed({ chainId, orderHash, error })
   },
 })

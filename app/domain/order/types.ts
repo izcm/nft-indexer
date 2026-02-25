@@ -1,4 +1,4 @@
-import type { Address, Hash } from '../shared/eth.js'
+import type { Address, Hash } from '../shared/types.js'
 
 export type OrderType = 'ASK' | 'BID' | 'COLLECTION_BID'
 
@@ -18,14 +18,20 @@ export type OrderRecord = {
   order: Order
 
   status: OrderStatus
-  updatedAt: number // only mutable field is status field
+
+  //   filledTxHash = txHash
+  // filledBlock = blockNumber
+  // filledLogIndex = logIndex
+
+  updatedAt: number
 
   createdAt: number
+}
 
-  // to not make changes to orderCore
-  // the below fields are added for pagination ease
-  // tokenIdSort: string = padStart(78, '0')
-  // price: decimal128
+export type Signature = {
+  r: Hash
+  s: Hash
+  v: number
 }
 
 export type Order = {
@@ -40,12 +46,7 @@ export type Order = {
   end: number
   nonce: string
 
-  signature: {
-    r: Hash
-    s: Hash
-    v: number
-  }
+  signature: Signature
 }
 
 export type OrderCore = Omit<Order, 'signature'>
-export type OrderSignature = Order['signature']

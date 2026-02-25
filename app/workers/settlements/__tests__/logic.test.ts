@@ -5,7 +5,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 // TODO: https://vitest.dev/config/ **define import aliases in vitest config**
 import { Side, SideLabel } from '#app/domain/order/types.js'
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
-import { settlementMetaFromTx } from '#app/workers/settlements/logic.js'
+import { parseTxInputFromTx } from '#app/workers/settlements/logic.js'
 import {
   mockFill,
   mockOrderCore,
@@ -49,7 +49,7 @@ describe('tx input => SettlementMeta logic', () => {
     const receipt = mockReceipt
 
     // extract meta
-    const meta = await settlementMetaFromTx(tx, receipt, abi)
+    const meta = await parseTxInputFromTx(tx, receipt, abi)
 
     expect(meta.order.type).toBe(Side[order.side] as SideLabel)
     expect(meta.order.signer).toBe(signerAcount.address)

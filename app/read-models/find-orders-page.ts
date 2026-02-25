@@ -2,7 +2,7 @@ import { secondsToUnixMs } from '#app/lib/utils/time.js'
 import { FindPageArgs } from '#app/repos/_shared/types.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { orderRepo } from '#app/repos/order.repo.js'
-import { OrderCore } from '../domain/order/types.js'
+import { OrderCore } from '#app/domain/order/types.js'
 
 export async function findPage(args: FindPageArgs, opts: { includeCollection?: boolean } = {}) {
   const page = await orderRepo.findPage(args)

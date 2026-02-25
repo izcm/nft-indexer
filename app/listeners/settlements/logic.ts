@@ -1,9 +1,23 @@
-// order types & methods
-// context types
-import type { SettlementLog } from '../types/logs.js'
-
-// domain types
+import type { Hex } from 'viem'
 import type { Settlement } from '#app/domain/settlement/types.js'
+import { Status } from '#app/domain/shared/types.js'
+
+export type SettlementLog = {
+  eventName: 'Settlement'
+  args: {
+    orderHash: Hex
+    collection: Hex
+    tokenId: bigint
+    seller: Hex
+    buyer: Hex
+    currency: Hex
+    price: bigint
+  }
+  blockNumber: bigint
+  blockTimestamp: bigint
+  transactionHash: Hex
+  logIndex: bigint
+}
 
 export const settlementFromLog = (log: SettlementLog, chainId: number): Settlement => {
   const { args } = log
@@ -29,9 +43,12 @@ export const settlementFromLog = (log: SettlementLog, chainId: number): Settleme
         number: Number(log.blockNumber),
         timestamp: Number(log.blockTimestamp),
       },
+
+      callReconstruction: {
+        status: Status.PENDING,
+      },
     },
 
-    metaStatus: 'PENDING',
     ingestedAt: 0,
   }
 }

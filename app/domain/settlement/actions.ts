@@ -1,8 +1,8 @@
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { orderRepo, orderRepoFor } from '#app/repos/order.repo.js'
 import { SettlementKey, settlementRepo } from '#app/repos/settlement.repo.js'
-import { Settlement, SettlementMeta } from './types.js'
-import type { Address } from '../shared/eth.js'
+import { Settlement, SettlementCall } from './types.js'
+import type { Address } from '../shared/types.js'
 
 const TAG = 'settlement'
 
@@ -19,9 +19,9 @@ export async function ingestSettlementMeta({
   chainId,
   orderHash,
   meta,
-}: SettlementKey & { meta: SettlementMeta }) {
+}: SettlementKey & { meta: SettlementCall }) {
   try {
-    await settlementRepo.finalizeMeta({ chainId, orderHash, meta })
+    await settlementRepo.finalizeCallReconstruction({ chainId, orderHash, meta })
 
     // corresponding order for settlement is a 'nice to have'
     //  => fire and forget
