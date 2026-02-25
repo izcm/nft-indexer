@@ -7,5 +7,3 @@ export const VERIFYING_CONTRACT: Address = process.env.VERIFYING_CONRACT as Addr
 export const SETTLEMENT_EVENT_EMITTER: Address = process.env.SETTLEMENT_EMITTER as Address
 
 export const APP_CHAINS: bigint[] = [31337n]
-
-export const DEFAULT_WORKER_LIMIT = 25

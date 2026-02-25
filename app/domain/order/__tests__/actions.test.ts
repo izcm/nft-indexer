@@ -1,11 +1,16 @@
-import { mockOrderRecord } from '#tests/mocks/primitives.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockOrderRecord } from '#tests/mocks/primitives.js'
 
-const findByHash = vi.fn()
-const markFilled = vi.fn()
+import { ingestOrder } from '../actions.js'
+import { orderRepo } from '#app/repos/order.repo.js'
+import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import { validOrder } from '../rules.js'
 
 vi.mock('#app/repos/order.repo.js', () => ({
-  orderRepoFor: () => ({ findByHash, markFilled }),
+  orderRepo: {
+    ensure: vi.fn(),
+  },
+  orderRepoFor: vi.fn(),
 }))
 
 vi.mock('#app/repos/nft-collection.repo.js', () => ({
@@ -14,21 +19,34 @@ vi.mock('#app/repos/nft-collection.repo.js', () => ({
   },
 }))
 
-const fmtError = (action: string, fnName: string) => `[order:${action}] ${fnName} failed`
+vi.mock('../rules.js', () => ({
+  validOrder: vi.fn(),
+}))
 
 describe('domain actions - orders', () => {
-  const mockOrder = mockOrderRecord()
-  const orderCore = mockOrder.order
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
 
-  // describe('applyOrderCreated', () => {
-  //   it('logs if noteCollection fails', async () => {
-  //     const err = new Error('db down')
-  //     vi.mocked(nftCollectionRepo).noteNFTCollection.mockRejectedValueOnce(err)
+  describe('ingestOrder', () => {
+    it('returns ensure result and notes collection', async () => {
+      const orderRecord = mockOrderRecord()
+      const { chainId, order } = orderRecord
 
-  //     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
-  //     await onOrderCreated({ chainId: 1, address: orderCore.collection })
+      const expected = { id: 'abc123', didUpsert: true }
 
-  //     expect(spy).toHaveBeenCalledWith(fmtError('created', 'noteCollection'), err)
-  //   })
-  // })
+      vi.mocked(orderRepo).ensure.mockResolvedValueOnce(expected as any)
+      vi.mocked(validOrder).mockReturnValueOnce(true)
+      vi.mocked(nftCollectionRepo).noteNFTCollection.mockResolvedValueOnce(undefined)
+
+      const result = await ingestOrder(chainId, order)
+
+      expect(orderRepo.ensure).toHaveBeenCalledExactlyOnceWith(chainId, order)
+      expect(nftCollectionRepo.noteNFTCollection).toHaveBeenCalledExactlyOnceWith({
+        chainId,
+        address: order.collection,
+      })
+      expect(result).toEqual(expected)
+    })
+  })
 })

@@ -1,11 +1,13 @@
+import { zeroAddress } from 'viem'
 import { isUintString } from '#app/lib/utils/string.js'
 import { isUnixSeconds } from '#app/lib/utils/time.js'
-import { zeroAddress } from 'viem'
-import { Order, Side } from './types.js'
+import { Side } from './types.js'
+import type { Order, OrderType, SideLabel } from './types.js'
 
-const MAX_ORDER_LIFETIME = 180 * 24 * 60 * 60 // 90 days
-
-// const validTimespan = (end: number, now: number): boolean => end <= BigInt(now + MAX_ORDER_LIFETIME)
+export const toOrderType = (side: number, isCollectionBid: boolean): OrderType => {
+  const direction = Side[side] as SideLabel
+  return direction === 'BID' && isCollectionBid ? 'COLLECTION_BID' : direction
+}
 
 export const validOrder = (o: Order, anchorTs: number): boolean => {
   return (

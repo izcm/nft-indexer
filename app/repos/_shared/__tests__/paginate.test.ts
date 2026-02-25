@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from '../cursor.js'
 import { findPageGeneric } from '../paginate.js'
 import { GenericPageArgs } from '../types.js'
+
 vi.mock(import('../cursor.js'), () => ({
   buildSortSpec: vi.fn(),
   walkPath: vi.fn(),

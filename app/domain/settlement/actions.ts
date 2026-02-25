@@ -1,8 +1,8 @@
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { orderRepoFor } from '#app/repos/order.repo.js'
+import { orderRepo, orderRepoFor } from '#app/repos/order.repo.js'
 import { SettlementKey, settlementRepo } from '#app/repos/settlement.repo.js'
-import type { Address } from '../shared/eth.js'
 import { Settlement, SettlementMeta } from './types.js'
+import type { Address } from '../shared/eth.js'
 
 const TAG = 'settlement'
 
@@ -22,9 +22,10 @@ export async function ingestSettlementMeta({
 }: SettlementKey & { meta: SettlementMeta }) {
   try {
     await settlementRepo.finalizeMeta({ chainId, orderHash, meta })
-    // then do void orderRepo.ensure
+
     // corresponding order for settlement is a 'nice to have'
     //  => fire and forget
+    // orderRepo.ensure(chainId, )
   } catch (err) {
     throw new Error(`[${TAG}:meta] failed to finalize settlement metadata`, { cause: err })
   }

@@ -1,10 +1,8 @@
-import { API_ERRORS } from '#app/domain/constants/api.js'
-import type { Order } from '#app/domain/order/types.js'
-import { validOrder } from '#app/domain/order/validation.js'
-import { orderRepo } from '#app/repos/order.repo.js'
 import type { FastifyInstance } from 'fastify'
+import { ingestOrder } from '#app/domain/order/actions.js'
+import type { Order } from '#app/domain/order/types.js'
+import { InvalidOrderError } from '#app/domain/shared/errors.js'
 
-// TODO: index orderhash on `order_status`
 export const ordersIngest = (fastify: FastifyInstance) => {
   fastify.post<{ Headers: { 'x-chain-id': number }; Body: Order }>(
     '/',
@@ -22,20 +20,21 @@ export const ordersIngest = (fastify: FastifyInstance) => {
       const orderCore = req.body
       const chainId = req.headers['x-chain-id']
 
-      if (!validOrder(orderCore, Math.floor(Date.now() / 1000))) {
-        res.code(400)
-        return API_ERRORS.INVALID_ORDER
-      }
+      try {
+        const { id, didUpsert } = await ingestOrder(chainId, orderCore)
 
-      const { id, didUpsert } = await orderRepo.ensure(chainId, orderCore)
-      //void onOrderCreated(chainId, orderCore)
+        const code = didUpsert ? 201 : 200
 
-      const code = didUpsert ? 201 : 200
+        res.code(code).header('Location', `/api/orders/${id}`)
 
-      res.code(code).header('Location', `/api/orders/${id}`)
-
-      return {
-        id,
+        return {
+          id,
+        }
+      } catch (err) {
+        if (err instanceof InvalidOrderError) {
+          return res.code(400).send(err.message)
+        }
+        throw err
       }
     }
   )

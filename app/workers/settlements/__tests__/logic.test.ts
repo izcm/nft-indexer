@@ -1,14 +1,11 @@
 import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
-
+import { describe, expect, it } from 'vitest'
+import { Abi, encodeFunctionData, getAbiItem, parseSignature } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
 // TODO: https://vitest.dev/config/ **define import aliases in vitest config**
 import { Side, SideLabel } from '#app/domain/order/types.js'
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 import { settlementMetaFromTx } from '#app/workers/settlements/logic.js'
-import { Abi, encodeFunctionData, getAbiItem, parseSignature } from 'viem'
-import { privateKeyToAccount } from 'viem/accounts'
-import { describe, expect, it } from 'vitest'
-
-// test helpers
 import {
   mockFill,
   mockOrderCore,
