@@ -1,11 +1,5 @@
-// === SHARED METADATA WRAPPERS ===
-
-import type { Hex } from 'viem'
-
-export type ListenerItem = {
-  log: any // decoded viem log
-  chainId: number
-}
+export type Address = `0x${string}`
+export type Hash = `0x${string}`
 
 export type BlockTime = {
   number: number
@@ -18,5 +12,5 @@ export type TxContext = {
   effectiveGasPrice: string
   functionSelector: `0x${string}`
   functionName: string
-  contractAddress: Hex | null
+  contractAddress: Address | null
 }

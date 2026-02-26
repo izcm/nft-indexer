@@ -1,8 +1,8 @@
-import type { BlockTime, TxContext } from '#app/domain/shared/chain-context.js'
+import type { BlockTime, TxContext } from '#app/domain/shared/eth.js'
 import type { OrderCore, OrderType, Signature } from '../order/types.js'
 import { Side } from '../order/types.js'
-import { Status } from '../shared/types.js'
-import type { Address, Hash } from '../shared/types.js'
+import { Status } from '../shared/status.js'
+import type { Address, Hash } from '../shared/eth.js'
 
 export type Settlement = {
   chainId: number
@@ -39,7 +39,13 @@ export type SettlementCall = {
   txInput: {
     order: OrderCore
     signature: Signature
-    fill: unknown
+    fill: Fill
     signer: Address
   }
+}
+
+// todo: this should be in some shared package a2z/packages
+export type Fill = {
+  tokenId: string
+  actor: Address
 }

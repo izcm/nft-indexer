@@ -1,9 +1,9 @@
 import { orders } from '#app/db/collections.js'
-import type { Order, OrderRecord, OrderSignature } from '#app/domain/order/types.js'
+import type { Order, OrderRecord, Signature } from '#app/domain/order/types.js'
 import { Side } from '#app/domain/order/types.js'
-import type { Address } from '#app/domain/shared/eth.js'
+import type { Address, Hash } from '#app/domain/shared/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import { addrOf, bytes32, bytes32n, priceWei } from '../../../app/lib/utils/evm-primitives.js'
+import { addrOf, bytes32, bytes32n, priceWei } from '#app/lib/utils/evm-primitives.js'
 
 const s = (x: number | bigint) => x.toString()
 
@@ -77,17 +77,17 @@ function buildFakeOrder(
     currency: addrOf('currency'),
     price: s(priceWei(`price:${orderSeed}`)),
     actor: addrOf(orderSeed),
-    start: startTs,
-    end: endTs,
+    start: s(startTs),
+    end: s(endTs),
     nonce: s(bytes32n(orderSeed)), // don't use seedNum (bigint => number => bigint creates issues when hashing order)
     signature: dummySignature(orderSeed),
   }
 }
 
-const dummySignature = (seed: string): OrderSignature => {
+const dummySignature = (seed: string): Signature => {
   return {
-    r: bytes32(`${seed}:r`),
-    s: bytes32(`${seed}:s`),
+    r: bytes32(`${seed}:r`) as Hash,
+    s: bytes32(`${seed}:s`) as Hash,
     v: 27,
   }
 }

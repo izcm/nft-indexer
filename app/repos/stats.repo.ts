@@ -1,5 +1,5 @@
 import { nftCollectionsStats as stats } from '#app/db/collections.js'
-import type { Address } from '#app/domain/shared/types.js'
+import type { Address } from '#app/domain/shared/eth.js'
 
 type CollectionStatsKey = {
   chainId: number

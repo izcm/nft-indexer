@@ -2,6 +2,9 @@ import { APP_CHAINS, APP_NAME, APP_VERSION, VERIFYING_CONTRACT } from '#app/doma
 import { OrderCore } from '#app/domain/order/types.js'
 import { encodeAbiParameters, Hex, keccak256, toBytes } from 'viem'
 
+// ! NB:
+// this should be in some shared package a2z/packages
+
 export const dmrktDomain = {
   name: APP_NAME,
   version: APP_VERSION,

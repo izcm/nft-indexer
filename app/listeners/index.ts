@@ -1,9 +1,11 @@
 import type { AppClient } from '#app/clients.js'
 import { parseAbi } from 'viem'
 import { SETTLEMENT_EVENT_EMITTER } from '#app/domain/constants/app.js'
-
 import { handleSettlement } from './settlements/handler.js'
-import type { ListenerItem } from '#app/domain/shared/chain-context.js'
+export type ListenerItem = {
+  log: any // decoded viem log
+  chainId: number
+}
 
 // ------------------
 // LISTENERS

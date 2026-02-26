@@ -1,6 +1,9 @@
 import { settlements } from '#app/db/collections.js'
 import { Settlement } from '#app/domain/settlement/types.js'
 import { addrOf, bytes32, priceWei } from '#app/lib/utils/evm-primitives.js'
+import { applyDeepPartial, type DeepPartial } from '#app/lib/utils/deep-partial.js'
+import { base } from 'viem/chains'
+
 const s = (x: number | bigint) => x.toString()
 
 export async function seedSettlements(
@@ -8,10 +11,10 @@ export async function seedSettlements(
   seed: string,
   count: number,
   now: number = 0,
-  overrides: Partial<Settlement> = {}
+  overrides: DeepPartial<Settlement> = {}
 ) {
   const allSettlements: Settlement[] = Array.from({ length: count }).map((_, i) => {
-    return {
+    const base = {
       chainId,
       orderHash: bytes32(`order:${i}:${seed}`),
 
@@ -27,17 +30,21 @@ export async function seedSettlements(
       execution: {
         logIndex: 0,
         txHash: bytes32(`tx:${seed}`),
+
         block: {
           number: 0,
           timestamp: now,
         },
+
+        callReconstruction: {
+          status: 'PENDING',
+        },
       },
 
-      metaStatus: 'PENDING',
       ingestedAt: now,
-
-      ...overrides,
     } as Settlement
+
+    return applyDeepPartial(base, overrides)
   })
 
   return settlements().insertMany(allSettlements)

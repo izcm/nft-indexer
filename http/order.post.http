@@ -4,9 +4,9 @@ X-Chain-Id: 31337
 
 {
   "actor": "0x31F1a4B4f9f7CAD3f21bF9F2c3840C5CcF7B85b9",
-  "collection": "0x6FE69253967982531bDe0C06476e7fe427f3F56c",
+  "collection": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
   "currency": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-  "end": 1868226791,
+  "end": 1868226790,
   "isCollectionBid": false,
   "nonce": "1",
   "price": "100000000000000000",

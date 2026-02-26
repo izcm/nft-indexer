@@ -1,12 +1,15 @@
+import { ObjectId } from 'mongodb'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { orders } from '#app/db/collections.js'
 import { OrderRecord } from '#app/domain/order/types.js'
 import { addrOf } from '#app/lib/utils/evm-primitives.js'
 import { orderRepo } from '#app/repos/order.repo.js'
+
+// test helpers
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
-import { mockOrderCore, mockOrderRecord } from '#tests/mocks/primitives.js'
-import { ObjectId } from 'mongodb'
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockOrderRecord } from '#tests/mocks/primitives.js'
 
 beforeAll(async () => {
   await startTestMongo()

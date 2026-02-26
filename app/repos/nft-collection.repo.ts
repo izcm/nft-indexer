@@ -1,11 +1,11 @@
+import { ObjectId } from 'mongodb'
 import { nftCollections } from '#app/db/collections.js'
 import type {
   NFTCollectionChainMeta,
   NFTCollectionMetaPatch,
 } from '#app/domain/nft-collection/types.js'
-import { Status } from '#app/domain/shared/types.js'
-import type { Address } from '#app/domain/shared/types.js'
-import { ObjectId } from 'mongodb'
+import { Status } from '#app/domain/shared/status.js'
+import type { Address } from '#app/domain/shared/eth.js'
 
 export type NFTCollectionKey = {
   chainId: number

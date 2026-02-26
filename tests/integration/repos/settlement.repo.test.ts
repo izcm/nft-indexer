@@ -1,12 +1,16 @@
+import { ObjectId } from 'mongodb'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { settlements } from '#app/db/collections.js'
 import type { Settlement } from '#app/domain/settlement/types.js'
+import { Status } from '#app/domain/shared/status.js'
+import type { Hash } from '#app/domain/shared/eth.js'
 import { bytes32 } from '#app/lib/utils/evm-primitives.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedSettlements } from '#tests/helpers/seed/seed-settlements.js'
-import { mockSettlement, mockSettlementMeta } from '#tests/mocks/primitives.js'
-import { ObjectId } from 'mongodb'
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockSettlement, mockSettlementCall } from '#tests/mocks/primitives.js'
+import { DeepPartial } from '#app/lib/utils/deep-partial.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -27,15 +31,19 @@ describe('settlementRepo', () => {
 
   const mockSettlementForChain = (chainId: number = CHAIN_ID) => mockSettlement({ chainId })
 
-  async function givenSettlementExists(overrides: Partial<Settlement> = {}) {
-    const raw = mockSettlementForChain()
-    const final = { ...raw, ...overrides }
+  async function givenSettlementExists(overrides: DeepPartial<Settlement> = {}) {
+    const seed = `given:${Math.random().toString(36).slice(2)}`
 
-    const { insertedId } = await settlements().insertOne(final)
+    const result = await seedSettlements(CHAIN_ID, seed, 1, 0, overrides)
+
+    const insertedId = result.insertedIds[0]
+
+    const settlement = await settlements().findOne({ _id: insertedId })
+    if (!settlement) throw new Error('failed to fetch seeded settlement')
 
     return {
       insertedId,
-      settlement: final,
+      settlement,
     }
   }
 
@@ -84,7 +92,7 @@ describe('settlementRepo', () => {
     })
 
     // findPageGeneric is extensively tested with both unit + seperate integration tests
-    describe('findPage', async () => {
+    describe('findPage', () => {
       it('filters settlement by block timestamp range', async () => {
         const cid = CHAIN_ID // lower noise
 
@@ -119,22 +127,33 @@ describe('settlementRepo', () => {
           },
         }
 
-        // Seed settlements with every metaStatus on target chain
+        // Seed settlements with every callReconstruction status on target chain
         await seedSettlements(target.chainId, 'pending', target.count.pending, 0, {
-          metaStatus: 'PENDING',
+          execution: {
+            callReconstruction: { status: Status.PENDING },
+          },
         })
         await seedSettlements(target.chainId, 'done', target.count.done, 0, {
-          metaStatus: 'DONE',
+          execution: {
+            callReconstruction: { status: Status.DONE },
+          },
         })
         await seedSettlements(target.chainId, 'failed', target.count.failed, 0, {
-          metaStatus: 'FAILED',
+          execution: {
+            callReconstruction: { status: Status.FAILED },
+          },
         })
 
         // Seed pending settlements on other chain
-        await seedSettlements(31337, 'ignore', 10, 0, { metaStatus: 'PENDING' })
+        await seedSettlements(31337, 'ignore', 10, 0, {
+          execution: {
+            callReconstruction: { status: Status.PENDING },
+          },
+        })
 
-        const items = await repo.findPendingMeta(target.chainId, 100)
+        const items = await repo.findPendingCallReconstruction(target.chainId, 100)
 
+        console.log(items)
         expect(items).toHaveLength(target.count.pending)
         expect(items.every(s => s.chainId === target.chainId)).toBe(true)
       })
@@ -144,18 +163,26 @@ describe('settlementRepo', () => {
         const limit = 2
 
         // Seed 5 pending settlements
-        await seedSettlements(chainId, 'pending', 5, 0, { metaStatus: 'PENDING' })
+        await seedSettlements(chainId, 'pending', 5, 0, {
+          execution: {
+            callReconstruction: { status: Status.PENDING },
+          },
+        })
 
-        const items = await repo.findPendingMeta(chainId, limit)
+        const items = await repo.findPendingCallReconstruction(chainId, limit)
 
         expect(items).toHaveLength(limit)
       })
 
       it('returns empty array when no pending settlements exist', async () => {
         // seed only non-pending
-        await seedSettlements(CHAIN_ID, 'done', 3, 0, { metaStatus: 'DONE' })
+        await seedSettlements(CHAIN_ID, 'done', 3, 0, {
+          execution: {
+            callReconstruction: { status: Status.DONE },
+          },
+        })
 
-        const items = await repo.findPendingMeta(CHAIN_ID, 10)
+        const items = await repo.findPendingCallReconstruction(CHAIN_ID, 10)
 
         expect(items).toEqual([])
       })
@@ -218,13 +245,17 @@ describe('settlementRepo', () => {
       })
     })
 
-    describe('meta / status writers', () => {
-      describe('finalizeMeta', () => {
-        it('updates an existing settlement with metadata and marks it DONE', async () => {
-          const { settlement } = await givenSettlementExists({ metaStatus: 'PENDING' })
-          const meta = mockSettlementMeta
+    describe('callReconstruction builders', () => {
+      const readCR = (s: Settlement) => s.execution.callReconstruction
 
-          const result = await repo.finalizeMeta({
+      describe('finalizeCallReconstruction', () => {
+        it('updates an existing settlement call reconstruction and marks it DONE', async () => {
+          const { settlement } = await givenSettlementExists({
+            execution: { callReconstruction: { status: Status.PENDING } },
+          })
+          const meta = mockSettlementCall()
+
+          const result = await repo.finalizeCallReconstruction({
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
             meta,
@@ -238,16 +269,16 @@ describe('settlementRepo', () => {
           })
           if (!updated) throw new Error('row missing')
 
-          expect(updated.metaStatus).toBe('DONE')
-          expect(updated.orderAttributes).toEqual(meta.order)
-          expect(updated.execution.txContext).toEqual(meta.txContext)
+          const cr = readCR(updated)
+          expect(cr.status).toBe(Status.DONE)
+          expect(cr.data?.txContext).toEqual(meta.txContext)
         })
 
         it('does not upsert settlement does not exist', async () => {
-          const result = await repo.finalizeMeta({
+          const result = await repo.finalizeCallReconstruction({
             chainId: 1,
-            orderHash: bytes32('o_hash'),
-            meta: mockSettlementMeta,
+            orderHash: bytes32('o_hash') as Hash,
+            meta: mockSettlementCall(),
           })
 
           expect(result.acknowledged).toBe(true)
@@ -271,13 +302,15 @@ describe('settlementRepo', () => {
           }
 
           const { settlement } = await givenSettlementExists({
-            metaStatus: 'PENDING',
-            execution: existingExecution,
+            execution: {
+              ...existingExecution,
+              callReconstruction: { status: Status.PENDING },
+            },
           })
 
-          const meta = mockSettlementMeta
+          const meta = mockSettlementCall()
 
-          await repo.finalizeMeta({
+          await repo.finalizeCallReconstruction({
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
             meta,
@@ -295,12 +328,14 @@ describe('settlementRepo', () => {
         })
       })
 
-      describe('markMetaFailed', () => {
-        it('marks an existing settlement meta as FAILED and stores the error message', async () => {
-          const { settlement } = await givenSettlementExists({ metaStatus: 'PENDING' })
-          const errorMessage = 'first'
+      describe('markCallReconstructionFailed', () => {
+        it('marks an existing settlement call reconstruction as FAILED and stores the error message', async () => {
+          const { settlement } = await givenSettlementExists({
+            execution: { callReconstruction: { status: Status.PENDING } },
+          })
+          const errorMessage = 'some error'
 
-          const result = await repo.markMetaFailed({
+          const result = await repo.markCallReconstructionFailed({
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
             error: errorMessage,
@@ -314,56 +349,22 @@ describe('settlementRepo', () => {
           })
           if (!updated) throw new Error('row missing')
 
-          expect(updated.metaStatus).toBe('FAILED')
-          expect(updated.metaError).toBe(errorMessage)
+          const cr = readCR(updated)
+          expect(cr.status).toBe(Status.FAILED)
+          expect(cr.error).toBe(errorMessage)
         })
 
-        it('does not modify execution data or orderAttributes', async () => {
-          const existingExecution = {
-            logIndex: 2,
-            txHash: bytes32('existing:tx'),
-            block: {
-              number: 100,
-              timestamp: 123456,
-            },
-          }
-
-          const existingAttributes = mockSettlementMeta.order
-
-          const { settlement } = await givenSettlementExists({
-            metaStatus: 'DONE',
-            execution: existingExecution,
-            orderAttributes: existingAttributes,
-          })
-
-          const errorMessage = 'second'
-
-          await repo.markMetaFailed({
-            chainId: settlement.chainId,
-            orderHash: settlement.orderHash,
-            error: errorMessage,
-          })
-
-          const updated = await settlements().findOne({
-            chainId: settlement.chainId,
-            orderHash: settlement.orderHash,
-          })
-          if (!updated) throw new Error('row missing')
-
-          expect(updated.execution).toEqual(existingExecution)
-          expect(updated.orderAttributes).toEqual(existingAttributes)
-        })
-
-        it('overwrites the previous metaError on retry', async () => {
+        it('overwrites the previous error on retry', async () => {
           const firstError = 'first'
           const secondError = 'second'
 
           const { settlement } = await givenSettlementExists({
-            metaStatus: 'FAILED',
-            metaError: firstError,
+            execution: {
+              callReconstruction: { status: Status.FAILED, error: firstError },
+            },
           })
 
-          await repo.markMetaFailed({
+          await repo.markCallReconstructionFailed({
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
             error: secondError,
@@ -375,7 +376,7 @@ describe('settlementRepo', () => {
           })
           if (!updated) throw new Error('row missing')
 
-          expect(updated?.metaError).toBe(secondError)
+          expect(readCR(updated).error).toBe(secondError)
         })
       })
     })

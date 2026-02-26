@@ -1,4 +1,4 @@
-import type { Address, Hash } from '../shared/types.js'
+import type { Address, Hash } from '../shared/eth.js'
 
 export type OrderType = 'ASK' | 'BID' | 'COLLECTION_BID'
 
@@ -19,7 +19,7 @@ export type OrderRecord = {
 
   status: OrderStatus
 
-  //   filledTxHash = txHash
+  // filledTxHash = txHash
   // filledBlock = blockNumber
   // filledLogIndex = logIndex
 
@@ -42,8 +42,9 @@ export type Order = {
   currency: Address
   price: string
   actor: Address
-  start: number
-  end: number
+  // uint64 cannot safely cast to number
+  start: string
+  end: string
   nonce: string
 
   signature: Signature

@@ -1,10 +1,18 @@
 import type { OrderCore, OrderRecord } from '#app/domain/order/types.js'
-import type { Settlement, SettlementMeta } from '#app/domain/settlement/types.js'
+import type { Settlement, SettlementCall } from '#app/domain/settlement/types.js'
+import { Status } from '#app/domain/shared/status.js'
+import type { Address, Hash } from '#app/domain/shared/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import type { TxContext } from '#app/listeners/types/context.js'
-import type { SettlementLog } from '#app/listeners/types/logs.js'
-import type { Hex } from 'viem'
-import { addrOf, bytes32, bytes32n, bytesOf, priceWei } from '../../app/lib/utils/evm-primitives.js'
+import type { TxContext } from '#app/domain/shared/eth.js'
+import type { SettlementLog } from '#app/listeners/settlements/logic.js'
+import {
+  addrOf,
+  bytes32,
+  bytes32n,
+  bytesOf,
+  bytesOfn,
+  priceWei,
+} from '#app/lib/utils/evm-primitives.js'
 
 const s = (x: number | bigint) => x.toString()
 
@@ -34,7 +42,7 @@ export const mockTxContext: TxContext = {
   contractAddress: addrOf('tx-context:contract'),
 }
 
-export const mockTx = (input: Hex) => ({
+export const mockTx = (input: Hash) => ({
   to: addrOf('tx:txTo'),
   chainId: 1n,
   transactionIndex: 0n,
@@ -46,7 +54,7 @@ export const mockTx = (input: Hex) => ({
 --------------------------------------------------- */
 
 export const mockFill = () => ({
-  tokenId: bytes32n('fill:tokenId'),
+  tokenId: s(bytes32n('fill:tokenId')),
   actor: addrOf('fill:actor'),
 })
 
@@ -56,8 +64,8 @@ export const mockOrderRecord = (overrides: Partial<OrderRecord> = {}): OrderReco
   order: {
     ...mockOrderCore(),
     signature: {
-      r: '0xabc' as Hex,
-      s: '0xabc' as Hex,
+      r: '0xabc',
+      s: '0xabc',
       v: 27,
     },
   },
@@ -71,60 +79,67 @@ export const mockOrderCore = (): OrderCore => ({
   side: 0,
   isCollectionBid: false,
   collection: addrOf('order:collection'),
-  tokenId: bytes32('order:tokenId'),
-  currency: addrOf('order:currency'),
-  price: bytes32('order:price'),
-  actor: addrOf('order:actor'),
-  start: Number(bytesOf('order:start', 8)),
-  end: Number(bytesOf('order:end', 8)),
-  nonce: bytes32('order:nonce'),
+  tokenId: s(bytes32n('order:tokenId')),
+  currency: addrOf('order:currency') as Address,
+  price: s(bytes32n('order:price')),
+  actor: addrOf('order:actor') as Address,
+  start: s(bytesOfn('order:start', 8)),
+  end: s(bytesOfn('order:end', 8)),
+  nonce: s(bytes32n('order:nonce')),
 })
 
 export const mockSettlement = (overrides: Partial<Settlement> = {}): Settlement => ({
   chainId: 1,
-  orderHash: bytes32('settlement:orderHash'),
-  collection: addrOf('settlement:collection'),
-  tokenId: bytes32n('settlement:tokenId').toString(),
-  seller: addrOf('settlement:seller'),
-  buyer: addrOf('settlement:buyer'),
-  currency: addrOf('settlement:currency'),
-  price: priceWei('settlement:price').toString(),
+  orderHash: bytes32('settlement:orderHash') as Hash,
+  collection: addrOf('settlement:collection') as Address,
+  tokenId: s(bytes32n('settlement:tokenId')),
+  seller: addrOf('settlement:seller') as Address,
+  buyer: addrOf('settlement:buyer') as Address,
+  currency: addrOf('settlement:currency') as Address,
+  price: s(bytes32n('settlement:price')),
   execution: {
     logIndex: 0,
-    txHash: bytes32('settlement:txHash'),
+    txHash: bytes32('settlement:txHash') as Hash,
     block: {
       number: 0,
       timestamp: 0,
     },
+    callReconstruction: {
+      status: Status.PENDING,
+    },
   },
-  metaStatus: 'PENDING',
   ingestedAt: 0,
   ...overrides,
 })
 
-export const mockSettlementMeta: SettlementMeta = {
-  order: {
-    type: 'ASK',
-    side: 0,
-    isCollectionBid: false,
-    signer: addrOf('meta:order:signer'),
-  },
+export const mockSettlementCall = (overrides: Partial<SettlementCall> = {}): SettlementCall => ({
   txContext: mockTxContext,
-}
+  txInput: {
+    order: mockOrderCore(),
+    signature: {
+      r: '0xabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabca' as Hash,
+      s: '0xabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabca' as Hash,
+      v: 27,
+    },
+    fill: mockFill(),
+    signer: addrOf('settlement:signer') as Address,
+  },
+  ...overrides,
+})
 
 export const mockSettlementLog = (): SettlementLog => ({
   eventName: 'Settlement',
   args: {
-    orderHash: bytes32('cd'),
-    collection: addrOf('log:collection'),
+    orderHash: bytes32('cd') as Hash,
+    collection: addrOf('log:collection') as Address,
     tokenId: BigInt(bytes32('log:tokenId')),
-    currency: addrOf('log:currency'),
+    currency: addrOf('log:currency') as Address,
     price: BigInt(bytes32('log:price')),
-    seller: addrOf('log:seller'),
-    buyer: addrOf('log:buyer'),
+    seller: addrOf('log:seller') as Address,
+    buyer: addrOf('log:buyer') as Address,
   },
   blockNumber: bytes32n('log:blocknumber'),
   blockTimestamp: bytes32n('log:blocktimestamp'),
-  transactionHash: bytes32('log:txhash'),
+  transactionHash: bytes32('log:txhash') as Hash,
   logIndex: bytes32n('log:index'),
 })

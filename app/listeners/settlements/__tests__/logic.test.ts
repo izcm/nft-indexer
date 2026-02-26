@@ -20,6 +20,8 @@ describe('Settlement log => Settlement domain mapping', () => {
     expect(settlement.seller).toBe(args.seller)
     expect(settlement.buyer).toBe(args.buyer)
 
+    expect(settlement.ingestedAt).toBe(0) // set in db
+
     // chain / execution ctx
     const { execution } = settlement
 
@@ -31,11 +33,10 @@ describe('Settlement log => Settlement domain mapping', () => {
     expect(block.number).toBe(Number(log.blockNumber))
     expect(block.timestamp).toBe(Number(log.blockTimestamp))
 
-    // ingestion ctx
-    expect(settlement.metaStatus).toBe('PENDING')
-    expect(settlement.ingestedAt).toBe(0) // set in db
+    // call reconstruction
+    const { callReconstruction } = execution
 
-    // order? should be undefined
-    expect(settlement.orderAttributes).toBeUndefined()
+    expect(callReconstruction.status).toBe('PENDING')
+    expect(callReconstruction.data).toBeUndefined()
   })
 })

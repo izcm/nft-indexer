@@ -1,4 +1,4 @@
-import type { Address } from '../shared/types.js'
+import type { Address } from '../shared/eth.js'
 
 export const APP_NAME = 'dmrkt'
 export const APP_VERSION = '0'

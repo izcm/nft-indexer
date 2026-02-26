@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { Abi, encodeFunctionData, getAbiItem, parseSignature } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 // TODO: https://vitest.dev/config/ **define import aliases in vitest config**
-import { Side, SideLabel } from '#app/domain/order/types.js'
+import { convertBigintsDeep } from '#app/lib/utils/bigint.js'
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
-import { parseTxInputFromTx } from '#app/workers/settlements/logic.js'
+import { parseTxInputs } from '#app/workers/settlements/logic.js'
 import {
   mockFill,
   mockOrderCore,
@@ -23,12 +23,14 @@ describe('tx input => SettlementMeta logic', () => {
       name: 'settle',
     })
 
-    expect(settleFunc).toBeDefined()
+    if (!settleFunc) throw new Error('did not find settle function in provided abi')
 
-    // mock inputs
+    // arrange
+
     const order = mockOrderCore()
-    const signerAcount = privateKeyToAccount(mockPrivateKeys.signer) // doesn't need to match order.actor
+    const fill = mockFill()
 
+    const signerAcount = privateKeyToAccount(mockPrivateKeys.signer)
     const sig = await signerAcount.signTypedData({
       domain: dmrktDomain,
       types: dmrktTypes,
@@ -36,22 +38,25 @@ describe('tx input => SettlementMeta logic', () => {
       message: toOrder712(order),
     })
 
-    const fill = mockFill()
-
     const encodedData = encodeFunctionData({
       abi,
       functionName: 'settle',
       args: [fill, order, parseSignature(sig)],
     })
 
-    // mock chain ctx
     const tx = mockTx(encodedData)
     const receipt = mockReceipt
 
-    // extract meta
-    const meta = await parseTxInputFromTx(tx, receipt, abi)
+    // act
+    const meta = await parseTxInputs(tx, receipt, abi)
 
-    expect(meta.order.type).toBe(Side[order.side] as SideLabel)
-    expect(meta.order.signer).toBe(signerAcount.address)
+    console.log(fill)
+    console.log(meta.txInput.fill)
+
+    // assert
+
+    expect(convertBigintsDeep(meta.txInput.order)).toEqual(order)
+    expect(convertBigintsDeep(meta.txInput.fill)).toEqual(fill)
+    expect(meta.txInput.signer).toBe(signerAcount.address)
   })
 })

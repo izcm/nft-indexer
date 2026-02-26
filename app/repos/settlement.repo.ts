@@ -1,6 +1,7 @@
 import { settlements } from '#app/db/collections.js'
 import type { Settlement, SettlementCall } from '#app/domain/settlement/types.js'
-import { Status, type Hash } from '#app/domain/shared/types.js'
+import { Status } from '#app/domain/shared/status.js'
+import type { Hash } from '#app/domain/shared/eth.js'
 import type { ObjectId } from 'mongodb'
 import { findPageGeneric } from './_shared/paginate.js'
 import type { FindPageArgs } from './_shared/types.js'

@@ -3,7 +3,7 @@ import { Side } from '#app/domain/order/types.js'
 import {
   ActiveCounts,
   topNFTCollectionsByActiveOrders,
-} from '#app/domain/queries/top-nft-collections.js'
+} from '#app/read-models/top-nft-collections.js'
 import { addrOf } from '#app/lib/utils/evm-primitives.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections as _seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
