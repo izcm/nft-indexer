@@ -5,7 +5,7 @@ import { secondsToUnixMs } from '#app/lib/utils/time.js'
 // api protects against huge start / end
 // listener may store orders with full on 256 fields, these need to be handled
 
-export const orderDTO = (order: OrderCore) => ({
+export const toOrderDTO = (order: OrderCore) => ({
   type: order.side === 0 ? 'ask' : 'bid',
   isCollectionBid: order.isCollectionBid,
   collection: order.collection,

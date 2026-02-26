@@ -1,7 +1,7 @@
 import { orderQueryableFields } from '#app/api/schemas/order.js'
 import { byIdParams, paginationQueryParams } from '#app/api/schemas/shared.js'
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
-import * as orderQuery from '#app/read-models/orders/find-orders-page.js'
+import * as orderQuery from '#app/read-models/orders/read-order-page.js'
 import { orderRepo as repo } from '#app/repos/order.repo.js'
 import type { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -46,7 +46,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
 
       const includeCollection = (include as string) && include.split(',').includes('collection')
 
-      return orderQuery.findPage(
+      return orderQuery.readOrderPage(
         {
           filters,
           from,

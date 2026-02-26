@@ -1,9 +1,12 @@
-import { FindPageArgs } from '#app/repos/shared/types.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { orderRepo } from '#app/repos/order.repo.js'
-import { orderDTO } from './dto.js'
+import { toOrderDTO } from './dto.js'
+import type { FindPageArgs } from '#app/repos/shared/types.js'
 
-export async function findPage(args: FindPageArgs, opts: { includeCollection?: boolean } = {}) {
+export async function readOrderPage(
+  args: FindPageArgs,
+  opts: { includeCollection?: boolean } = {}
+) {
   const page = await orderRepo.findPage(args)
 
   const includeCollection = opts.includeCollection === true
@@ -29,7 +32,7 @@ export async function findPage(args: FindPageArgs, opts: { includeCollection?: b
     return {
       id: record._id.toString(),
       chainId: record.chainId,
-      ...orderDTO(record.order),
+      ...toOrderDTO(record.order),
       rawOrder: record.order,
       collectionMeta: collection,
     }
