@@ -7,28 +7,44 @@ import type { OrderRecord } from '#app/domain/order/types.js'
 import type { NFTCollection } from '#app/domain/nft-collection/types.js'
 import { nftCollectionRepo, type NFTCollectionKey } from '#app/repos/nft-collection.repo.js'
 
-type KeyExtractors = {
-  Settlement: (doc: Settlement) => SettlementKey
-  Order: (doc: OrderRecord) => OrderKey
-  NFTCollection: (doc: NFTCollection) => NFTCollectionKey
-}
+// type ResourceDef<TDoc, TKey> = {
+//   getKey: (doc: TDoc) => TKey
+//   findByKey: (key: TKey) => Promise<TDoc | null>
+// }
 
-const keys: KeyExtractors = {
-  Settlement: s => ({
-    chainId: s.chainId,
-    orderHash: s.orderHash,
-  }),
-  Order: o => ({
-    chainId: o.chainId,
-    orderHash: o.orderHash,
-  }),
-  NFTCollection: c => ({
-    chainId: c.chainId,
-    address: c.address,
-  }),
-}
+// type Resources = {
+//   Settlement: ResourceDef<Settlement, SettlementKey>
+//   Order: ResourceDef<OrderRecord, OrderKey>
+//   NFTCollection: ResourceDef<NFTCollection, NFTCollectionKey>
+// }
 
-type PagedResource = Exclude<keyof typeof keys, 'NFTCollection'>
+const resources = {
+  Settlement: {
+    getKey: (s: Settlement) => ({
+      chainId: s.chainId,
+      orderHash: s.orderHash,
+    }),
+    findByKey: (key: SettlementKey) => settlementRepo.findByKey(key),
+  },
+
+  Order: {
+    getKey: (o: OrderRecord) => ({
+      chainId: o.chainId,
+      orderHash: o.orderHash,
+    }),
+    findByKey: (key: OrderKey) => orderRepo.findByKey(key),
+  },
+
+  NFTCollection: {
+    getKey: (c: NFTCollection) => ({
+      chainId: c.chainId,
+      address: c.address,
+    }),
+    findByKey: (key: NFTCollectionKey) => nftCollectionRepo.findByKey(key),
+  },
+} as const
+
+type PagedResource = Exclude<keyof typeof resources, 'NFTCollection'>
 
 const findPageRoutes: Record<
   PagedResource,
@@ -38,14 +54,12 @@ const findPageRoutes: Record<
   Order: orderRepo.findPage,
 }
 
-export async function readPage(
-  key: PagedResource,
+export async function readGenericPage(
+  resource: PagedResource,
   args: FindPageArgs,
-  opts: { includeCollection?: boolean } = {}
+  opts: { include?: (keyof typeof resources)[] } = {}
 ) {
-  const findPage = findPageRoutes[key]
+  const findPage = findPageRoutes[resource]
 
   const page = await findPage(args)
 }
-
-const inclution = {}
