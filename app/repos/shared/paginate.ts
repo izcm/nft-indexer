@@ -1,13 +1,20 @@
+import { Document as MongoDoc } from 'mongodb'
 import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from './cursor.js'
 import { GenericPageArgs } from './types.js'
-export async function findPageGeneric({
+
+export type Page<T> = {
+  items: T[]
+  nextCursor: string | null
+}
+
+export async function findPageGeneric<TDoc extends MongoDoc>({
   dbCollection,
   baseQuery,
   sortField,
   sortDir,
   cursor,
   limit,
-}: GenericPageArgs) {
+}: GenericPageArgs<TDoc>) {
   if (!Number.isInteger(limit) || limit < 1) throw new Error('Invalid pagination limit')
 
   const query = { ...baseQuery }
@@ -21,7 +28,7 @@ export async function findPageGeneric({
   const sortSpec = buildSortSpec(sortField, sortDir)
 
   const docs = await dbCollection
-    .find(query)
+    .find(query as any)
     .sort(sortSpec)
     .limit(limit + 1)
     .toArray()

@@ -116,11 +116,6 @@ export const mockSettlementCall = (overrides: Partial<SettlementCall> = {}): Set
   txContext: mockTxContext,
   txInput: {
     order: mockOrderCore(),
-    signature: {
-      r: '0xabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabca' as Hash,
-      s: '0xabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabca' as Hash,
-      v: 27,
-    },
     fill: mockFill(),
     signer: addrOf('settlement:signer') as Address,
   },

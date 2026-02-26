@@ -3,8 +3,8 @@ import type { Settlement, SettlementCall } from '#app/domain/settlement/types.js
 import { Status } from '#app/domain/shared/status.js'
 import type { Hash } from '#app/domain/shared/eth.js'
 import type { ObjectId } from 'mongodb'
-import { findPageGeneric } from './_shared/paginate.js'
-import type { FindPageArgs } from './_shared/types.js'
+import { findPageGeneric } from './shared/paginate.js'
+import type { FindPageArgs } from './shared/types.js'
 
 export type SettlementKey = {
   chainId: number
@@ -42,7 +42,7 @@ export const settlementRepo = {
       if (to) query[blockTs].$lte = to
     }
 
-    return findPageGeneric({
+    return findPageGeneric<Settlement>({
       dbCollection: settlements(),
       baseQuery: query,
       sortField,

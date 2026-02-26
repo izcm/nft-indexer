@@ -1,8 +1,7 @@
-import { secondsToUnixMs } from '#app/lib/utils/time.js'
-import { FindPageArgs } from '#app/repos/_shared/types.js'
+import { FindPageArgs } from '#app/repos/shared/types.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { orderRepo } from '#app/repos/order.repo.js'
-import { OrderCore } from '#app/domain/order/types.js'
+import { orderDTO } from './dto.js'
 
 export async function findPage(args: FindPageArgs, opts: { includeCollection?: boolean } = {}) {
   const page = await orderRepo.findPage(args)
@@ -41,19 +40,3 @@ export async function findPage(args: FindPageArgs, opts: { includeCollection?: b
     items,
   }
 }
-
-// todo: start and end must handle bigints
-// api protects against huge start / end
-// listener may store orders with full on 256 fields, these need to be handled
-
-const orderDTO = (order: OrderCore) => ({
-  type: order.side === 0 ? 'ask' : 'bid',
-  isCollectionBid: order.isCollectionBid,
-  collection: order.collection,
-  tokenId: order.tokenId,
-  price: order.price,
-  currency: order.currency,
-  actor: order.actor,
-  start: secondsToUnixMs(Number(order.start)),
-  end: secondsToUnixMs(Number(order.end)),
-})

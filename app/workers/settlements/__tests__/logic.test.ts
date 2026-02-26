@@ -14,8 +14,8 @@ import {
   mockTx,
 } from '#tests/mocks/primitives.js'
 
-describe('tx input => SettlementMeta logic', () => {
-  it('recovers signer + order attributes ', async () => {
+describe('parseTxInputs', () => {
+  it('parses all tx inputs + recovers signer as expected', async () => {
     const abi = json.abi as Abi
 
     const settleFunc = getAbiItem({
@@ -48,10 +48,8 @@ describe('tx input => SettlementMeta logic', () => {
     const receipt = mockReceipt
 
     // act
-    const meta = await parseTxInputs(tx, receipt, abi)
 
-    console.log(fill)
-    console.log(meta.txInput.fill)
+    const meta = await parseTxInputs(tx, receipt, abi)
 
     // assert
 

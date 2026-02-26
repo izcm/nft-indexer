@@ -38,7 +38,6 @@ export type SettlementCall = {
 
   txInput: {
     order: OrderCore
-    signature: Signature
     fill: Fill
     signer: Address
   }

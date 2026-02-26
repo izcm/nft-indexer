@@ -1,13 +1,14 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { getDb } from '#app/db/mongo.js'
 import { bytes32n } from '#app/lib/utils/evm-primitives.js'
-import { walkPath } from '#app/repos/_shared/cursor.js'
-import { findPageGeneric } from '#app/repos/_shared/paginate.js'
-import type { GenericPageArgs } from '#app/repos/_shared/types.js'
+import { walkPath } from '#app/repos/shared/cursor.js'
+import { findPageGeneric, Page } from '#app/repos/shared/paginate.js'
+import type { GenericPageArgs } from '#app/repos/shared/types.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-import type { Collection } from 'mongodb'
+import { Collection, ObjectId } from 'mongodb'
 
 type TestDoc = {
+  _id: ObjectId
   foo: {
     bar: number
   }
@@ -18,7 +19,7 @@ let collection: Collection<TestDoc>
 
 beforeAll(async () => {
   await startTestMongo()
-  collection = getDb().collection('__paginate_test__')
+  collection = getDb().collection<TestDoc>('__paginate_test__')
 })
 
 beforeEach(async () => {
@@ -30,7 +31,9 @@ afterAll(async () => {
 })
 
 describe('findPageGeneric (mongo integration)', () => {
-  const makeArgs = (overrides: Partial<GenericPageArgs> = {}): GenericPageArgs => ({
+  const makeArgs = (
+    overrides: Partial<GenericPageArgs<TestDoc>> = {}
+  ): GenericPageArgs<TestDoc> => ({
     dbCollection: collection,
     baseQuery: {},
     sortField: 'ts',
@@ -41,12 +44,13 @@ describe('findPageGeneric (mongo integration)', () => {
   })
 
   async function seedTestDocs(count: number = 5, seed: string = 'seed') {
-    const testDocs = Array.from({ length: count }).map((_, i) => {
+    const testDocs: TestDoc[] = Array.from({ length: count }).map((_, i) => {
       const iSeed = `${seed}:${i}`
 
       const determine = (x: string) => Number(bytes32n(x) % 9_000_000_000_000_000n) // js number 2^53
 
       return {
+        _id: new ObjectId(),
         foo: {
           bar: determine(`b:ts:${iSeed}`),
         },
@@ -98,12 +102,12 @@ describe('findPageGeneric (mongo integration)', () => {
   })
 
   describe('cursor traversal', () => {
-    async function walkAllPages(args: Partial<GenericPageArgs>) {
+    async function walkAllPages(args: Partial<GenericPageArgs<TestDoc>>) {
       let cursor: string | null = null
       const seen = new Set<string>()
 
       while (true) {
-        const res = await findPageGeneric(makeArgs({ ...args, cursor }))
+        const res: Page<TestDoc> = await findPageGeneric(makeArgs({ ...args, cursor }))
 
         for (const doc of res.items) {
           const id = String(doc._id)
@@ -158,6 +162,7 @@ describe('findPageGeneric (mongo integration)', () => {
           seed: async (total: number) => {
             await collection.insertMany(
               Array.from({ length: total }).map((_, i) => ({
+                _id: new ObjectId(),
                 ts: 1000,
                 foo: { bar: i },
               }))

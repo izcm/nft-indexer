@@ -1,10 +1,10 @@
 import { orders } from '#app/db/collections.js'
-import type { Order, OrderStatus } from '#app/domain/order/types.js'
+import type { Order, OrderRecord, OrderStatus } from '#app/domain/order/types.js'
 import type { Hash } from '#app/domain/shared/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import type { FindPageArgs } from '#app/repos/_shared/types.js'
 import { ObjectId } from 'mongodb'
-import { findPageGeneric } from './_shared/paginate.js'
+import { findPageGeneric } from './shared/paginate.js'
+import type { FindPageArgs } from './shared/types.js'
 
 export type OrderKey = {
   chainId: number
@@ -32,7 +32,7 @@ export const orderRepo = {
       if (to) query.createdAt.$lte = to
     }
 
-    return findPageGeneric({
+    return findPageGeneric<OrderRecord>({
       dbCollection: orders(),
       baseQuery: query,
       sortField,

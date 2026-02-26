@@ -1,4 +1,4 @@
-import type { Collection, Document } from 'mongodb'
+import type { Collection, Document as MongoDoc } from 'mongodb'
 
 import { COLLECTIONS } from '#app/domain/constants/db.js'
 import type { NFTCollection, NFTCollectionStats } from '#app/domain/nft-collection/types.js'
@@ -15,6 +15,6 @@ export const nftCollections = () => col<NFTCollection>(COLLECTIONS.NFT_COLLECTIO
 
 export const nftCollectionsStats = () => col<NFTCollectionStats>(COLLECTIONS.NFT_COLLECTION_STATS)
 
-const col = <T extends Document>(name: string): Collection<T> => {
+const col = <T extends MongoDoc>(name: string): Collection<T> => {
   return getDb().collection<T>(name)
 }

@@ -1,4 +1,4 @@
-import type { Collection } from 'mongodb'
+import type { Collection, Document as MongoDoc } from 'mongodb'
 
 // --------- cursor ---------
 
@@ -21,7 +21,7 @@ export type FindPageArgs = CursorPageCore & {
 
 // --------- generic helper ---------
 
-export type GenericPageArgs = CursorPageCore & {
-  dbCollection: Collection<any>
+export type GenericPageArgs<TDoc extends MongoDoc> = CursorPageCore & {
+  dbCollection: Collection<TDoc>
   baseQuery: Record<string, any>
 }

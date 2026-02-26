@@ -10,7 +10,7 @@ import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedSettlements } from '#tests/helpers/seed/seed-settlements.js'
 import { mockSettlement, mockSettlementCall } from '#tests/mocks/primitives.js'
-import { DeepPartial } from '#app/lib/utils/deep-partial.js'
+import type { DeepPartial } from '#app/lib/utils/deep-partial.js'
 
 beforeAll(async () => {
   await startTestMongo()

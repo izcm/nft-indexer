@@ -49,7 +49,6 @@ export async function parseTxInputs(tx: any, receipt: any, abi: Abi): Promise<Se
   return {
     txInput: {
       order,
-      signature: sig,
       fill,
       signer,
     },

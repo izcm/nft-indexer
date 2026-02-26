@@ -23,8 +23,8 @@ describe('findPageGeneric', () => {
   const makeArgs = (
     dbCollection: any,
     docs: any[],
-    overrides: Partial<GenericPageArgs> = {}
-  ): GenericPageArgs => ({
+    overrides: Partial<GenericPageArgs<any>> = {}
+  ): GenericPageArgs<any> => ({
     dbCollection,
     baseQuery: {},
     sortField: 'ts',
@@ -60,7 +60,7 @@ describe('findPageGeneric', () => {
     args = {},
   }: {
     docs?: any[]
-    args?: Partial<GenericPageArgs>
+    args?: Partial<GenericPageArgs<any>>
   } = {}) {
     const ctx = setup(docs)
 
