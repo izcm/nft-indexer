@@ -1,10 +1,12 @@
 import { Settlement } from '#app/domain/settlement/types.js'
 import { secondsToUnixMs } from '#app/lib/utils/time.js'
-import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { FindPageArgs } from '#app/repos/shared/types.js'
+import { readGenericPage } from '../shared/read-generic-page.js'
 
-export async function findPage(args: FindPageArgs) {
-  const page = settlementRepo.findPage(args)
+export async function readSettlementPage(args: FindPageArgs) {
+  const page = await readGenericPage('Settlement', args, { include: ['NFTCollection'] })
+
+  // make settlement into dto and any include object
 }
 
 const settlementDTO = (s: Settlement) => ({

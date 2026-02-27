@@ -7,12 +7,12 @@ import { convertBigintsDeep } from '#app/lib/utils/bigint.js'
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 import { parseTxInputs } from '#app/workers/settlements/logic.js'
 import {
-  mockFill,
-  mockOrderCore,
+  fakeFill,
+  fakeOrderCore,
   mockPrivateKeys,
-  mockReceipt,
-  mockTx,
-} from '#tests/mocks/primitives.js'
+  fakeReceipt,
+  fakeTx,
+} from '#tests/helpers/fixtures.js'
 
 describe('parseTxInputs', () => {
   it('parses all tx inputs + recovers signer as expected', async () => {
@@ -27,8 +27,8 @@ describe('parseTxInputs', () => {
 
     // arrange
 
-    const order = mockOrderCore()
-    const fill = mockFill()
+    const order = fakeOrderCore()
+    const fill = fakeFill()
 
     const signerAcount = privateKeyToAccount(mockPrivateKeys.signer)
     const sig = await signerAcount.signTypedData({
@@ -44,8 +44,8 @@ describe('parseTxInputs', () => {
       args: [fill, order, parseSignature(sig)],
     })
 
-    const tx = mockTx(encodedData)
-    const receipt = mockReceipt
+    const tx = fakeTx(encodedData)
+    const receipt = fakeReceipt
 
     // act
 

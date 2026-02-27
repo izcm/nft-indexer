@@ -1,4 +1,3 @@
-import { zeroAddress } from 'viem'
 import { isUintString } from '#app/lib/utils/string.js'
 import { isUnixSeconds } from '#app/lib/utils/time.js'
 import { Side } from './types.js'
@@ -20,7 +19,7 @@ export const validOrder = (o: Order, anchorTs: number): boolean => {
     isUnixSeconds(Number(o.end)) &&
     // commented out since the demo includes fork time-warping
     // BigInt(o.end) >= Math.floor(Date.now() / 1000) &&
-    o.actor !== zeroAddress
+    o.actor !== '0x0000000000000000000000000000000000000000'
   )
 }
 

@@ -2,7 +2,7 @@ import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { orderRepoFor } from '#app/repos/order.repo.js'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { onSettlementCreated } from '../actions.js'
-import { mockSettlement } from '#tests/mocks/primitives.js'
+import { fakeSettlement } from '#tests/helpers/fixtures.js'
 
 // --- mocks ---
 
@@ -34,7 +34,7 @@ describe('domain actions - settlements', () => {
     findByHash.mockResolvedValue(null)
   })
 
-  const mock = mockSettlement()
+  const mock = fakeSettlement()
 
   describe('onSettlementCreated', () => {
     it('logs if failed to note collection', async () => {

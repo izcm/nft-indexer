@@ -3,13 +3,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { orders } from '#app/db/collections.js'
 import { OrderRecord } from '#app/domain/order/types.js'
-import { addrOf } from '#app/lib/utils/evm-primitives.js'
+import { addrOf } from '#tests/helpers/evm-primitives.js'
 import { orderRepo } from '#app/repos/order.repo.js'
 
 // test helpers
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
-import { mockOrderRecord } from '#tests/mocks/primitives.js'
+import { fakeOrderRecord } from '#tests/helpers/fixtures.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -29,7 +29,7 @@ describe('orderRepo', () => {
   // === defaults ===
 
   async function givenOrderRecordExists(overrides: Partial<OrderRecord> = {}) {
-    const orderRecord = mockOrderRecord(overrides)
+    const orderRecord = fakeOrderRecord(overrides)
     const { insertedId } = await orders().insertOne(orderRecord)
 
     return { insertedId, orderRecord }
@@ -130,7 +130,7 @@ describe('orderRepo', () => {
 
     describe('ensure', () => {
       it('inserts order doc for new chainId + orderHash pair', async () => {
-        const orderRecord = mockOrderRecord()
+        const orderRecord = fakeOrderRecord()
 
         const { chainId, order } = orderRecord
         const { id, didUpsert } = await repo.ensure(chainId, order)
@@ -226,7 +226,7 @@ describe('orderRepo', () => {
     })
 
     it('does nothing if order not found', async () => {
-      const { chainId, orderHash } = mockOrderRecord()
+      const { chainId, orderHash } = fakeOrderRecord()
 
       const result = await repo.updateStatus({ chainId, orderHash, status: 'filled' })
 

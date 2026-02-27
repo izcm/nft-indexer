@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockOrderRecord } from '#tests/mocks/primitives.js'
+import { fakeOrderRecord } from '#tests/helpers/fixtures.js'
 
 import { ingestOrder } from '../actions.js'
 import { orderRepo } from '#app/repos/order.repo.js'
@@ -30,7 +30,7 @@ describe('domain actions - orders', () => {
 
   describe('ingestOrder', () => {
     it('returns ensure result and notes collection', async () => {
-      const orderRecord = mockOrderRecord()
+      const orderRecord = fakeOrderRecord()
       const { chainId, order } = orderRecord
 
       const expected = { id: 'abc123', didUpsert: true }

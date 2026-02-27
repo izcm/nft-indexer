@@ -5,11 +5,11 @@ import { settlements } from '#app/db/collections.js'
 import type { Settlement } from '#app/domain/settlement/types.js'
 import { Status } from '#app/domain/shared/status.js'
 import type { Hash } from '#app/domain/shared/eth.js'
-import { bytes32 } from '#app/lib/utils/evm-primitives.js'
+import { bytes32 } from '#tests/helpers/evm-primitives.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedSettlements } from '#tests/helpers/seed/seed-settlements.js'
-import { mockSettlement, mockSettlementCall } from '#tests/mocks/primitives.js'
+import { fakeSettlement, fakeSettlementCall } from '#tests/helpers/fixtures.js'
 import type { DeepPartial } from '#app/lib/utils/deep-partial.js'
 
 beforeAll(async () => {
@@ -29,7 +29,7 @@ describe('settlementRepo', () => {
 
   const CHAIN_ID = 1
 
-  const mockSettlementForChain = (chainId: number = CHAIN_ID) => mockSettlement({ chainId })
+  const mockSettlementForChain = (chainId: number = CHAIN_ID) => fakeSettlement({ chainId })
 
   async function givenSettlementExists(overrides: DeepPartial<Settlement> = {}) {
     const seed = `given:${Math.random().toString(36).slice(2)}`
@@ -253,7 +253,7 @@ describe('settlementRepo', () => {
           const { settlement } = await givenSettlementExists({
             execution: { callReconstruction: { status: Status.PENDING } },
           })
-          const meta = mockSettlementCall()
+          const meta = fakeSettlementCall()
 
           const result = await repo.finalizeCallReconstruction({
             chainId: settlement.chainId,
@@ -278,7 +278,7 @@ describe('settlementRepo', () => {
           const result = await repo.finalizeCallReconstruction({
             chainId: 1,
             orderHash: bytes32('o_hash') as Hash,
-            meta: mockSettlementCall(),
+            meta: fakeSettlementCall(),
           })
 
           expect(result.acknowledged).toBe(true)
@@ -308,7 +308,7 @@ describe('settlementRepo', () => {
             },
           })
 
-          const meta = mockSettlementCall()
+          const meta = fakeSettlementCall()
 
           await repo.finalizeCallReconstruction({
             chainId: settlement.chainId,

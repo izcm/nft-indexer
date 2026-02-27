@@ -1,8 +1,7 @@
-import type { BlockTime, TxContext } from '#app/domain/shared/eth.js'
-import type { OrderCore, OrderType, Signature } from '../order/types.js'
-import { Side } from '../order/types.js'
 import { Status } from '../shared/status.js'
+import type { OrderCore } from '../order/types.js'
 import type { Address, Hash } from '../shared/eth.js'
+import type { BlockTime, TxContext } from '../shared/eth.js'
 
 export type SettlementKey = {
   chainId: number

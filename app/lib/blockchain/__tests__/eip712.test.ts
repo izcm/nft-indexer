@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 
 import { OrderCore } from '#app/domain/order/types.js'
 import { toOrder712 } from '#app/lib/blockchain/eip712.js'
-import { mockOrderCore } from '#tests/mocks/primitives.js'
+import { fakeOrderCore } from '#tests/helpers/fixtures.js'
 
 describe('eip712 library', () => {
-  const order = mockOrderCore()
+  const order = fakeOrderCore()
 
   it('toOrder712 converts correctly', () => {
     const o712 = toOrder712(order)

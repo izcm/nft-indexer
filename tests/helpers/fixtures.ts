@@ -12,7 +12,7 @@ import {
   bytesOf,
   bytesOfn,
   priceWei,
-} from '#app/lib/utils/evm-primitives.js'
+} from '#tests/helpers/evm-primitives.js'
 
 const s = (x: number | bigint) => x.toString()
 
@@ -28,12 +28,12 @@ export const mockPrivateKeys = {
    Chain context
 --------------------------------------------------- */
 
-export const mockReceipt = {
+export const fakeReceipt = {
   gasUsed: bytes32('receipt:used'),
   effectiveGasPrice: bytes32('receipt:price'),
 } as const
 
-export const mockTxContext: TxContext = {
+export const fakeTxContext: TxContext = {
   index: 0,
   gasUsed: s(priceWei('tx-context:gas-used')),
   effectiveGasPrice: s(priceWei('tx-context:gas-price')),
@@ -42,7 +42,7 @@ export const mockTxContext: TxContext = {
   contractAddress: addrOf('tx-context:contract'),
 }
 
-export const mockTx = (input: Hash) => ({
+export const fakeTx = (input: Hash) => ({
   to: addrOf('tx:txTo'),
   chainId: 1n,
   transactionIndex: 0n,
@@ -53,16 +53,16 @@ export const mockTx = (input: Hash) => ({
    Domain helpers
 --------------------------------------------------- */
 
-export const mockFill = () => ({
+export const fakeFill = () => ({
   tokenId: s(bytes32n('fill:tokenId')),
   actor: addrOf('fill:actor'),
 })
 
-export const mockOrderRecord = (overrides: Partial<OrderRecord> = {}): OrderRecord => ({
+export const fakeOrderRecord = (overrides: Partial<OrderRecord> = {}): OrderRecord => ({
   chainId: 1,
-  orderHash: hashOrderStruct(mockOrderCore()),
+  orderHash: hashOrderStruct(fakeOrderCore()),
   order: {
-    ...mockOrderCore(),
+    ...fakeOrderCore(),
     signature: {
       r: '0xabc',
       s: '0xabc',
@@ -75,7 +75,7 @@ export const mockOrderRecord = (overrides: Partial<OrderRecord> = {}): OrderReco
   ...overrides,
 })
 
-export const mockOrderCore = (): OrderCore => ({
+export const fakeOrderCore = (): OrderCore => ({
   side: 0,
   isCollectionBid: false,
   collection: addrOf('order:collection'),
@@ -88,7 +88,7 @@ export const mockOrderCore = (): OrderCore => ({
   nonce: s(bytes32n('order:nonce')),
 })
 
-export const mockSettlement = (overrides: Partial<Settlement> = {}): Settlement => ({
+export const fakeSettlement = (overrides: Partial<Settlement> = {}): Settlement => ({
   chainId: 1,
   orderHash: bytes32('settlement:orderHash') as Hash,
   collection: addrOf('settlement:collection') as Address,
@@ -112,17 +112,17 @@ export const mockSettlement = (overrides: Partial<Settlement> = {}): Settlement 
   ...overrides,
 })
 
-export const mockSettlementCall = (overrides: Partial<SettlementCall> = {}): SettlementCall => ({
-  txContext: mockTxContext,
+export const fakeSettlementCall = (overrides: Partial<SettlementCall> = {}): SettlementCall => ({
+  txContext: fakeTxContext,
   txInput: {
-    order: mockOrderCore(),
-    fill: mockFill(),
+    order: fakeOrderCore(),
+    fill: fakeFill(),
     signer: addrOf('settlement:signer') as Address,
   },
   ...overrides,
 })
 
-export const mockSettlementLog = (): SettlementLog => ({
+export const fakeSettlementLog = (): SettlementLog => ({
   eventName: 'Settlement',
   args: {
     orderHash: bytes32('cd') as Hash,
