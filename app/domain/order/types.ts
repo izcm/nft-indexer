@@ -1,5 +1,15 @@
 import type { Address, Hash } from '../shared/eth.js'
 
+export type OrderKey = {
+  chainId: number
+  orderHash: Hash
+}
+
+export const orderKeyOf = (record: OrderRecord): OrderKey => ({
+  chainId: record.chainId,
+  orderHash: record.orderHash,
+})
+
 export type OrderType = 'ASK' | 'BID' | 'COLLECTION_BID'
 
 export enum Side {

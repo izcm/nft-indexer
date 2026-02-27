@@ -2,15 +2,11 @@ import { ObjectId } from 'mongodb'
 import { nftCollections } from '#app/db/collections.js'
 import type {
   NFTCollectionChainMeta,
+  NFTCollectionKey,
   NFTCollectionMetaPatch,
 } from '#app/domain/nft-collection/types.js'
 import { Status } from '#app/domain/shared/status.js'
 import type { Address } from '#app/domain/shared/eth.js'
-
-export type NFTCollectionKey = {
-  chainId: number
-  address: Address
-}
 
 const stringifyKey = (key: NFTCollectionKey) => {
   return `${key.chainId}:${key.address.toLowerCase()}`

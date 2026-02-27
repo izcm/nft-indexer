@@ -4,6 +4,16 @@ import { Side } from '../order/types.js'
 import { Status } from '../shared/status.js'
 import type { Address, Hash } from '../shared/eth.js'
 
+export type SettlementKey = {
+  chainId: number
+  orderHash: Hash
+}
+
+export const settlementKeyOf = (settlement: Settlement): SettlementKey => ({
+  chainId: settlement.chainId,
+  orderHash: settlement.orderHash,
+})
+
 export type Settlement = {
   chainId: number
   orderHash: Hash

@@ -1,6 +1,7 @@
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { orderRepo, orderRepoFor } from '#app/repos/order.repo.js'
-import { SettlementKey, settlementRepo } from '#app/repos/settlement.repo.js'
+import { orderRepoFor } from '#app/repos/order.repo.js'
+import { settlementRepo } from '#app/repos/settlement.repo.js'
+import type { SettlementKey } from './types.js'
 import { Settlement, SettlementCall } from './types.js'
 import type { Address } from '../shared/eth.js'
 

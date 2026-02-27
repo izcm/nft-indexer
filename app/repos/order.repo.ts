@@ -1,15 +1,10 @@
 import { orders } from '#app/db/collections.js'
-import type { Order, OrderRecord, OrderStatus } from '#app/domain/order/types.js'
+import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/types.js'
 import type { Hash } from '#app/domain/shared/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { ObjectId } from 'mongodb'
 import { findPageGeneric } from './shared/paginate.js'
 import type { FindPageArgs } from './shared/types.js'
-
-export type OrderKey = {
-  chainId: number
-  orderHash: Hash
-}
 
 export const orderRepo = {
   // === read ===
@@ -21,6 +16,14 @@ export const orderRepo = {
   async findByKey(key: OrderKey) {
     const { chainId, orderHash } = key
     return orders().findOne({ chainId, orderHash })
+  },
+
+  async findByKeys(keys: OrderKey[]) {
+    if (!keys.length) return []
+
+    return orders()
+      .find({ $or: keys.map(k => ({ chainId: k.chainId, orderHash: k.orderHash })) })
+      .toArray()
   },
 
   async findPage({ filters = {}, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {

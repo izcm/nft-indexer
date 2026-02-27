@@ -29,11 +29,11 @@ export async function readOrderPage(
       ? (keyToCollection.get(`${record.chainId}:${record.order.collection.toLowerCase()}`) ?? null)
       : undefined
 
+    const orderDTO = toOrderDTO(record)
+
     return {
       id: record._id.toString(),
-      chainId: record.chainId,
-      ...toOrderDTO(record.order),
-      rawOrder: record.order,
+      ...orderDTO,
       collectionMeta: collection,
     }
   })

@@ -1,6 +1,16 @@
 import type { Status } from '../shared/status.js'
 import type { Address } from '../shared/eth.js'
 
+export type NFTCollectionKey = {
+  chainId: number
+  address: Address
+}
+
+export const nftCollectionKeyOf = (collection: NFTCollectionBase): NFTCollectionKey => ({
+  chainId: collection.chainId,
+  address: collection.address,
+})
+
 export type NFTCollectionStats = {
   chainId: number
   collection: Address
