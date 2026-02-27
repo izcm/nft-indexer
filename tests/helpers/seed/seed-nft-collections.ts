@@ -1,6 +1,6 @@
 import { nftCollections } from '#app/db/collections.js'
 import { NFTCollection } from '#app/domain/nft-collection/types.js'
-import { addrOf } from '#tests/helpers/evm-primitives.js'
+import { addrOf } from '#tests/helpers/evm-fixtures.js'
 
 export const seedCollections = async (
   chainId: number,

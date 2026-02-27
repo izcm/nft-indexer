@@ -1,7 +1,7 @@
 import {
   topNFTCollectionsByActiveOrders,
   topNFTCollectionsBySettlements,
-} from '#app/read/top-nft-collections.js'
+} from '#app/view/nft-collections/top-nft-collections.js'
 import type { FastifyInstance } from 'fastify'
 
 const handlers = {

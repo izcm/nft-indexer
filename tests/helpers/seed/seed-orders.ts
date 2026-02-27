@@ -3,7 +3,7 @@ import type { Order, OrderRecord, Signature } from '#app/domain/order/types.js'
 import { Side } from '#app/domain/order/types.js'
 import type { Address, Hash } from '#app/domain/shared/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import { addrOf, bytes32, bytes32n, priceWei } from '#tests/helpers/evm-primitives.js'
+import { addrOf, bytes32, bytes32n, priceWei } from '#tests/helpers/evm-fixtures.js'
 
 const s = (x: number | bigint) => x.toString()
 

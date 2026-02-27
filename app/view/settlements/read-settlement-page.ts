@@ -9,22 +9,24 @@ export async function readSettlementPage(args: FindPageArgs) {
   // make settlement into dto and any include object
 }
 
-const settlementDTO = (s: Settlement) => ({
-  chainId: s.chainId,
-  txHash: s.execution.txHash,
+function toSettlementDTO(s: Settlement) {
+  return {
+    chainId: s.chainId,
+    txHash: s.execution.txHash,
 
-  orderHash: s.orderHash,
+    orderHash: s.orderHash,
 
-  seller: s.seller,
-  buyer: s.buyer,
+    seller: s.seller,
+    buyer: s.buyer,
 
-  collection: s.collection,
-  tokenId: s.tokenId,
+    collection: s.collection,
+    tokenId: s.tokenId,
 
-  currency: s.currency,
-  price: s.price,
+    currency: s.currency,
+    price: s.price,
 
-  timestamp: secondsToUnixMs(s.execution.block.timestamp),
+    timestamp: secondsToUnixMs(s.execution.block.timestamp),
 
-  executionDetails: s.execution,
-})
+    executionDetails: s.execution,
+  }
+}

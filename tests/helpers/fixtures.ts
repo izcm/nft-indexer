@@ -12,7 +12,7 @@ import {
   bytesOf,
   bytesOfn,
   priceWei,
-} from '#tests/helpers/evm-primitives.js'
+} from '#tests/helpers/evm-fixtures.js'
 
 const s = (x: number | bigint) => x.toString()
 

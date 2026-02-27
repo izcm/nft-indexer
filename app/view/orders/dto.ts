@@ -5,7 +5,7 @@ import { secondsToUnixMs } from '#app/lib/utils/time.js'
 // api protects against huge start / end
 // listener may store orders with full on 256 fields, these need to be handled
 
-type OrderDTO = {
+export type OrderDTO = {
   chainId: number
 
   type: 'ask' | 'bid'
@@ -25,7 +25,7 @@ type OrderDTO = {
   rawOrder: OrderCore
 }
 
-export const toOrderDTO = (record: OrderRecord): OrderDTO => {
+export function toOrderDTO(record: OrderRecord): OrderDTO {
   const { order } = record
 
   return {

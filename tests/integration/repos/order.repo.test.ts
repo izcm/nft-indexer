@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { orders } from '#app/db/collections.js'
 import { OrderRecord } from '#app/domain/order/types.js'
-import { addrOf } from '#tests/helpers/evm-primitives.js'
+import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { orderRepo } from '#app/repos/order.repo.js'
 
 // test helpers

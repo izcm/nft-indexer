@@ -19,9 +19,14 @@ export type FindPageArgs = CursorPageCore & {
   to?: number
 }
 
-// --------- generic helper ---------
+// --------- generics ---------
 
 export type GenericPageArgs<TDoc extends MongoDoc> = CursorPageCore & {
   dbCollection: Collection<TDoc>
   baseQuery: Record<string, any>
+}
+
+export type Page<T> = {
+  items: T[]
+  nextCursor: string | null
 }

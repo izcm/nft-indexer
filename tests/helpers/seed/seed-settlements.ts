@@ -1,6 +1,6 @@
 import { settlements } from '#app/db/collections.js'
 import { Settlement } from '#app/domain/settlement/types.js'
-import { addrOf, bytes32, priceWei } from '#tests/helpers/evm-primitives.js'
+import { addrOf, bytes32, priceWei } from '#tests/helpers/evm-fixtures.js'
 import { applyDeepPartial, type DeepPartial } from '#app/lib/utils/deep-partial.js'
 import { base } from 'viem/chains'
 

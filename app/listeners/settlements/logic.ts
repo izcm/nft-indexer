@@ -19,7 +19,7 @@ export type SettlementLog = {
   logIndex: bigint
 }
 
-export const settlementFromLog = (log: SettlementLog, chainId: number): Settlement => {
+export function settlementFromLog(log: SettlementLog, chainId: number): Settlement {
   const { args } = log
 
   return {

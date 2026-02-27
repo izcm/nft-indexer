@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { getDb } from '#app/db/mongo.js'
-import { bytes32n } from '#tests/helpers/evm-primitives.js'
+import { bytes32n } from '#tests/helpers/evm-fixtures.js'
 import { walkPath } from '#app/repos/shared/cursor.js'
 import { findPageGeneric, Page } from '#app/repos/shared/paginate.js'
 import type { GenericPageArgs } from '#app/repos/shared/types.js'

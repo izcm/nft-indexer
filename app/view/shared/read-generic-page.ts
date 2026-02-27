@@ -14,6 +14,7 @@ import {
   type NFTCollection,
   type NFTCollectionKey,
 } from '#app/domain/nft-collection/types.js'
+import { ResourceName } from './types.js'
 
 const loaders = {
   Settlement: {
@@ -56,7 +57,7 @@ const relations = {
   },
 } as const
 
-type PagedResource = 'Settlement' | 'Order'
+type PagedResource = Exclude<ResourceName, 'NFTCollection'>
 type includeFor<R extends PagedResource> = keyof (typeof relations)[R]
 
 const findPageRoutes: Record<

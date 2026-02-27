@@ -1,4 +1,4 @@
-import { addrOf } from '#tests/helpers/evm-primitives.js'
+import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { nftCollectionRepo, nftCollectionRepoFor } from '#app/repos/nft-collection.repo.js'
 import { describe, expect, it, vi } from 'vitest'
 

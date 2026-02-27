@@ -1,6 +1,6 @@
 import { orders } from '#app/db/collections.js'
 import { Side } from '#app/domain/order/types.js'
-import { addrOf, bytes32n } from '#tests/helpers/evm-primitives.js'
+import { addrOf, bytes32n } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { seedOrders } from '../seed-orders.js'

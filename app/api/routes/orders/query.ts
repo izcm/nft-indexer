@@ -1,7 +1,7 @@
 import { orderQueryableFields } from '#app/api/schemas/order.js'
 import { byIdParams, paginationQueryParams } from '#app/api/schemas/shared.js'
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
-import * as orderQuery from '#app/read/orders/read-order-page.js'
+import * as orderQuery from '#app/view/orders/read-order-page.js'
 import { orderRepo as repo } from '#app/repos/order.repo.js'
 import type { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
