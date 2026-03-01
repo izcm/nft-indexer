@@ -14,20 +14,22 @@ import {
   type NFTCollection,
   type NFTCollectionKey,
 } from '#app/domain/nft-collection/types.js'
-import { ResourceName } from './types.js'
+import { ResourceName, ResourceType } from './types.js'
+import { WithId } from 'mongodb'
 
-const loaders = {
-  Settlement: {
+const loaders: {
+  [K in ResourceName]: { findByKeys: (keys: any[]) => Promise<WithId<ResourceType<K>>[]> }
+} = {
+  settlement: {
     findByKeys: (keys: SettlementKey[]) => settlementRepo.findByKeys(keys),
   },
-  Order: {
+  order: {
     findByKeys: (keys: OrderKey[]) => orderRepo.findByKeys(keys),
   },
-  NFTCollection: {
+  nftCollection: {
     findByKeys: (keys: NFTCollectionKey[]) => nftCollectionRepo.findByKeys(keys),
   },
 } as const
-
 const pkOf = {
   Settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),
   Order: (o: OrderRecord): OrderKey => orderKeyOf(o),
@@ -35,37 +37,37 @@ const pkOf = {
 } as const
 
 const relations = {
-  Settlement: {
-    Order: (s: Settlement): OrderKey => ({
+  settlement: {
+    order: (s: Settlement): OrderKey => ({
       chainId: s.chainId,
       orderHash: s.orderHash,
     }),
-    NFTCollection: (s: Settlement): NFTCollectionKey => ({
+    nftCollection: (s: Settlement): NFTCollectionKey => ({
       chainId: s.chainId,
       address: s.collection,
     }),
   },
-  Order: {
-    Settlement: (o: OrderRecord): SettlementKey => ({
+  order: {
+    settlement: (o: OrderRecord): SettlementKey => ({
       chainId: o.chainId,
       orderHash: o.orderHash,
     }),
-    NFTCollection: (o: OrderRecord): NFTCollectionKey => ({
+    nftCollection: (o: OrderRecord): NFTCollectionKey => ({
       chainId: o.chainId,
       address: o.order.collection,
     }),
   },
 } as const
 
-type PagedResource = Exclude<ResourceName, 'NFTCollection'>
+type PagedResource = Exclude<ResourceName, 'nftCollection'>
 type includeFor<R extends PagedResource> = keyof (typeof relations)[R]
 
 const findPageRoutes: Record<
   PagedResource,
   (args: FindPageArgs) => ReturnType<typeof findPageGeneric>
 > = {
-  Settlement: settlementRepo.findPage,
-  Order: orderRepo.findPage,
+  settlement: settlementRepo.findPage,
+  order: orderRepo.findPage,
 }
 
 export async function readGenericPage<R extends PagedResource>(
