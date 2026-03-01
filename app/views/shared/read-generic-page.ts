@@ -30,6 +30,7 @@ const loaders: {
     findByKeys: (keys: NFTCollectionKey[]) => nftCollectionRepo.findByKeys(keys),
   },
 } as const
+
 const pkOf = {
   Settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),
   Order: (o: OrderRecord): OrderKey => orderKeyOf(o),

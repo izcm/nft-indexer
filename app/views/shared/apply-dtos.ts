@@ -1,23 +1,39 @@
+import { NFTCollection } from '#app/domain/nft-collection/types.js'
+import { Settlement } from '#app/domain/settlement/types.js'
 import { toOrderDTO } from '../orders/dto.js'
-import { ResourceName } from './types.js'
+import { ResourceMap, ResourceName, ResourceType } from './types.js'
 
-export const dtos: Record<ResourceName, (x: any) => any> = {
-  settlement: x => x,
+type DTOMap = {
+  [R in keyof ResourceMap]: (x: ResourceType<R>) => any
+}
+
+type WithIncludes<R extends ResourceName> = ResourceType<R> & Partial<ResourceMap>
+
+export const dtos: DTOMap = {
+  settlement: (x: Settlement) => x,
   order: toOrderDTO,
-  nftCollection: x => x,
+  nftCollection: (x: NFTCollection) => x,
 } as const
 
-export function applyDTOs(resource: ResourceName, page: Object[]) {
+function callDTO<K extends ResourceName>(key: K, value: ResourceType<K>) {
+  return dtos[key](value)
+}
+
+export function applyDTOs<R extends ResourceName>(resource: R, page: WithIncludes<R>[]) {
   return page.map(item => {
-    // copy
-    const out = { ...item }
+    // root to dto
+    const out: any = dtos[resource](item)
 
-    for (const key of Object.keys(dtos) as ResourceName[]) {
+    // convert included relations and attach
+    for (const key of Object.keys(dtos) as (keyof typeof dtos)[]) {
+      if (key === resource) continue
+
+      const rel = item[key]
+      if (!rel) continue
+
+      out[key] = callDTO(key, rel)
     }
-  })
-  for (const item of page) {
-    const base = dtos[resource]
 
-    for (const key of Object.keys(dtos) as ResourceName[]) if (item.hasOwnProperty(key)) return
-  }
+    return out
+  })
 }
