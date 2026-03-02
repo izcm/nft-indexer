@@ -8,7 +8,7 @@ import type { SettlementKey } from '#app/domain/settlement/types.js'
 import type { OrderKey } from '#app/domain/order/types.js'
 import type { NFTCollectionKey } from '#app/domain/nft-collection/types.js'
 
-import type { PagedResource, ResourceName } from './resource-def.js'
+import type { PagedResource, ResourceName } from './types/resource-defs.js'
 import { pkOf, relations, WithIncludes, type includeFor } from './include-rules.js'
 
 const loaders: {

@@ -38,7 +38,7 @@ describe('findPageGeneric (mongo integration)', () => {
     baseQuery: {},
     sortField: 'ts',
     sortDir: 1,
-    cursor: null,
+    cursor: undefined,
     limit: 5,
     ...overrides,
   })
@@ -103,7 +103,7 @@ describe('findPageGeneric (mongo integration)', () => {
 
   describe('cursor traversal', () => {
     async function walkAllPages(args: Partial<GenericPageArgs<TestDoc>>) {
-      let cursor: string | null = null
+      let cursor: string | undefined = undefined
       const seen = new Set<string>()
 
       while (true) {

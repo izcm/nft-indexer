@@ -105,7 +105,7 @@ describe('settlementRepo', () => {
         const res = await repo.findPage({
           from: 150,
           to: 250,
-          cursor: null,
+          cursor: undefined,
           sortDir: 1,
           sortField: 'createdAt',
           limit: 100,

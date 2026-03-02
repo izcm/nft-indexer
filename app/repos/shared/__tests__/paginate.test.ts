@@ -30,7 +30,7 @@ describe('findPageGeneric', () => {
     sortField: 'ts',
     sortDir: -1,
     limit: docs.length,
-    cursor: null,
+    cursor: undefined,
     ...overrides,
   })
 

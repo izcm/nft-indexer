@@ -11,7 +11,7 @@ import { ordersQuery } from './routes/orders/query.js'
 
 // schemas
 import { nftCollectionsQuery } from './routes/nft-collections/query.js'
-import { orderCreateBody } from './schemas/order.js'
+import { orderCreateBody } from './routes/orders/schema.js'
 
 const app = Fastify({
   logger: true,

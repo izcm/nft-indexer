@@ -157,7 +157,7 @@ describe('buildCursorFilter', () => {
   }
 
   it('returns null when cursor is not provided', () => {
-    const res = buildCursorFilter({ sortField: 'field', sortDir: 1, cursor: null })
+    const res = buildCursorFilter({ sortField: 'field', sortDir: 1, cursor: undefined })
     expect(res).toBeNull()
   })
 

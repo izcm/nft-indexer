@@ -1,17 +1,21 @@
-import { orderQueryableFields } from '#app/api/schemas/order.js'
-import { byIdParams, paginationQueryParams } from '#app/api/schemas/shared.js'
-import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
-import * as orderQuery from '#app/views/orders/read-order-page.js'
-import { orderRepo as repo } from '#app/repos/order.repo.js'
 import type { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
+
+import { orderQueryableFields } from './schema.js'
+import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
+
+import { orderRepo } from '#app/repos/order.repo.js'
+
+import { readPage } from '#app/views/read-page.js'
+import { RESOURCE_NAMES } from '#app/views/shared/types/resource-defs.js'
+import { PageQuery } from '#app/views/shared/types/page-query.js'
 
 export const ordersQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(
     '/:id',
     { schema: { params: byIdParams } },
     async (req, res) => {
-      const doc = await repo.findById(new ObjectId(req.params.id))
+      const doc = await orderRepo.findById(new ObjectId(req.params.id))
 
       if (!doc) {
         res.code(404)
@@ -26,7 +30,9 @@ export const ordersQuery = (fastify: FastifyInstance) => {
   // from / to + cursor can conflict (timestamp collision) which then returns an empty set
   // callers are responsible for constructing sensible queries
 
-  fastify.get(
+  fastify.get<{
+    Querystring: PageQuery
+  }>(
     '/',
     {
       schema: {
@@ -36,30 +42,17 @@ export const ordersQuery = (fastify: FastifyInstance) => {
           properties: {
             ...orderQueryableFields,
             ...paginationQueryParams,
-            include: { type: 'string' },
+            include: {
+              type: 'array',
+              maxItems: RESOURCE_NAMES.length - 1,
+              items: { type: 'string', enum: RESOURCE_NAMES },
+            },
           },
         },
       },
     },
     async req => {
-      const { from, to, limit, cursor, include, ...filters } = req.query as Record<string, any>
-
-      const includeCollection = (include as string) && include.split(',').includes('collection')
-
-      return orderQuery.readOrderPage(
-        {
-          filters,
-          from,
-          to,
-          cursor,
-          sortField: 'createdAt',
-          sortDir: -1,
-          limit: limit ?? DEFAULT_PAGE_LIMIT,
-        },
-        {
-          includeCollection,
-        }
-      )
+      return readPage('order', req.query)
     }
   )
 }
