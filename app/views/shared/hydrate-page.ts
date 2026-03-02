@@ -1,24 +1,18 @@
 import { orderRepo } from '#app/repos/order.repo.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import type { FindPageArgs } from '#app/repos/shared/types.js'
 import { findPageGeneric } from '#app/repos/shared/paginate.js'
-import {
-  settlementKeyOf,
-  type Settlement,
-  type SettlementKey,
-} from '#app/domain/settlement/types.js'
-import { type OrderRecord, type OrderKey, orderKeyOf } from '#app/domain/order/types.js'
-import {
-  nftCollectionKeyOf,
-  type NFTCollection,
-  type NFTCollectionKey,
-} from '#app/domain/nft-collection/types.js'
-import { ResourceName, ResourceType } from './types.js'
-import { WithId } from 'mongodb'
+import type { FindPageArgs } from '#app/repos/shared/types.js'
+
+import type { SettlementKey } from '#app/domain/settlement/types.js'
+import type { OrderKey } from '#app/domain/order/types.js'
+import type { NFTCollectionKey } from '#app/domain/nft-collection/types.js'
+
+import type { PagedResource, ResourceName } from './resource-def.js'
+import { pkOf, relations, WithIncludes, type includeFor } from './include-rules.js'
 
 const loaders: {
-  [K in ResourceName]: { findByKeys: (keys: any[]) => Promise<WithId<ResourceType<K>>[]> }
+  [K in ResourceName]: { findByKeys: (keys: any[]) => Promise<any[]> }
 } = {
   settlement: {
     findByKeys: (keys: SettlementKey[]) => settlementRepo.findByKeys(keys),
@@ -31,54 +25,21 @@ const loaders: {
   },
 } as const
 
-const pkOf = {
-  Settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),
-  Order: (o: OrderRecord): OrderKey => orderKeyOf(o),
-  NFTCollection: (c: NFTCollection): NFTCollectionKey => nftCollectionKeyOf(c),
-} as const
-
-const relations = {
-  settlement: {
-    order: (s: Settlement): OrderKey => ({
-      chainId: s.chainId,
-      orderHash: s.orderHash,
-    }),
-    nftCollection: (s: Settlement): NFTCollectionKey => ({
-      chainId: s.chainId,
-      address: s.collection,
-    }),
-  },
-  order: {
-    settlement: (o: OrderRecord): SettlementKey => ({
-      chainId: o.chainId,
-      orderHash: o.orderHash,
-    }),
-    nftCollection: (o: OrderRecord): NFTCollectionKey => ({
-      chainId: o.chainId,
-      address: o.order.collection,
-    }),
-  },
-} as const
-
-type PagedResource = Exclude<ResourceName, 'nftCollection'>
-type includeFor<R extends PagedResource> = keyof (typeof relations)[R]
-
 const findPageRoutes: Record<
   PagedResource,
   (args: FindPageArgs) => ReturnType<typeof findPageGeneric>
 > = {
   settlement: settlementRepo.findPage,
   order: orderRepo.findPage,
-}
+} as const
 
-export async function readGenericPage<R extends PagedResource>(
+export async function hydratePage<R extends PagedResource>(
   resource: R,
   args: FindPageArgs,
   opts: { include?: includeFor<R>[] } = {}
 ) {
   // --- read page of base resource ---
-  const findPage = findPageRoutes[resource]
-  const page = await findPage(args)
+  const page = await findPageRoutes[resource](args)
 
   // --- include items ---
   for (const include of opts.include ?? []) {
@@ -106,7 +67,8 @@ export async function readGenericPage<R extends PagedResource>(
     }
   }
 
-  return {
-    page,
+  return page as {
+    items: WithIncludes<R>[]
+    nextCursor: string
   }
 }

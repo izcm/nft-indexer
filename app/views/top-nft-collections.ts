@@ -1,6 +1,8 @@
 import { orders, settlements } from '#app/db/collections.js'
+
 import { NFTCollection } from '#app/domain/nft-collection/types.js'
 import { Side } from '#app/domain/order/types.js'
+
 export type TopNFTCollectionByActiveOrders = NFTCollection & {
   summary: ActiveCounts
 }

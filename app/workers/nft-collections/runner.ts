@@ -1,7 +1,10 @@
-import type { AppClient } from '#app/clients.js'
 import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
+
+import type { AppClient } from '#app/clients.js'
+
 import { readERC721Meta } from '#app/lib/blockchain/calls/erc721-meta.js'
 import { isErc721 } from '#app/lib/blockchain/interfaces/erc165.js'
+
 import { nftCollectionRepoFor } from '#app/repos/nft-collection.repo.js'
 
 export const runNFTCollectionWorker = async (client: AppClient) => {

@@ -1,7 +1,7 @@
 export type Address = `0x${string}`
 export type Hash = `0x${string}`
 
-export type BlockTime = {
+export type BlockRef = {
   number: number
   timestamp: number
 }

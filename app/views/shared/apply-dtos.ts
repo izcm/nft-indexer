@@ -1,7 +1,7 @@
-import { NFTCollection } from '#app/domain/nft-collection/types.js'
-import { Settlement } from '#app/domain/settlement/types.js'
-import { toOrderDTO } from '../orders/dto.js'
-import { ResourceMap, ResourceName, ResourceType } from './types.js'
+import { toOrderDTO } from '../dtos/order.dto.js'
+import { toSettlementDTO } from '../dtos/settlement.dto.js'
+import { toNFTCollectionDTO } from '../dtos/nft-collection.dto.js'
+import { ResourceMap, ResourceName, ResourceType } from './resource-def.js'
 
 type DTOMap = {
   [R in keyof ResourceMap]: (x: ResourceType<R>) => any
@@ -10,9 +10,9 @@ type DTOMap = {
 type WithIncludes<R extends ResourceName> = ResourceType<R> & Partial<ResourceMap>
 
 export const dtos: DTOMap = {
-  settlement: (x: Settlement) => x,
+  settlement: toSettlementDTO,
   order: toOrderDTO,
-  nftCollection: (x: NFTCollection) => x,
+  nftCollection: toNFTCollectionDTO,
 } as const
 
 function callDTO<K extends ResourceName>(key: K, value: ResourceType<K>) {

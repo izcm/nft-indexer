@@ -3,6 +3,7 @@ import { decodeFunctionData, getAbiItem, recoverTypedDataAddress, serializeSigna
 
 import type { OrderCore, Signature, SideLabel } from '#app/domain/order/types.js'
 import type { Fill, SettlementCall } from '#app/domain/settlement/types.js'
+
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 
 export async function parseTxInputs(tx: any, receipt: any, abi: Abi): Promise<SettlementCall> {

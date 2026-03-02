@@ -1,7 +1,7 @@
 import { Status } from '../shared/status.js'
-import type { OrderCore } from '../order/types.js'
 import type { Address, Hash } from '../shared/eth.js'
-import type { BlockTime, TxContext } from '../shared/eth.js'
+import type { BlockRef, TxContext } from '../shared/eth.js'
+import type { OrderCore } from '../order/types.js'
 
 export type SettlementKey = {
   chainId: number
@@ -29,7 +29,7 @@ export type Settlement = {
   execution: {
     logIndex: number
     txHash: Hash
-    block: BlockTime
+    block: BlockRef
 
     callReconstruction: {
       status: Status
