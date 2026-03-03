@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { orders } from '#app/db/collections.js'
-import { OrderRecord } from '#app/domain/order/types.js'
+import { OrderRecord } from '#app/domain/order/model.js'
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { orderRepo } from '#app/repos/order.repo.js'
 

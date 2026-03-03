@@ -1,4 +1,4 @@
-import { OrderCore, OrderRecord } from '#app/domain/order/types.js'
+import { OrderCore, OrderRecord } from '#app/domain/order/model.js'
 import { secondsToUnixMs } from '#app/lib/utils/time.js'
 
 // todo: start and end must handle bigints

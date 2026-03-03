@@ -1,16 +1,12 @@
 import { ObjectId, UpdateResult, WithId } from 'mongodb'
 import { orders } from '#app/db/collections.js'
 
-import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/types.js'
+import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/model.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 
-import {
-  PageableRepository,
-  ByKeyRepository,
-  ByIdRepository,
-} from './shared/interfaces/read-repository.js'
+import { ByKey, ById, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 import { createReadRepo } from './read-commons.repo.js'
 
 type OrderDoc = WithId<OrderRecord>
@@ -20,9 +16,9 @@ const baseRead = createReadRepo<OrderRecord, OrderKey>(orders, k => ({
   orderHash: k.orderHash,
 }))
 
-export const orderRepo: ByIdRepository<OrderDoc, ObjectId> &
-  ByKeyRepository<OrderDoc, OrderKey> &
-  PageableRepository<OrderDoc> & {
+export const orderRepo: ById<OrderDoc, ObjectId> &
+  ByKey<OrderDoc, OrderKey> &
+  Pageable<OrderDoc> & {
     ensure(chainId: number, order: Order): Promise<{ id: ObjectId; didUpsert: boolean }>
     updateStatus({
       chainId,

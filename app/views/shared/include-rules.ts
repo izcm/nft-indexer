@@ -2,13 +2,13 @@ import {
   settlementKeyOf,
   type Settlement,
   type SettlementKey,
-} from '#app/domain/settlement/types.js'
-import { type OrderRecord, type OrderKey, orderKeyOf } from '#app/domain/order/types.js'
+} from '#app/domain/settlement/model.js'
+import { type OrderRecord, type OrderKey, orderKeyOf } from '#app/domain/order/model.js'
 import {
   nftCollectionKeyOf,
   type NFTCollection,
   type NFTCollectionKey,
-} from '#app/domain/nft-collection/types.js'
+} from '#app/domain/nft-collection/model.js'
 import type {
   PagedResource,
   ResourceMap,

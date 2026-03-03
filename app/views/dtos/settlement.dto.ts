@@ -1,4 +1,4 @@
-import type { Settlement } from '#app/domain/settlement/types.js'
+import type { Settlement } from '#app/domain/settlement/model.js'
 import { secondsToUnixMs } from '#app/lib/utils/time.js'
 
 export type SettlementDTO = {

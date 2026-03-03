@@ -1,10 +1,9 @@
+import { UNIX_SECONDS_MAX } from '#app/domain/constants/limits.js'
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 
-const UNIX_SECONDS_MAX = 1e11 // year ~5138
+// === query ===
 
-// TODO: make order sortableFields
-
-export const orderQueryableFields = {
+export const orderCoreFieldSchemas = {
   actor: { type: 'string', pattern: ADDR_REGEX },
   collection: { type: 'string', pattern: ADDR_REGEX },
   tokenId: { type: 'string' },
@@ -14,9 +13,15 @@ export const orderQueryableFields = {
   isCollectionBid: { type: 'boolean' },
   start: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
   end: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
+} as const
 
-  status: { enum: ['active', 'filled', 'cancelled', 'expired'] },
-}
+export const orderCoreQueryableFields = orderCoreFieldSchemas
+export const orderRecordQueryableFields = {
+  ...orderCoreQueryableFields,
+  status: { type: 'string', enum: ['active', 'filled', 'cancelled', 'expired'] },
+} as const
+
+// === ingest ===
 
 export const orderCreateBody = {
   $id: 'order-create',
@@ -35,7 +40,7 @@ export const orderCreateBody = {
     'signature',
   ],
   properties: {
-    ...orderQueryableFields,
+    ...orderCoreFieldSchemas,
     nonce: { type: 'string' },
     signature: {
       type: 'object',

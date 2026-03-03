@@ -1,5 +1,5 @@
 import { nftCollections, orders } from '#app/db/collections.js'
-import { Side } from '#app/domain/order/types.js'
+import { Side } from '#app/domain/order/model.js'
 import { ActiveCounts, topNFTCollectionsByActiveOrders } from '#app/views/top-nft-collections.js'
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'

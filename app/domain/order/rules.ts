@@ -1,7 +1,7 @@
 import { isUintString } from '#app/lib/utils/string.js'
 import { isUnixSeconds } from '#app/lib/utils/time.js'
-import { Side } from './types.js'
-import type { Order, OrderType, SideLabel } from './types.js'
+import { Side } from './model.js'
+import type { Order, OrderType, SideLabel } from './model.js'
 
 export const toOrderType = (side: number, isCollectionBid: boolean): OrderType => {
   const direction = Side[side] as SideLabel

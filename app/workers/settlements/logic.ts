@@ -1,8 +1,8 @@
 import type { Abi, AbiFunction, Hex } from 'viem'
 import { decodeFunctionData, getAbiItem, recoverTypedDataAddress, serializeSignature } from 'viem'
 
-import type { OrderCore, Signature, SideLabel } from '#app/domain/order/types.js'
-import type { Fill, SettlementCall } from '#app/domain/settlement/types.js'
+import type { OrderCore, Signature, SideLabel } from '#app/domain/order/model.js'
+import type { Fill, SettlementCall } from '#app/domain/settlement/model.js'
 
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 

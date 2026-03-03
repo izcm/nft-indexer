@@ -1,9 +1,9 @@
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { orderRepo } from '#app/repos/order.repo.js'
-import type { NFTCollectionKey } from '../nft-collection/types.js'
+import type { NFTCollectionKey } from '../nft-collection/model.js'
 import { InvalidOrderError } from '../shared/errors.js'
 import { validOrder } from './rules.js'
-import type { Order } from './types.js'
+import type { Order } from './model.js'
 
 const TAG = 'order'
 

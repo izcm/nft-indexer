@@ -3,10 +3,10 @@ import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { findPageGeneric } from '#app/repos/shared/pagination/find-page-generic.js'
 
-import type { SettlementKey } from '#app/domain/settlement/types.js'
+import type { SettlementKey } from '#app/domain/settlement/model.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
-import type { OrderKey } from '#app/domain/order/types.js'
-import type { NFTCollectionKey } from '#app/domain/nft-collection/types.js'
+import type { OrderKey } from '#app/domain/order/model.js'
+import type { NFTCollectionKey } from '#app/domain/nft-collection/model.js'
 
 import type {
   PagedResource,

@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { settlements } from '#app/db/collections.js'
-import type { Settlement } from '#app/domain/settlement/types.js'
+import type { Settlement } from '#app/domain/settlement/model.js'
 import { Status } from '#app/domain/shared/status.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
 import { bytes32 } from '#tests/helpers/evm-fixtures.js'
@@ -106,7 +106,7 @@ describe('settlementRepo', () => {
           from: 150,
           to: 250,
           cursor: undefined,
-          sortDir: 1,
+          sortDir: 'asc',
           sortField: 'createdAt',
           limit: 100,
         })

@@ -22,7 +22,7 @@ function callDTO<K extends ResourceName>(key: K, value: ResourceType<K>) {
 export function applyDTOs<R extends ResourceName>(resource: R, page: WithIncludes<R>[]) {
   return page.map(item => {
     // root to dto
-    const out: any = dtos[resource](item)
+    const out = dtos[resource](item)
 
     // convert included relations and attach
     for (const key of Object.keys(dtos) as (keyof typeof dtos)[]) {

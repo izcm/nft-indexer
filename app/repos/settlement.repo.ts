@@ -1,14 +1,11 @@
 import type { ObjectId, WithId } from 'mongodb'
 import { settlements } from '#app/db/collections.js'
 
-import type { Settlement, SettlementCall, SettlementKey } from '#app/domain/settlement/types.js'
+import type { Settlement, SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
 import { Status } from '#app/domain/shared/status.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
-import {
-  ByIdRepository,
-  ByKeyRepository,
-  PageableRepository,
-} from './shared/interfaces/read-repository.js'
+import { ByKey, ById, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
+
 import { createReadRepo } from './read-commons.repo.js'
 
 // === helpers ===
@@ -27,9 +24,9 @@ const baseRead = createReadRepo<Settlement, SettlementKey>(settlements, k => ({
   orderHash: k.orderHash,
 }))
 
-export type SettlementRepo = ByIdRepository<SettlementDoc, ObjectId> &
-  ByKeyRepository<SettlementDoc, SettlementKey> &
-  PageableRepository<SettlementDoc> & {
+export type SettlementRepo = ById<SettlementDoc, ObjectId> &
+  ByKey<SettlementDoc, SettlementKey> &
+  Pageable<SettlementDoc> & {
     findPendingCallReconstruction(chainId: number, limit: number): Promise<Settlement[]>
     save(settlement: Settlement): Promise<any>
     finalizeCallReconstruction(args: SettlementKey & { meta: SettlementCall }): Promise<any>

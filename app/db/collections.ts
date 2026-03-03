@@ -1,9 +1,9 @@
 import type { Collection, Document as MongoDoc, WithId } from 'mongodb'
 
 import { COLLECTIONS } from '#app/domain/constants/db.js'
-import type { NFTCollection, NFTCollectionStats } from '#app/domain/nft-collection/types.js'
-import type { OrderRecord } from '#app/domain/order/types.js'
-import type { Settlement } from '#app/domain/settlement/types.js'
+import type { NFTCollection, NFTCollectionStats } from '#app/domain/nft-collection/model.js'
+import type { OrderRecord } from '#app/domain/order/model.js'
+import type { Settlement } from '#app/domain/settlement/model.js'
 
 import { getDb } from './mongo.js'
 

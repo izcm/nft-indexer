@@ -1,5 +1,5 @@
 import { nftCollections } from '#app/db/collections.js'
-import { NFTCollectionChainMeta } from '#app/domain/nft-collection/types.js'
+import { NFTCollectionChainMeta } from '#app/domain/nft-collection/model.js'
 import { Status } from '#app/domain/shared/status.js'
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'

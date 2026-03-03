@@ -61,3 +61,10 @@ export type Order = {
 }
 
 export type OrderCore = Omit<Order, 'signature'>
+export type OrderQueryModel = OrderCore & { status: OrderStatus }
+
+// --- pagination ---
+
+export const ORDER_SORT_FIELDS = ['createdAt', 'updatedAt'] as const
+
+export type OrderSortField = (typeof ORDER_SORT_FIELDS)[number]

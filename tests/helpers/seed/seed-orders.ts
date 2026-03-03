@@ -1,6 +1,6 @@
 import { orders } from '#app/db/collections.js'
-import type { Order, OrderRecord, Signature } from '#app/domain/order/types.js'
-import { Side } from '#app/domain/order/types.js'
+import type { Order, OrderRecord, Signature } from '#app/domain/order/model.js'
+import { Side } from '#app/domain/order/model.js'
 import type { Address, Hash } from '#app/domain/shared/types/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { addrOf, bytes32, bytes32n, priceWei } from '#tests/helpers/evm-fixtures.js'

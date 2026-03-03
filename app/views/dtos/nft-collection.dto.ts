@@ -1,4 +1,4 @@
-import type { NFTCollection } from '#app/domain/nft-collection/types.js'
+import type { NFTCollection } from '#app/domain/nft-collection/model.js'
 
 export type NFTCollectionDTO = {
   chainId: number

@@ -1,8 +1,8 @@
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { orderRepoFor } from '#app/repos/order.repo.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
-import type { SettlementKey } from './types.js'
-import { Settlement, SettlementCall } from './types.js'
+import type { SettlementKey } from './model.js'
+import { Settlement, SettlementCall } from './model.js'
 import type { Address } from '../shared/types/eth.js'
 
 const TAG = 'settlement'

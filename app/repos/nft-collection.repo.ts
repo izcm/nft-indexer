@@ -4,7 +4,7 @@ import type {
   NFTCollectionChainMeta,
   NFTCollectionKey,
   NFTCollectionMetaPatch,
-} from '#app/domain/nft-collection/types.js'
+} from '#app/domain/nft-collection/model.js'
 import { Status } from '#app/domain/shared/status.js'
 import type { Address } from '#app/domain/shared/types/eth.js'
 

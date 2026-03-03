@@ -1,5 +1,5 @@
 import type { Hex } from 'viem'
-import type { Settlement } from '#app/domain/settlement/types.js'
+import type { Settlement } from '#app/domain/settlement/model.js'
 import { Status } from '#app/domain/shared/status.js'
 
 export type SettlementLog = {

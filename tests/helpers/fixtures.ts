@@ -1,5 +1,5 @@
-import type { OrderCore, OrderRecord } from '#app/domain/order/types.js'
-import type { Settlement, SettlementCall } from '#app/domain/settlement/types.js'
+import type { OrderCore, OrderRecord } from '#app/domain/order/model.js'
+import type { Settlement, SettlementCall } from '#app/domain/settlement/model.js'
 import { Status } from '#app/domain/shared/status.js'
 import type { Address, Hash } from '#app/domain/shared/types/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'

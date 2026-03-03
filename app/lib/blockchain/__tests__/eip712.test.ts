@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { OrderCore } from '#app/domain/order/types.js'
+import { OrderCore } from '#app/domain/order/model.js'
 import { toOrder712 } from '#app/lib/blockchain/eip712.js'
 import { fakeOrderCore } from '#tests/helpers/fixtures.js'
 
