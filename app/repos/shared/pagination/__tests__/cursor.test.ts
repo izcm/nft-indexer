@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { describe, expect, it } from 'vitest'
-import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from '../cursor.js'
+import { buildCursorFilter, buildSortSpec, encodeCursor, toMongo, walkPath } from '../cursor.js'
 import { CursorPageCore } from '../types.js'
 
 /* ======================================
@@ -105,6 +105,28 @@ describe('encodeCursor', () => {
 /* =======================================================
    buildSortSpec
 ======================================================= */
+
+/* =======================================================
+   toMongo (dir conversion)
+======================================================= */
+
+describe('toMongo', () => {
+  // import it
+  // change export in cursor.ts to: export const toMongo = ...
+
+  it('maps asc -> 1', () => {
+    expect(toMongo('asc')).toBe(1)
+  })
+
+  it('maps desc -> -1', () => {
+    expect(toMongo('desc')).toBe(-1)
+  })
+
+  it('is deterministic', () => {
+    expect(toMongo('asc')).toBe(toMongo('asc'))
+    expect(toMongo('desc')).toBe(toMongo('desc'))
+  })
+})
 
 describe('buildSortSpec', () => {
   it('sets primary and secondary sort field as expected', () => {

@@ -1,18 +1,22 @@
 import { orderRepo } from '#app/repos/order.repo.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { findPageGeneric } from '#app/repos/shared/paginate.js'
-import type { FindPageArgs } from '#app/repos/shared/types.js'
+import { findPageGeneric } from '#app/repos/shared/pagination/find-page-generic.js'
 
 import type { SettlementKey } from '#app/domain/settlement/types.js'
+import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import type { OrderKey } from '#app/domain/order/types.js'
 import type { NFTCollectionKey } from '#app/domain/nft-collection/types.js'
 
-import type { PagedResource, ResourceName } from './types/resource-defs.js'
+import type {
+  PagedResource,
+  ResourceName,
+  ResourceType,
+} from '../../domain/shared/types/resources.js'
 import { pkOf, relations, WithIncludes, type includeFor } from './include-rules.js'
 
 const loaders: {
-  [K in ResourceName]: { findByKeys: (keys: any[]) => Promise<any[]> }
+  [K in ResourceName]: { findByKeys: (keys: any[]) => Promise<any[] | null> }
 } = {
   settlement: {
     findByKeys: (keys: SettlementKey[]) => settlementRepo.findByKeys(keys),
@@ -25,17 +29,18 @@ const loaders: {
   },
 } as const
 
-const findPageRoutes: Record<
-  PagedResource,
-  (args: FindPageArgs) => ReturnType<typeof findPageGeneric>
-> = {
+const findPageRoutes: {
+  [R in PagedResource]: (
+    args: DomainPageQuery<ResourceType<R>>
+  ) => ReturnType<typeof findPageGeneric>
+} = {
   settlement: settlementRepo.findPage,
   order: orderRepo.findPage,
 } as const
 
 export async function hydratePage<R extends PagedResource>(
   resource: R,
-  args: FindPageArgs,
+  args: DomainPageQuery<ResourceType<R>>,
   opts: { include?: includeFor<R>[] } = {}
 ) {
   // --- read page of base resource ---
@@ -52,6 +57,7 @@ export async function hydratePage<R extends PagedResource>(
 
     // 2) load related documents
     const related = await loaders[loaderKey].findByKeys(keys)
+    if (!related) continue
 
     // 3) index include items by primary key
     const index = new Map<string, any>()

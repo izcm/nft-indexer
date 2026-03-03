@@ -1,6 +1,6 @@
-import { NFTCollection } from '#app/domain/nft-collection/types.js'
-import { OrderRecord } from '#app/domain/order/types.js'
-import { Settlement } from '#app/domain/settlement/types.js'
+import type { NFTCollection } from '#app/domain/nft-collection/types.js'
+import type { OrderRecord } from '#app/domain/order/types.js'
+import type { Settlement } from '#app/domain/settlement/types.js'
 
 export const RESOURCE_NAMES = ['settlement', 'order', 'nftCollection'] as const
 export type ResourceName = (typeof RESOURCE_NAMES)[number]

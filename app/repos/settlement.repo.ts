@@ -1,10 +1,15 @@
+import type { ObjectId, WithId } from 'mongodb'
 import { settlements } from '#app/db/collections.js'
+
 import type { Settlement, SettlementCall, SettlementKey } from '#app/domain/settlement/types.js'
 import { Status } from '#app/domain/shared/status.js'
-import type { Hash } from '#app/domain/shared/eth.js'
-import type { ObjectId } from 'mongodb'
-import { findPageGeneric } from './shared/paginate.js'
-import type { FindPageArgs } from './shared/types.js'
+import type { Hash } from '#app/domain/shared/types/eth.js'
+import {
+  ByIdRepository,
+  ByKeyRepository,
+  PageableRepository,
+} from './shared/interfaces/read-repository.js'
+import { createReadRepo } from './read-commons.repo.js'
 
 // === helpers ===
 
@@ -15,47 +20,26 @@ const crPaths = {
   txContext: 'execution.callReconstruction.data.txContext',
 }
 
-export const settlementRepo = {
+type SettlementDoc = WithId<Settlement>
+
+const baseRead = createReadRepo<Settlement, SettlementKey>(settlements, k => ({
+  chainId: k.chainId,
+  orderHash: k.orderHash,
+}))
+
+export type SettlementRepo = ByIdRepository<SettlementDoc, ObjectId> &
+  ByKeyRepository<SettlementDoc, SettlementKey> &
+  PageableRepository<SettlementDoc> & {
+    findPendingCallReconstruction(chainId: number, limit: number): Promise<Settlement[]>
+    save(settlement: Settlement): Promise<any>
+    finalizeCallReconstruction(args: SettlementKey & { meta: SettlementCall }): Promise<any>
+    markCallReconstructionFailed(args: SettlementKey & { error: string }): Promise<any>
+  }
+
+export const settlementRepo: SettlementRepo = {
   // === read ===
 
-  async findById(id: ObjectId) {
-    return settlements().findOne({ _id: id })
-  },
-
-  async findByKey(key: SettlementKey) {
-    const { chainId, orderHash } = key
-    return settlements().findOne({ chainId, orderHash })
-  },
-
-  async findByKeys(keys: SettlementKey[]) {
-    if (!keys.length) return []
-
-    return settlements()
-      .find({
-        $or: keys.map(k => ({ chainId: k.chainId, orderHash: k.orderHash })),
-      })
-      .toArray()
-  },
-
-  async findPage({ filters = {}, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {
-    const blockTs = 'execution.block.timestamp'
-    const query = { ...filters }
-
-    if (from || to) {
-      query[blockTs] = {}
-      if (from) query[blockTs].$gte = from
-      if (to) query[blockTs].$lte = to
-    }
-
-    return findPageGeneric<Settlement>({
-      dbCollection: settlements(),
-      baseQuery: query,
-      sortField,
-      sortDir,
-      cursor,
-      limit,
-    })
-  },
+  ...baseRead,
 
   async findPendingCallReconstruction(chainId: number, limit: number) {
     return settlements()

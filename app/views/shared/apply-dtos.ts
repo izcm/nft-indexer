@@ -1,7 +1,7 @@
 import { toOrderDTO } from '../dtos/order.dto.js'
 import { toSettlementDTO } from '../dtos/settlement.dto.js'
 import { toNFTCollectionDTO } from '../dtos/nft-collection.dto.js'
-import { ResourceMap, ResourceName, ResourceType } from './types/resource-defs.js'
+import { ResourceMap, ResourceName, ResourceType } from '../../domain/shared/types/resources.js'
 
 type DTOMap = {
   [R in keyof ResourceMap]: (x: ResourceType<R>) => any

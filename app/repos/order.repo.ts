@@ -1,49 +1,37 @@
+import { ObjectId, UpdateResult, WithId } from 'mongodb'
 import { orders } from '#app/db/collections.js'
+
 import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/types.js'
-import type { Hash } from '#app/domain/shared/eth.js'
+import type { Hash } from '#app/domain/shared/types/eth.js'
+
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import { ObjectId } from 'mongodb'
-import { findPageGeneric } from './shared/paginate.js'
-import type { FindPageArgs } from './shared/types.js'
 
-export const orderRepo = {
+import {
+  PageableRepository,
+  ByKeyRepository,
+  ByIdRepository,
+} from './shared/interfaces/read-repository.js'
+import { createReadRepo } from './read-commons.repo.js'
+
+type OrderDoc = WithId<OrderRecord>
+
+const baseRead = createReadRepo<OrderRecord, OrderKey>(orders, k => ({
+  chainId: k.chainId,
+  orderHash: k.orderHash,
+}))
+
+export const orderRepo: ByIdRepository<OrderDoc, ObjectId> &
+  ByKeyRepository<OrderDoc, OrderKey> &
+  PageableRepository<OrderDoc> & {
+    ensure(chainId: number, order: Order): Promise<{ id: ObjectId; didUpsert: boolean }>
+    updateStatus({
+      chainId,
+      orderHash,
+      status,
+    }: OrderKey & { status: OrderStatus }): Promise<UpdateResult>
+  } = {
   // === read ===
-
-  async findById(id: ObjectId) {
-    return orders().findOne({ _id: id })
-  },
-
-  async findByKey(key: OrderKey) {
-    const { chainId, orderHash } = key
-    return orders().findOne({ chainId, orderHash })
-  },
-
-  async findByKeys(keys: OrderKey[]) {
-    if (!keys.length) return []
-
-    return orders()
-      .find({ $or: keys.map(k => ({ chainId: k.chainId, orderHash: k.orderHash })) })
-      .toArray()
-  },
-
-  async findPage({ filters = {}, from, to, cursor, sortField, sortDir, limit }: FindPageArgs) {
-    const query = { ...filters }
-
-    if (from || to) {
-      query.createdAt = {}
-      if (from) query.createdAt.$gte = from
-      if (to) query.createdAt.$lte = to
-    }
-
-    return findPageGeneric<OrderRecord>({
-      dbCollection: orders(),
-      baseQuery: query,
-      sortField,
-      sortDir,
-      cursor,
-      limit,
-    })
-  },
+  ...baseRead,
 
   // === write ===
 

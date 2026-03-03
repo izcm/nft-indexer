@@ -27,10 +27,11 @@ describe('orderRepo', () => {
   const repo = orderRepo
 
   // === defaults ===
+  const fakeOrderDoc = () => ({ ...fakeOrderRecord(), _id: new ObjectId() })
 
   async function givenOrderRecordExists(overrides: Partial<OrderRecord> = {}) {
     const orderRecord = fakeOrderRecord(overrides)
-    const { insertedId } = await orders().insertOne(orderRecord)
+    const { insertedId } = await orders().insertOne({ ...orderRecord, _id: new ObjectId() })
 
     return { insertedId, orderRecord }
   }
@@ -97,6 +98,7 @@ describe('orderRepo', () => {
         cursor: undefined,
         sortDir: 1,
         sortField: 'createdAt',
+        rangeField: 'createdAt',
         limit: 100,
       })
 
@@ -125,7 +127,7 @@ describe('orderRepo', () => {
     it('rejects manual duplicate insertion', async () => {
       const { orderRecord } = await givenOrderRecordExists()
 
-      await expect(orders().insertOne(orderRecord)).rejects.toThrow()
+      await expect(orders().insertOne(fakeOrderDoc())).rejects.toThrow()
     })
 
     describe('ensure', () => {

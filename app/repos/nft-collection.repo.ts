@@ -6,7 +6,7 @@ import type {
   NFTCollectionMetaPatch,
 } from '#app/domain/nft-collection/types.js'
 import { Status } from '#app/domain/shared/status.js'
-import type { Address } from '#app/domain/shared/eth.js'
+import type { Address } from '#app/domain/shared/types/eth.js'
 
 const stringifyKey = (key: NFTCollectionKey) => {
   return `${key.chainId}:${key.address.toLowerCase()}`

@@ -1,14 +1,14 @@
 import type { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
-import { orderQueryableFields } from './schema.js'
+import { orderQueryableFields } from './schemas.js'
 import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
 
 import { orderRepo } from '#app/repos/order.repo.js'
 
 import { readPage } from '#app/views/read-page.js'
-import { RESOURCE_NAMES } from '#app/views/shared/types/resource-defs.js'
-import { PageQuery } from '#app/views/shared/types/page-query.js'
+import { RESOURCE_NAMES } from '#app/domain/shared/types/resources.js'
+import { PageQuery } from '#app/views/shared/types/query-defs.js'
 
 export const ordersQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(

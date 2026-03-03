@@ -1,5 +1,5 @@
 import type { Status } from '../shared/status.js'
-import type { Address } from '../shared/eth.js'
+import type { Address } from '../shared/types/eth.js'
 
 export type NFTCollectionKey = {
   chainId: number

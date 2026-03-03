@@ -2,11 +2,6 @@ import { Document as MongoDoc } from 'mongodb'
 import { buildCursorFilter, buildSortSpec, encodeCursor, walkPath } from './cursor.js'
 import { GenericPageArgs } from './types.js'
 
-export type Page<T> = {
-  items: T[]
-  nextCursor: string | null
-}
-
 export async function findPageGeneric<TDoc extends MongoDoc>({
   dbCollection,
   baseQuery,

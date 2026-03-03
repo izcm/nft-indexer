@@ -9,13 +9,12 @@ import {
   type NFTCollection,
   type NFTCollectionKey,
 } from '#app/domain/nft-collection/types.js'
-
 import type {
   PagedResource,
   ResourceMap,
   ResourceName,
   ResourceType,
-} from './types/resource-defs.js'
+} from '../../domain/shared/types/resources.js'
 
 export const pkOf = {
   Settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),

@@ -1,4 +1,4 @@
-import type { Address, Hash } from '../shared/eth.js'
+import type { Address, Hash } from '../shared/types/eth.js'
 
 export type OrderKey = {
   chainId: number

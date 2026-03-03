@@ -1,5 +1,7 @@
 import { ObjectId } from 'mongodb'
-import { CursorDir, CursorPageCore } from './types.js'
+import { MongoSortDir as CursorDir, CursorPageCore } from './types.js'
+
+export const toMongo = (dir: 'asc' | 'desc'): 1 | -1 => (dir === 'asc' ? 1 : -1)
 
 export const walkPath = (obj: any, path: string) => {
   if (Object.keys(obj).length === 0) return undefined

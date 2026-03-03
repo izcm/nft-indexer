@@ -1,6 +1,6 @@
 import { Status } from '../shared/status.js'
-import type { Address, Hash } from '../shared/eth.js'
-import type { BlockRef, TxContext } from '../shared/eth.js'
+import type { Address, Hash } from '../shared/types/eth.js'
+import type { BlockRef, TxContext } from '../shared/types/eth.js'
 import type { OrderCore } from '../order/types.js'
 
 export type SettlementKey = {
