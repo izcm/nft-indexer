@@ -14,7 +14,6 @@ const stringifyKey = (key: NFTCollectionKey) => {
 
 // === cache ===
 
-// todo: test findByContracts
 const seenCollections = new Set<string>()
 
 export const __resetSeenCollectionsForTest = () => {
@@ -29,7 +28,7 @@ export const nftCollectionRepo = {
    * Avoids repeated DB upserts using in-memory tracking
    */
 
-  async noteNFTCollection(key: NFTCollectionKey) {
+  noteNFTCollection(key: NFTCollectionKey) {
     const { chainId, address } = key
 
     const cacheKey = stringifyKey(key)
@@ -54,16 +53,16 @@ export const nftCollectionRepo = {
 
   // === read ===
 
-  async findById(id: ObjectId) {
+  findById(id: ObjectId) {
     return nftCollections().findOne({ _id: id })
   },
 
-  async findByKey(key: NFTCollectionKey) {
+  findByKey(key: NFTCollectionKey) {
     const { chainId, address } = key
     return nftCollections().findOne({ chainId, address })
   },
 
-  async findByKeys(keys: NFTCollectionKey[]) {
+  findByKeys(keys: NFTCollectionKey[]) {
     if (!keys.length) return []
 
     return nftCollections()
@@ -71,7 +70,7 @@ export const nftCollectionRepo = {
       .toArray()
   },
 
-  async findMissingChainMeta(chainId: number, limit: number) {
+  findMissingChainMeta(chainId: number, limit: number) {
     return nftCollections()
       .find({ chainId: chainId, chainMetaStatus: Status.PENDING })
       .limit(limit)
@@ -80,7 +79,7 @@ export const nftCollectionRepo = {
 
   // === write ===
 
-  async finalizeChainMeta({
+  finalizeChainMeta({
     chainId,
     address,
     chainMeta,
@@ -97,7 +96,7 @@ export const nftCollectionRepo = {
     )
   },
 
-  async markChainMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
+  markChainMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
     return nftCollections().updateOne(
       { chainId, address },
       {
@@ -110,11 +109,7 @@ export const nftCollectionRepo = {
     )
   },
 
-  async patchMeta({
-    chainId,
-    address,
-    patch,
-  }: NFTCollectionKey & { patch: NFTCollectionMetaPatch }) {
+  patchMeta({ chainId, address, patch }: NFTCollectionKey & { patch: NFTCollectionMetaPatch }) {
     return nftCollections().updateOne(
       { chainId, address },
       {

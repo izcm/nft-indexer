@@ -1,11 +1,14 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { getDb } from '#app/db/mongo.js'
-import { bytes32n } from '#tests/helpers/evm-fixtures.js'
-import { walkPath } from '#app/repos/shared/pagination/cursor.js'
-import { findPageGeneric, Page } from '#app/repos/shared/pagination/find-page-generic.js'
-import type { GenericPageArgs } from '#app/repos/shared/pagination/types.js'
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { Collection, ObjectId } from 'mongodb'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+
+import { getDb } from '#app/db/mongo.js'
+import { walkPath } from '#app/repos/shared/pagination/cursor.js'
+import { findPageGeneric } from '#app/repos/shared/pagination/find-page-generic.js'
+import type { GenericPageArgs } from '#app/repos/shared/pagination/types.js'
+import type { Page } from '#app/domain/shared/types/page.js'
+
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
+import { bytes32n } from '#tests/helpers/evm-fixtures.js'
 
 type TestDoc = {
   _id: ObjectId

@@ -13,6 +13,8 @@ import { RESOURCE_NAMES } from '#app/domain/shared/types/resources.js'
 
 import { orderCoreQueryableFields, orderRecordQueryableFields } from './schemas.js'
 import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
+
+// -- DI ---
 import { readById, readPage } from '#app/di/read.js'
 
 export const ordersQuery = (fastify: FastifyInstance) => {

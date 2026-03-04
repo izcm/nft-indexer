@@ -1,12 +1,12 @@
 import { ObjectId, UpdateResult, WithId } from 'mongodb'
 import { orders } from '#app/db/collections.js'
 
+import type { OrderPort } from '#app/domain/order/port.js'
 import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/model.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
+import type { ById } from '#app/domain/shared/interfaces/read-commons.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-
-import { ByKey, ById, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 import { createReadRepo } from './read-commons.repo.js'
 
 type OrderDoc = WithId<OrderRecord>
@@ -16,16 +16,7 @@ const baseRead = createReadRepo<OrderRecord, OrderKey>(orders, k => ({
   orderHash: k.orderHash,
 }))
 
-export const orderRepo: ById<OrderDoc, ObjectId> &
-  ByKey<OrderDoc, OrderKey> &
-  Pageable<OrderDoc> & {
-    ensure(chainId: number, order: Order): Promise<{ id: ObjectId; didUpsert: boolean }>
-    updateStatus({
-      chainId,
-      orderHash,
-      status,
-    }: OrderKey & { status: OrderStatus }): Promise<UpdateResult>
-  } = {
+export const orderRepo: OrderPort & ById<OrderDoc, ObjectId> = {
   // === read ===
   ...baseRead,
 
@@ -67,7 +58,7 @@ export const orderRepo: ById<OrderDoc, ObjectId> &
     return { id, didUpsert }
   },
 
-  async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
+  updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
     return orders().updateOne(
       { chainId, orderHash },
       {

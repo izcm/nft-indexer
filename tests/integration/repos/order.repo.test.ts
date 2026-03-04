@@ -96,7 +96,7 @@ describe('orderRepo', () => {
         from: 150,
         to: 250,
         cursor: undefined,
-        sortDir: 1,
+        sortDir: 'asc',
         sortField: 'createdAt',
         rangeField: 'createdAt',
         limit: 100,

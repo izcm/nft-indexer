@@ -25,7 +25,7 @@ export const createReadRepo = <TDoc extends MongoDoc, TKey>(
         .toArray()
     },
 
-    findPage(pageQuery: DomainPageQuery<WithId<TDoc>>) {
+    findPage(pageQuery: DomainPageQuery<TDoc>) {
       const { filters = {}, from, to, rangeField } = pageQuery
       const query: Record<string, any> = { ...filters }
 
