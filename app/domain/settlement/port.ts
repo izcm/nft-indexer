@@ -20,10 +20,10 @@ export interface SettlementPort extends ByKey<Settlement, SettlementKey>, Pageab
   /**
    * Finalize call reconstruction after successful parse.
    */
-  finalizeCallReconstruction(args: SettlementKey & { meta: SettlementCall }): Promise<any>
+  finalizeCallReconstruction(args: SettlementKey & { meta: SettlementCall }): Promise<void>
 
   /**
    * Mark call reconstruction as failed.
    */
-  markCallReconstructionFailed(args: SettlementKey & { error: string }): Promise<any>
+  markCallReconstructionFailed(args: SettlementKey & { error: string }): Promise<void>
 }

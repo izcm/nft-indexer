@@ -153,7 +153,6 @@ describe('settlementRepo', () => {
 
         const items = await repo.findPendingCallReconstruction(target.chainId, 100)
 
-        console.log(items)
         expect(items).toHaveLength(target.count.pending)
         expect(items.every(s => s.chainId === target.chainId)).toBe(true)
       })
@@ -261,8 +260,6 @@ describe('settlementRepo', () => {
             meta,
           })
 
-          expect(result.modifiedCount).toBe(1)
-
           const updated = await settlements().findOne({
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
@@ -274,18 +271,12 @@ describe('settlementRepo', () => {
           expect(cr.data?.txContext).toEqual(meta.txContext)
         })
 
-        it('does not upsert settlement does not exist', async () => {
-          const result = await repo.finalizeCallReconstruction({
+        it('does not upsert when settlement does not exist', async () => {
+          await repo.finalizeCallReconstruction({
             chainId: 1,
             orderHash: bytes32('o_hash') as Hash,
             meta: fakeSettlementCall(),
           })
-
-          expect(result.acknowledged).toBe(true)
-          expect(result.matchedCount).toBe(0)
-
-          expect(result.modifiedCount).toBe(0)
-          expect(result.upsertedCount).toBe(0)
 
           const rows = await settlements().find().toArray()
           expect(rows).toHaveLength(0)
@@ -335,13 +326,11 @@ describe('settlementRepo', () => {
           })
           const errorMessage = 'some error'
 
-          const result = await repo.markCallReconstructionFailed({
+          await repo.markCallReconstructionFailed({
             chainId: settlement.chainId,
             orderHash: settlement.orderHash,
             error: errorMessage,
           })
-
-          expect(result.modifiedCount).toBe(1)
 
           const updated = await settlements().findOne({
             chainId: settlement.chainId,

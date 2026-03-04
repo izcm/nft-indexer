@@ -15,12 +15,6 @@ import { Status } from '#app/domain/shared/status.js'
 
 import { createReadRepo } from './read-commons.repo.js'
 
-// === helpers ===
-
-const stringifyKey = (key: NFTCollectionKey) => {
-  return `${key.chainId}:${key.address.toLowerCase()}`
-}
-
 // === cache ===
 
 const seenCollections = new Set<string>()
@@ -29,7 +23,11 @@ export const __resetSeenCollectionsForTest = () => {
   seenCollections.clear()
 }
 
-// === readers ===
+const stringifyKey = (key: NFTCollectionKey) => {
+  return `${key.chainId}:${key.address.toLowerCase()}`
+}
+
+// === init common-readers ===
 
 const baseRead = createReadRepo<NFTCollection, NFTCollectionKey>(nftCollections, k => ({
   chainId: k.chainId,

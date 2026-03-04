@@ -227,19 +227,14 @@ describe('orderRepo', () => {
       expect(rowAfter).toMatchObject({ ...rowBefore, status: 'filled', updatedAt: startTime + 1 })
     })
 
-    it('does nothing if order not found', async () => {
+    it('does not upsert if order does not exist', async () => {
       const { chainId, orderHash } = fakeOrderRecord()
 
-      const result = await repo.updateStatus({ chainId, orderHash, status: 'filled' })
+      await repo.updateStatus({ chainId, orderHash, status: 'filled' })
 
-      expect(result.acknowledged).toBe(true)
+      const rows = await orders().find().toArray()
 
-      // no match or modifications
-      expect(result.matchedCount).toBe(0)
-      expect(result.modifiedCount).toBe(0)
-
-      // upsert should be off
-      expect(result.upsertedCount).toBe(0)
+      expect(rows).toHaveLength(0)
     })
   })
 })

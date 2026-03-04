@@ -44,12 +44,12 @@ export const settlementRepo: SettlementPort & ById<WithId<Settlement>, ObjectId>
     })
   },
 
-  finalizeCallReconstruction({
+  async finalizeCallReconstruction({
     chainId,
     orderHash,
     meta,
   }: SettlementKey & { meta: SettlementCall }) {
-    return settlements().updateOne(
+    await settlements().updateOne(
       { chainId, orderHash },
       {
         $set: {
@@ -60,8 +60,12 @@ export const settlementRepo: SettlementPort & ById<WithId<Settlement>, ObjectId>
     )
   },
 
-  markCallReconstructionFailed({ chainId, orderHash, error }: SettlementKey & { error: string }) {
-    return settlements().updateOne(
+  async markCallReconstructionFailed({
+    chainId,
+    orderHash,
+    error,
+  }: SettlementKey & { error: string }) {
+    await settlements().updateOne(
       { chainId, orderHash },
       {
         $set: {

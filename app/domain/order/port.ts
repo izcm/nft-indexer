@@ -14,5 +14,5 @@ export interface OrderPort extends ByKey<OrderRecord, OrderKey>, Pageable<OrderR
   /**
    * Update order status (active/filled/cancelled/expired).
    */
-  updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }): Promise<any>
+  updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }): Promise<void>
 }

@@ -1,8 +1,8 @@
 import { ObjectId, UpdateResult, WithId } from 'mongodb'
 import { orders } from '#app/db/collections.js'
 
-import type { OrderPort } from '#app/domain/order/port.js'
 import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/model.js'
+import type { OrderPort } from '#app/domain/order/port.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
 import type { ById } from '#app/domain/shared/interfaces/read-commons.js'
 
@@ -58,8 +58,8 @@ export const orderRepo: OrderPort & ById<OrderDoc, ObjectId> = {
     return { id, didUpsert }
   },
 
-  updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
-    return orders().updateOne(
+  async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
+    await orders().updateOne(
       { chainId, orderHash },
       {
         $set: {
