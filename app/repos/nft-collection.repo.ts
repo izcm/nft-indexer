@@ -1,12 +1,21 @@
 import { ObjectId } from 'mongodb'
 import { nftCollections } from '#app/db/collections.js'
+
 import type {
+  NFTCollection,
   NFTCollectionChainMeta,
   NFTCollectionKey,
   NFTCollectionMetaPatch,
 } from '#app/domain/nft-collection/model.js'
-import { Status } from '#app/domain/shared/status.js'
+import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
+
 import type { Address } from '#app/domain/shared/types/eth.js'
+import type { ById } from '#app/domain/shared/interfaces/read-commons.js'
+import { Status } from '#app/domain/shared/status.js'
+
+import { createReadRepo } from './read-commons.repo.js'
+
+// === helpers ===
 
 const stringifyKey = (key: NFTCollectionKey) => {
   return `${key.chainId}:${key.address.toLowerCase()}`
@@ -20,15 +29,19 @@ export const __resetSeenCollectionsForTest = () => {
   seenCollections.clear()
 }
 
-export const nftCollectionRepo = {
-  // === helpers ===
+// === readers ===
 
-  /**
-   * Ensures the collection exists
-   * Avoids repeated DB upserts using in-memory tracking
-   */
+const baseRead = createReadRepo<NFTCollection, NFTCollectionKey>(nftCollections, k => ({
+  chainId: k.chainId,
+  address: k.address,
+}))
 
-  noteNFTCollection(key: NFTCollectionKey) {
+export const nftCollectionRepo: NFTCollectionPort & ById<NFTCollection, ObjectId> = {
+  // === read ===
+  ...baseRead,
+
+  // === write ===
+  async noteNFTCollection(key: NFTCollectionKey) {
     const { chainId, address } = key
 
     const cacheKey = stringifyKey(key)
@@ -36,7 +49,7 @@ export const nftCollectionRepo = {
 
     seenCollections.add(cacheKey)
 
-    return nftCollections().updateOne(
+    await nftCollections().updateOne(
       { chainId, address },
       {
         $setOnInsert: {
@@ -53,38 +66,21 @@ export const nftCollectionRepo = {
 
   // === read ===
 
-  findById(id: ObjectId) {
-    return nftCollections().findOne({ _id: id })
-  },
-
-  findByKey(key: NFTCollectionKey) {
-    const { chainId, address } = key
-    return nftCollections().findOne({ chainId, address })
-  },
-
-  findByKeys(keys: NFTCollectionKey[]) {
-    if (!keys.length) return []
-
-    return nftCollections()
-      .find({ $or: keys.map(k => ({ chainId: k.chainId, address: k.address })) })
-      .toArray()
-  },
-
   findMissingChainMeta(chainId: number, limit: number) {
     return nftCollections()
-      .find({ chainId: chainId, chainMetaStatus: Status.PENDING })
+      .find({ chainId, chainMetaStatus: Status.PENDING })
       .limit(limit)
       .toArray()
   },
 
   // === write ===
 
-  finalizeChainMeta({
+  async finalizeChainMeta({
     chainId,
     address,
     chainMeta,
   }: NFTCollectionKey & { chainMeta: Partial<NFTCollectionChainMeta> }) {
-    return nftCollections().updateOne(
+    await nftCollections().updateOne(
       { chainId, address },
       {
         $set: {
@@ -96,8 +92,8 @@ export const nftCollectionRepo = {
     )
   },
 
-  markChainMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
-    return nftCollections().updateOne(
+  async markChainMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
+    await nftCollections().updateOne(
       { chainId, address },
       {
         $set: {
@@ -109,8 +105,12 @@ export const nftCollectionRepo = {
     )
   },
 
-  patchMeta({ chainId, address, patch }: NFTCollectionKey & { patch: NFTCollectionMetaPatch }) {
-    return nftCollections().updateOne(
+  async patchMeta({
+    chainId,
+    address,
+    patch,
+  }: NFTCollectionKey & { patch: NFTCollectionMetaPatch }) {
+    await nftCollections().updateOne(
       { chainId, address },
       {
         $set: {

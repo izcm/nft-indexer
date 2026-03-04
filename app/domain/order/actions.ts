@@ -29,5 +29,5 @@ export async function ingestOrder(chainId: number, order: Order) {
 export async function onOrderCreated({ chainId, address }: NFTCollectionKey) {
   void nftCollectionRepo
     .noteNFTCollection({ chainId, address })
-    .catch(err => console.error(`[${TAG}:created] failed to note NFT collection`, err))
+    ?.catch(err => console.error(`[${TAG}:created] failed to note NFT collection`, err))
 }

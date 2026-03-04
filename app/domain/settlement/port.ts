@@ -1,23 +1,29 @@
 import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
 import type { Settlement, SettlementCall, SettlementKey } from './model.js'
 
-// todo: type return types
-// note: dont depend on mongodb eg. make own updateresult type etc.
-
-/* definitions settlement read / write  */
+/**
+ * Settlement read / write definitions.
+ */
 
 export interface SettlementPort extends ByKey<Settlement, SettlementKey>, Pageable<Settlement> {
-  // save should insert one row and throw error for duplicates chainId + orderHash
+  /**
+   * Save settlement. Should error on duplicate chainId + orderHash.
+   */
   save(settlement: Settlement): Promise<any>
 
-  // worker collects tx / tx-receipt & reconstructs call
-  // eg. parses tx inputs (calldata)
-
-  // worker finds rows who have their callReconstruction status set to PENDING
+  /**
+   * Find settlements with pending call reconstruction.
+   * Used by background workers to parse tx calldata.
+   */
   findPendingCallReconstruction(chainId: number, limit: number): Promise<Settlement[]>
 
-  // call reconstruction - on success
+  /**
+   * Finalize call reconstruction after successful parse.
+   */
   finalizeCallReconstruction(args: SettlementKey & { meta: SettlementCall }): Promise<any>
-  // call reconstruction - on error
+
+  /**
+   * Mark call reconstruction as failed.
+   */
   markCallReconstructionFailed(args: SettlementKey & { error: string }): Promise<any>
 }

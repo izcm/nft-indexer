@@ -46,7 +46,7 @@ export async function onSettlementCreated({
   // note collection
   void nftCollectionRepo
     .noteNFTCollection({ chainId, address: collection })
-    .catch(err => console.error(`[${tag}] failed to note NFT collection`, err))
+    ?.catch(err => console.error(`[${tag}] failed to note NFT collection`, err))
 
   // mark order as filled
   void orderRepo

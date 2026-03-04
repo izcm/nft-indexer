@@ -6,35 +6,40 @@ import type {
   NFTCollectionMetaPatch,
 } from './model.js'
 
-// todo: type return types
-// note: dont depend on mongodb eg. make own updateresult type etc.
-
-/* definitions nft-collection read / write  */
+/**
+ * NFTCollection read / write definitions.
+ */
 
 export interface NFTCollectionPort
   extends ByKey<NFTCollection, NFTCollectionKey>, Pageable<NFTCollection> {
-  // ensure collection exists (no-op if already present)
-  // - NB:  indexer calls this function pretty often so any repo should have some in-memory call
-  //        to prevent repeated DB calls
+  /**
+   * Ensure collection exists (no-op if already present).
+   *
+   * NB: workers make calls here often, repos should implement
+   * some in-memory cache to avoid repeated DB writes.
+   */
   noteNFTCollection(key: NFTCollectionKey): Promise<void>
 
-  // for workers appending chain data (symbol, name etc.)
+  /**
+   * Find collections missing chain metadata (symbol, name, etc.).
+   * Used by background workers.
+   */
   findMissingChainMeta(chainId: number, limit: number): Promise<NFTCollection[]>
-  finalizeChainMeta({
-    chainId,
-    address,
-    chainMeta,
-  }: NFTCollectionKey & { chainMeta: Partial<NFTCollectionChainMeta> }): Promise<void>
-  markChainMetaFailed({
-    chainId,
-    address,
-    error,
-  }: NFTCollectionKey & { error: string }): Promise<void>
 
-  // patch off-chain meta (creator socials etc.)
-  patchMeta({
-    chainId,
-    address,
-    patch,
-  }: NFTCollectionKey & { patch: NFTCollectionMetaPatch }): Promise<void>
+  /**
+   * Finalize chain metadata after successful fetch.
+   */
+  finalizeChainMeta(
+    args: NFTCollectionKey & { chainMeta: Partial<NFTCollectionChainMeta> }
+  ): Promise<void>
+
+  /**
+   * Mark chain metadata fetch as failed.
+   */
+  markChainMetaFailed(args: NFTCollectionKey & { error: string }): Promise<void>
+
+  /**
+   * Patch off-chain metadata (e.g. creator socials).
+   */
+  patchMeta(args: NFTCollectionKey & { patch: NFTCollectionMetaPatch }): Promise<void>
 }
