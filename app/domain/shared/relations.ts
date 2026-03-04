@@ -14,12 +14,12 @@ import type {
   ResourceMap,
   ResourceName,
   ResourceType,
-} from '../../domain/shared/types/resources.js'
+} from '#app/domain/shared/types/resources.js'
 
 export const pkOf = {
-  Settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),
-  Order: (o: OrderRecord): OrderKey => orderKeyOf(o),
-  NFTCollection: (c: NFTCollection): NFTCollectionKey => nftCollectionKeyOf(c),
+  settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),
+  order: (o: OrderRecord): OrderKey => orderKeyOf(o),
+  nftCollection: (c: NFTCollection): NFTCollectionKey => nftCollectionKeyOf(c),
 } as const
 
 export const relations = {

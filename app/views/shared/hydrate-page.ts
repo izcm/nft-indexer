@@ -1,62 +1,31 @@
-import { orderRepo } from '#app/repos/order.repo.js'
-import { settlementRepo } from '#app/repos/settlement.repo.js'
-import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { findPageGeneric } from '#app/repos/shared/pagination/find-page-generic.js'
-
-import type { SettlementKey } from '#app/domain/settlement/model.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
-import type { OrderKey } from '#app/domain/order/model.js'
-import type { NFTCollectionKey } from '#app/domain/nft-collection/model.js'
-
+import { pkOf, relations, WithIncludes, type includeFor } from '#app/domain/shared/relations.js'
 import type {
   PagedResource,
   ResourceName,
   ResourceType,
-} from '../../domain/shared/types/resources.js'
-import { pkOf, relations, WithIncludes, type includeFor } from './include-rules.js'
-
-const loaders: {
-  [K in ResourceName]: { findByKeys: (keys: any[]) => Promise<any[] | null> }
-} = {
-  settlement: {
-    findByKeys: (keys: SettlementKey[]) => settlementRepo.findByKeys(keys),
-  },
-  order: {
-    findByKeys: (keys: OrderKey[]) => orderRepo.findByKeys(keys),
-  },
-  nftCollection: {
-    findByKeys: (keys: NFTCollectionKey[]) => nftCollectionRepo.findByKeys(keys),
-  },
-} as const
-
-const findPageRoutes: {
-  [R in PagedResource]: (
-    args: DomainPageQuery<ResourceType<R>>
-  ) => ReturnType<typeof findPageGeneric>
-} = {
-  settlement: settlementRepo.findPage,
-  order: orderRepo.findPage,
-} as const
+} from '#app/domain/shared/types/resources.js'
+import { PageableKeyReaders } from '#app/domain/shared/types/readers.js'
 
 export async function hydratePage<R extends PagedResource>(
+  readers: PageableKeyReaders,
   resource: R,
   args: DomainPageQuery<ResourceType<R>>,
   opts: { include?: includeFor<R>[] } = {}
 ) {
   // --- read page of base resource ---
-  const page = await findPageRoutes[resource](args)
+  const page = await readers[resource].findPage(args)
 
   // --- include items ---
   for (const include of opts.include ?? []) {
     const buildFK = relations[resource][include] as (x: any) => any
-    const loaderKey = include as keyof typeof loaders
-    const pk = pkOf[include as keyof typeof pkOf] as (x: any) => any
+    const pk = pkOf[include as ResourceName] as (x: any) => any
 
     // 1) collect foreign keys from base page
     const keys = page.items.map(item => buildFK(item))
 
     // 2) load related documents
-    const related = await loaders[loaderKey].findByKeys(keys)
+    const related = await readers[include as ResourceName].findByKeys(keys)
     if (!related) continue
 
     // 3) index include items by primary key
@@ -69,7 +38,7 @@ export async function hydratePage<R extends PagedResource>(
     for (const item of page.items) {
       const fk = buildFK(item)
       const match = index.get(JSON.stringify(fk))
-      if (match) item[include as string] = match
+      if (match) (item as any)[include] = match
     }
   }
 

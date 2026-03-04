@@ -8,7 +8,7 @@ export const toOrderType = (side: number, isCollectionBid: boolean): OrderType =
   return direction === 'BID' && isCollectionBid ? 'COLLECTION_BID' : direction
 }
 
-export const validOrder = (o: Order, anchorTs: number): boolean => {
+export const validOrder = (o: Order): boolean => {
   return (
     BigInt(o.price) > 0 &&
     BigInt(o.end) > BigInt(o.start) &&
@@ -17,8 +17,6 @@ export const validOrder = (o: Order, anchorTs: number): boolean => {
     isUintString(o.price) &&
     isUnixSeconds(Number(o.start)) &&
     isUnixSeconds(Number(o.end)) &&
-    // commented out since the demo includes fork time-warping
-    // BigInt(o.end) >= Math.floor(Date.now() / 1000) &&
     o.actor !== '0x0000000000000000000000000000000000000000'
   )
 }

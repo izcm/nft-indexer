@@ -1,28 +1,28 @@
 import type { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
-import { orderCoreQueryableFields, orderRecordQueryableFields } from './schemas.js'
-import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
-
-import { readPage } from '#app/views/read-page.js'
-import { orderRepo } from '#app/repos/order.repo.js'
-
 import {
   ORDER_SORT_FIELDS,
   OrderQueryModel,
   OrderRecord,
   OrderSortField,
 } from '#app/domain/order/model.js'
+import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
+import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
 import { RESOURCE_NAMES } from '#app/domain/shared/types/resources.js'
-import { DomainPageQuery } from '#app/domain/shared/types/page.js'
-import { HttpPageRequest } from '#app/domain/shared/types/http.js'
+
+import { orderCoreQueryableFields, orderRecordQueryableFields } from './schemas.js'
+import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
+import { readById, readPage } from '#app/di/read.js'
 
 export const ordersQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(
     '/:id',
     { schema: { params: byIdParams } },
     async (req, res) => {
-      const doc = await orderRepo.findById(new ObjectId(req.params.id))
+      // todo: api shouldnt depend on ObjectId
+      const id = new ObjectId(req.params.id)
+      const doc = await readById('order', id)
 
       if (!doc) {
         res.code(404)

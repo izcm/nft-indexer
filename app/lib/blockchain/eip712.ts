@@ -4,6 +4,7 @@ import { encodeAbiParameters, Hex, keccak256, toBytes } from 'viem'
 
 // ! NB:
 // this should be in some shared package a2z/packages
+// todo: do the packages thing and import it as protocol/
 
 export const dmrktDomain = {
   name: APP_NAME,

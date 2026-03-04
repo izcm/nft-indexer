@@ -10,9 +10,7 @@ const TAG = 'order'
 // === PRIMARY ACTIONS ===
 
 export async function ingestOrder(chainId: number, order: Order) {
-  const now = Math.floor(Date.now() / 1000)
-
-  if (!validOrder(order, now)) {
+  if (!validOrder(order)) {
     throw new InvalidOrderError()
   }
 

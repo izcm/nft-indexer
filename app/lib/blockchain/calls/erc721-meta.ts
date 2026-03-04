@@ -1,17 +1,18 @@
-import { erc721For } from '#app/lib/blockchain/interfaces/erc721.js'
 import { Hex, parseAbi, PublicClient } from 'viem'
-
-import type { NFTCollectionChainMeta } from '#app/domain/nft-collection/model.js'
+import { erc721For } from '#app/lib/blockchain/interfaces/erc721.js'
 
 const totalSupplyAbi = parseAbi(['function totalSupply() view returns (uint256)'])
 
-export const readERC721Meta = async (
-  client: PublicClient,
-  address: Hex
-): Promise<Partial<NFTCollectionChainMeta>> => {
+type ChainMeta = {
+  name: string
+  symbol: string
+  tokenType: string
+  totalSupply?: string
+}
+export const readERC721Meta = async (client: PublicClient, address: Hex) => {
   const erc721 = erc721For(client)
 
-  const meta: Partial<NFTCollectionChainMeta> = {
+  const meta: Partial<ChainMeta> = {
     name: await erc721.readName(address),
     symbol: await erc721.readSymbol(address),
     tokenType: 'ERC721',
