@@ -10,8 +10,8 @@ import { InvalidOrderError } from '../shared/errors.js'
 const TAG = 'order'
 
 type Deps = {
-  orders: OrderPort
-  nftCollections: NFTCollectionPort
+  orders: Pick<OrderPort, 'ensure'>
+  nftCollections: Pick<NFTCollectionPort, 'noteNFTCollection'>
 }
 
 export const makeOrderActions = ({ orders, nftCollections }: Deps) => {

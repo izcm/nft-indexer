@@ -1,47 +1,47 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeOrderRecord } from '#tests/helpers/fixtures.js'
 
-import { orderRepo } from '#app/repos/order.repo.js'
-import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { isValidOrder } from '../rules.js'
-
-vi.mock('#app/repos/order.repo.js', () => ({
-  orderRepo: {
-    ensure: vi.fn(),
-  },
-  orderRepoFor: vi.fn(),
-}))
-
-vi.mock('#app/repos/nft-collection.repo.js', () => ({
-  nftCollectionRepo: {
-    noteNFTCollection: vi.fn(),
-  },
-}))
+import { makeOrderActions } from '../actions.js'
 
 vi.mock('../rules.js', () => ({
-  validOrder: vi.fn(),
+  isValidOrder: vi.fn().mockResolvedValue(true),
 }))
 
+const fakeDeps = () => ({
+  orders: {
+    ensure: vi.fn(),
+    updateStatus: vi.fn(),
+  },
+  nftCollections: {
+    noteNFTCollection: vi.fn(),
+  },
+})
+
 describe('domain actions - orders', () => {
+  let deps: ReturnType<typeof fakeDeps>
+  let actions: ReturnType<typeof makeOrderActions>
+
+  // clear out any stale data
   beforeEach(() => {
-    vi.clearAllMocks()
+    deps = fakeDeps()
+    actions = makeOrderActions(deps)
   })
 
   describe('ingestOrder', () => {
-    it('returns ensure result and notes collection', async () => {
+    it('returns id + bool whether order was upserted and notes collection', async () => {
       const orderRecord = fakeOrderRecord()
       const { chainId, order } = orderRecord
 
       const expected = { id: 'abc123', didUpsert: true }
 
-      vi.mocked(orderRepo).ensure.mockResolvedValueOnce(expected as any)
-      vi.mocked(isValidOrder).mockReturnValueOnce(true)
-      vi.mocked(nftCollectionRepo).noteNFTCollection.mockResolvedValueOnce(undefined)
+      deps.orders.ensure.mockResolvedValueOnce(expected as any)
+      deps.nftCollections.noteNFTCollection.mockResolvedValueOnce(undefined)
 
-      const result = await ingestOrder(chainId, order)
+      const result = await actions.ingestOrder(chainId, order)
 
-      expect(orderRepo.ensure).toHaveBeenCalledExactlyOnceWith(chainId, order)
-      expect(nftCollectionRepo.noteNFTCollection).toHaveBeenCalledExactlyOnceWith({
+      expect(deps.orders.ensure).toHaveBeenCalledExactlyOnceWith(chainId, order)
+      expect(deps.nftCollections.noteNFTCollection).toHaveBeenCalledExactlyOnceWith({
         chainId,
         address: order.collection,
       })
