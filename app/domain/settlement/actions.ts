@@ -9,9 +9,9 @@ import type { Address } from '../shared/types/eth.js'
 const TAG = 'settlement'
 
 type Deps = {
-  settlements: SettlementPort
-  orders: OrderPort
-  nftCollections: NFTCollectionPort
+  settlements: Pick<SettlementPort, 'save' | 'finalizeCallReconstruction'>
+  orders: Pick<OrderPort, 'findByKey' | 'updateStatus'>
+  nftCollections: Pick<NFTCollectionPort, 'noteNFTCollection'>
 }
 
 export const makeSettlementActions = ({ settlements, orders, nftCollections }: Deps) => {

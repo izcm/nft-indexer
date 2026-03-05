@@ -1,5 +1,5 @@
 import { orders } from '#app/db/collections.js'
-import { Side } from '#app/domain/order/model.js'
+import { OrderSide } from '#app/domain/order/model.js'
 import { addrOf, bytes32n } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
@@ -52,14 +52,14 @@ describe('seed-orders', () => {
     // array of one address
     const cols = mockAddresses(colN)
 
-    const shapeFn = () => ({ side: Side.ASK, isCollectionBid: true })
+    const shapeFn = () => ({ side: OrderSide.ASK, isCollectionBid: true })
 
     await seedOrders(CHAIN_ID, cols, perCol, 'shapeFn', 0, shapeFn)
 
     const docs = await orders().find({}).toArray()
 
     expect(docs.length).toBe(colN * perCol)
-    expect(docs.every(o => o.order.side === Side.ASK && o.order.isCollectionBid)).toBe(true)
+    expect(docs.every(o => o.order.side === OrderSide.ASK && o.order.isCollectionBid)).toBe(true)
   })
 
   it('falls back to default side logic', async () => {
@@ -80,7 +80,7 @@ describe('seed-orders', () => {
 
     for (let i = 0; i < perCol; i++) {
       const expected = {
-        side: i % 2 === 0 ? Side.ASK : Side.BID,
+        side: i % 2 === 0 ? OrderSide.ASK : OrderSide.BID,
         isCollectionBid: i % 2 === 1 && seedNums[i] % 2 === 0,
       }
 

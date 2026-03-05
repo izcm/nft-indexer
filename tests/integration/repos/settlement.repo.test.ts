@@ -109,6 +109,7 @@ describe('settlementRepo', () => {
           cursor: undefined,
           sortDir: 'asc',
           sortField: 'createdAt',
+          rangeField: 'ingestedAt',
           limit: 100,
         })
 

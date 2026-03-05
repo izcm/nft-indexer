@@ -1,7 +1,7 @@
 import { orders, settlements } from '#app/db/collections.js'
 
 import { NFTCollection } from '#app/domain/nft-collection/model.js'
-import { Side } from '#app/domain/order/model.js'
+import { OrderSide } from '#app/domain/order/model.js'
 
 export type TopNFTCollectionByActiveOrders = NFTCollection & {
   summary: ActiveCounts
@@ -53,7 +53,7 @@ const buildPipeline = ({
 
         activeAskCount: {
           $sum: {
-            $cond: [{ $eq: [orderFields.side, Side.ASK] }, 1, 0],
+            $cond: [{ $eq: [orderFields.side, OrderSide.ASK] }, 1, 0],
           },
         },
 
@@ -61,7 +61,10 @@ const buildPipeline = ({
           $sum: {
             $cond: [
               {
-                $and: [{ $eq: [orderFields.side, Side.BID] }, { $eq: [orderFields.isCb, false] }],
+                $and: [
+                  { $eq: [orderFields.side, OrderSide.BID] },
+                  { $eq: [orderFields.isCb, false] },
+                ],
               },
               1,
               0,
@@ -73,7 +76,10 @@ const buildPipeline = ({
           $sum: {
             $cond: [
               {
-                $and: [{ $eq: [orderFields.side, Side.BID] }, { $eq: [orderFields.isCb, true] }],
+                $and: [
+                  { $eq: [orderFields.side, OrderSide.BID] },
+                  { $eq: [orderFields.isCb, true] },
+                ],
               },
               1,
               0,
@@ -153,7 +159,7 @@ export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: nu
 
         activeAskCount: {
           $sum: {
-            $cond: [{ $eq: ['$order.side', Side.ASK] }, 1, 0],
+            $cond: [{ $eq: ['$order.side', OrderSide.ASK] }, 1, 0],
           },
         },
 
@@ -162,7 +168,7 @@ export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: nu
             $cond: [
               {
                 $and: [
-                  { $eq: ['$order.side', Side.BID] },
+                  { $eq: ['$order.side', OrderSide.BID] },
                   { $eq: ['$order.isCollectionBid', false] },
                 ],
               },
@@ -177,7 +183,7 @@ export const topNFTCollectionsByActiveOrders = async (chainId: number, limit: nu
             $cond: [
               {
                 $and: [
-                  { $eq: ['$order.side', Side.BID] },
+                  { $eq: ['$order.side', OrderSide.BID] },
                   { $eq: ['$order.isCollectionBid', true] },
                 ],
               },

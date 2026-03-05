@@ -12,12 +12,12 @@ export const orderKeyOf = (record: OrderRecord): OrderKey => ({
 
 export type OrderType = 'ASK' | 'BID' | 'COLLECTION_BID'
 
-export enum Side {
+export enum OrderSide {
   ASK,
   BID,
 }
 
-export type SideLabel = keyof typeof Side
+export type SideLabel = keyof typeof OrderSide
 
 export type OrderStatus = 'active' | 'filled' | 'cancelled' | 'expired'
 

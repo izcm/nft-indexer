@@ -1,5 +1,5 @@
 import { nftCollections, orders } from '#app/db/collections.js'
-import { Side } from '#app/domain/order/model.js'
+import { OrderSide } from '#app/domain/order/model.js'
 import { ActiveCounts, topNFTCollectionsByActiveOrders } from '#app/views/top-nft-collections.js'
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
@@ -45,11 +45,11 @@ describe('topCollectionsByActiveOrders query', () => {
   }
 
   const makeShapeFn = (ask: number, bid: number, cb: number) => (i: number) => {
-    if (i < ask) return { side: Side.ASK, isCollectionBid: false }
+    if (i < ask) return { side: OrderSide.ASK, isCollectionBid: false }
 
-    if (i < bid + ask) return { side: Side.BID, isCollectionBid: false }
+    if (i < bid + ask) return { side: OrderSide.BID, isCollectionBid: false }
 
-    return { side: Side.BID, isCollectionBid: true }
+    return { side: OrderSide.BID, isCollectionBid: true }
   }
 
   it('groups + sorts + counts corectly', async () => {

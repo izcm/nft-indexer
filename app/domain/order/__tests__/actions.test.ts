@@ -22,14 +22,14 @@ describe('domain actions - orders', () => {
   let deps: ReturnType<typeof fakeDeps>
   let actions: ReturnType<typeof makeOrderActions>
 
-  // clear out any stale data
+  // clear out any stale state
   beforeEach(() => {
     deps = fakeDeps()
     actions = makeOrderActions(deps)
   })
 
-  describe('ingestOrder', () => {
-    it('returns id + bool whether order was upserted and notes collection', async () => {
+  describe('order ingestion', () => {
+    it('returns id + indicator on whether order was upserted and notes collection', async () => {
       const orderRecord = fakeOrderRecord()
       const { chainId, order } = orderRecord
 

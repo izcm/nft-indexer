@@ -1,6 +1,6 @@
 import { orders } from '#app/db/collections.js'
 import type { Order, OrderRecord, Signature } from '#app/domain/order/model.js'
-import { Side } from '#app/domain/order/model.js'
+import { OrderSide } from '#app/domain/order/model.js'
 import type { Address, Hash } from '#app/domain/shared/types/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { addrOf, bytes32, bytes32n, priceWei } from '#tests/helpers/evm-fixtures.js'
@@ -19,7 +19,7 @@ export async function seedOrders(
     i: number
     // seedNum: number
   ) => {
-    side: Side
+    side: OrderSide
     isCollectionBid: boolean
   },
   overrides: Partial<Omit<OrderRecord, 'order' | 'orderHash'>> = {}
@@ -55,7 +55,7 @@ function buildFakeOrder(
   i: number,
   seed: string,
   now: number,
-  shapeFn?: (i: number) => { side: Side; isCollectionBid: boolean }
+  shapeFn?: (i: number) => { side: OrderSide; isCollectionBid: boolean }
 ): Order {
   const orderSeed = `${i}:${seed}`
   const seedNum = Number(bytes32n(orderSeed))

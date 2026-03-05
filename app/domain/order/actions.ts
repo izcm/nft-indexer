@@ -16,7 +16,7 @@ type Deps = {
 
 export const makeOrderActions = ({ orders, nftCollections }: Deps) => {
   // --- primary actions ---
-
+  0
   async function ingestOrder(chainId: number, order: Order) {
     if (!isValidOrder(order)) {
       throw new InvalidOrderError()

@@ -20,7 +20,7 @@ const s = (x: number | bigint) => x.toString()
    Primitive identities
 --------------------------------------------------- */
 
-export const mockPrivateKeys = {
+export const fakePrivateKeys = {
   signer: bytes32('pk:signer'),
 } as const
 

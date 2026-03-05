@@ -13,7 +13,7 @@ import { decodeSettlementCall } from '../logic.js'
 import {
   fakeFill,
   fakeOrderCore,
-  mockPrivateKeys,
+  fakePrivateKeys,
   fakeReceipt,
   fakeTx,
 } from '#tests/helpers/fixtures.js'
@@ -34,7 +34,7 @@ describe('parseTxInputs', () => {
     const order = fakeOrderCore()
     const fill = fakeFill()
 
-    const signerAcount = privateKeyToAccount(mockPrivateKeys.signer)
+    const signerAcount = privateKeyToAccount(fakePrivateKeys.signer)
     const sig = await signerAcount.signTypedData({
       domain: dmrktDomain,
       types: dmrktTypes,
