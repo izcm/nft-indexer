@@ -13,7 +13,7 @@ import type { Address } from '#app/domain/shared/types/eth.js'
 import type { ById } from '#app/domain/shared/interfaces/read-commons.js'
 import { Status } from '#app/domain/shared/status.js'
 
-import { createReadRepo } from './read-commons.repo.js'
+import { makeReadRepo } from './read-commons.repo.js'
 
 // === cache ===
 
@@ -29,7 +29,7 @@ const stringifyKey = (key: NFTCollectionKey) => {
 
 // === init common-readers ===
 
-const baseRead = createReadRepo<NFTCollection, NFTCollectionKey>(nftCollections, k => ({
+const baseRead = makeReadRepo<NFTCollection, NFTCollectionKey>(nftCollections, k => ({
   chainId: k.chainId,
   address: k.address,
 }))

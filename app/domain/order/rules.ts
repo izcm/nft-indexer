@@ -8,7 +8,7 @@ export const toOrderType = (side: number, isCollectionBid: boolean): OrderType =
   return direction === 'BID' && isCollectionBid ? 'COLLECTION_BID' : direction
 }
 
-export const validOrder = (o: Order): boolean => {
+export const isValidOrder = (o: Order): boolean => {
   return (
     BigInt(o.price) > 0 &&
     BigInt(o.end) > BigInt(o.start) &&

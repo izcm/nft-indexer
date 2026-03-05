@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify'
-import { ingestOrder } from '#app/domain/order/actions.js'
+
 import type { Order, OrderCore } from '#app/domain/order/model.js'
 import { InvalidOrderError } from '#app/domain/shared/errors.js'
-import type { Address, Hash } from '#app/domain/shared/types/eth.js'
+
+import { orderActions as actions } from '#app/di/write.js'
 
 export const ordersIngest = (fastify: FastifyInstance) => {
   fastify.post<{ Headers: { 'x-chain-id': number }; Body: CreateOrderRequest }>(
@@ -21,12 +22,12 @@ export const ordersIngest = (fastify: FastifyInstance) => {
       const chainId = req.headers['x-chain-id']
 
       const order: Order = {
-        ...toOrderCore(req.body),
+        ...toDomainOrderCore(req.body),
         signature: req.body.signature,
       }
 
       try {
-        const { id, didUpsert } = await ingestOrder(chainId, order)
+        const { id, didUpsert } = await actions.ingestOrder(chainId, order)
 
         const code = didUpsert ? 201 : 200
 
@@ -50,7 +51,8 @@ type CreateOrderRequest = Omit<Order, 'start' | 'end'> & {
   end: number
 }
 
-function toOrderCore(body: CreateOrderRequest): Order {
+// convert start + end to string (orderbook fields are uint64)
+function toDomainOrderCore(body: CreateOrderRequest): OrderCore {
   const { start, end, ...rest } = body
   return {
     ...rest,

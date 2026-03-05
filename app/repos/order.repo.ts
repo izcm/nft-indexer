@@ -1,4 +1,4 @@
-import { ObjectId, UpdateResult, WithId } from 'mongodb'
+import { ObjectId, WithId } from 'mongodb'
 import { orders } from '#app/db/collections.js'
 
 import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/model.js'
@@ -7,16 +7,15 @@ import type { Hash } from '#app/domain/shared/types/eth.js'
 import type { ById } from '#app/domain/shared/interfaces/read-commons.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import { createReadRepo } from './read-commons.repo.js'
 
-type OrderDoc = WithId<OrderRecord>
+import { makeReadRepo } from './read-commons.repo.js'
 
-const baseRead = createReadRepo<OrderRecord, OrderKey>(orders, k => ({
+const baseRead = makeReadRepo<OrderRecord, OrderKey>(orders, k => ({
   chainId: k.chainId,
   orderHash: k.orderHash,
 }))
 
-export const orderRepo: OrderPort & ById<OrderDoc, ObjectId> = {
+export const orderRepo: OrderPort & ById<WithId<OrderRecord>, ObjectId> = {
   // === read ===
   ...baseRead,
 
@@ -77,7 +76,7 @@ export const orderRepo: OrderPort & ById<OrderDoc, ObjectId> = {
  */
 
 export const orderRepoFor = (chainId: number) => ({
-  findByHash(orderHash: Hash) {
+  findByKey(orderHash: Hash) {
     return orderRepo.findByKey({ chainId, orderHash })
   },
 

@@ -6,7 +6,7 @@ import { applyDTOs } from './shared/apply-dtos.js'
 import { hydratePage } from './shared/hydrate-page.js'
 import { PageableKeyReaders } from '#app/domain/shared/types/readers.js'
 
-export const createReadPage = (readers: PageableKeyReaders) =>
+export const makeReadPage = (readers: PageableKeyReaders) =>
   async function readPage<R extends PagedResource>(r: R, query: HttpPageRequest<ResourceType<R>>) {
     const { include, from, to, limit, cursor, ...filters } = query
 

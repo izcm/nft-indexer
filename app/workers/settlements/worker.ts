@@ -1,9 +1,12 @@
 import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
+import type { Abi } from 'viem'
+
 import { AppClient } from '#app/clients.js'
+
 import { readTxMeta } from '#app/lib/blockchain/calls/tx-meta.js'
 import { settlementRepoFor } from '#app/repos/settlement.repo.js'
-import { parseTxInputs as metaFromTx } from '#app/workers/settlements/logic.js'
-import type { Abi } from 'viem'
+
+import { decodeSettlementCall } from './logic.js'
 
 export async function runSettlementWorker(client: AppClient) {
   const chainId = client.chain.id
@@ -18,12 +21,14 @@ export async function runSettlementWorker(client: AppClient) {
 
     try {
       const { receipt, tx } = await readTxMeta(client, txHash)
-      const meta = await metaFromTx(tx, receipt, json.abi as Abi)
+      const call = await decodeSettlementCall(tx, receipt, json.abi as Abi)
 
-      await repo.finalizeCallReconstruction(settlement.orderHash, meta)
+      await repo.finalizeCallReconstruction(settlement.orderHash, call)
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err))
+
       console.error('[settlement-worker] failed', err)
+
       await repo.markCallReconstructionFailed(settlement.execution.txHash, e.message)
     }
   }

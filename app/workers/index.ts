@@ -1,6 +1,6 @@
 import { AppClient } from '#app/clients.js'
 import { runNFTCollectionWorker } from './nft-collections/runner.js'
-import { runSettlementWorker } from './settlements/runner.js'
+import { runSettlementWorker } from './settlements/worker.js'
 // ------------------
 // WORKERS
 // ------------------

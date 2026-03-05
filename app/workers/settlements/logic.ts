@@ -6,7 +6,11 @@ import type { Fill, SettlementCall } from '#app/domain/settlement/model.js'
 
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 
-export async function parseTxInputs(tx: any, receipt: any, abi: Abi): Promise<SettlementCall> {
+export async function decodeSettlementCall(
+  tx: any,
+  receipt: any,
+  abi: Abi
+): Promise<SettlementCall> {
   if (!tx.to) {
     throw new Error('[tx-parser] unexpected contract creation tx')
   }

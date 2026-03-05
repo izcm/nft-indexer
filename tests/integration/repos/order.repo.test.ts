@@ -29,7 +29,7 @@ describe('orderRepo', () => {
   // === defaults ===
   const fakeOrderDoc = () => ({ ...fakeOrderRecord(), _id: new ObjectId() })
 
-  async function givenOrderRecordExists(overrides: Partial<OrderRecord> = {}) {
+  async function givenOrderDocExists(overrides: Partial<OrderRecord> = {}) {
     const orderRecord = fakeOrderRecord(overrides)
     const { insertedId } = await orders().insertOne({ ...orderRecord, _id: new ObjectId() })
 
@@ -42,7 +42,7 @@ describe('orderRepo', () => {
 
   describe('findById', () => {
     it('returns expected doc', async () => {
-      const { insertedId, orderRecord } = await givenOrderRecordExists()
+      const { insertedId, orderRecord } = await givenOrderDocExists()
 
       const row = await repo.findById(insertedId)
       if (!row) throw new Error('row missing')
@@ -62,7 +62,7 @@ describe('orderRepo', () => {
 
   describe('findByOrderKey', () => {
     it('findByOrderKey returns expected doc for chainId + orderHash', async () => {
-      const { orderRecord } = await givenOrderRecordExists()
+      const { orderRecord } = await givenOrderDocExists()
       const { chainId, orderHash } = orderRecord
 
       const row = await repo.findByKey({ chainId, orderHash })
@@ -125,7 +125,7 @@ describe('orderRepo', () => {
     })
 
     it('rejects manual duplicate insertion', async () => {
-      const { orderRecord } = await givenOrderRecordExists()
+      const { orderRecord } = await givenOrderDocExists()
 
       await expect(orders().insertOne(fakeOrderDoc())).rejects.toThrow()
     })
@@ -156,8 +156,7 @@ describe('orderRepo', () => {
       it('handles duplicate chainId + orderHash pair and informs of no upsert', async () => {
         const startTime = 0
 
-        const { chainId, order } = (await givenOrderRecordExists({ createdAt: startTime }))
-          .orderRecord
+        const { chainId, order } = (await givenOrderDocExists({ createdAt: startTime })).orderRecord
 
         const first = await repo.ensure(chainId, order)
 
@@ -179,7 +178,7 @@ describe('orderRepo', () => {
     })
 
     it('does not overwrite an existing order', async () => {
-      const { orderRecord } = await givenOrderRecordExists()
+      const { orderRecord } = await givenOrderDocExists()
 
       const original = await orders().findOne({
         chainId: orderRecord.chainId,
@@ -206,7 +205,7 @@ describe('orderRepo', () => {
       const startTime = 0
 
       const { chainId, orderHash } = (
-        await givenOrderRecordExists({ status: 'active', updatedAt: startTime })
+        await givenOrderDocExists({ status: 'active', updatedAt: startTime })
       ).orderRecord
 
       const rowBefore = await orders().findOne({ chainId, orderHash })

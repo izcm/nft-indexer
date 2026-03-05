@@ -4,7 +4,7 @@ import { mapDomainToRepoQuery } from './shared/pagination/page-mapper.js'
 import { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import { ById, ByKey, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 
-export const createReadRepo = <TDoc extends MongoDoc, TKey>(
+export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
   getCol: () => Collection<TDoc>,
   keyToFilter: (k: TKey) => Filter<TDoc>
 ) => {

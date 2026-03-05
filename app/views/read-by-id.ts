@@ -6,7 +6,7 @@ type ByIdReaders = {
 }
 
 // todo: id needs to be validated (di?)
-export const createReadById = (readers: ByIdReaders) =>
+export const makeReadById = (readers: ByIdReaders) =>
   async function readById<R extends ResourceName>(
     resource: R,
     id: unknown

@@ -7,24 +7,27 @@ import type { Hash } from '#app/domain/shared/types/eth.js'
 import type { ByKey, ById, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 import { Status } from '#app/domain/shared/status.js'
 
-import { createReadRepo } from './read-commons.repo.js'
+import { makeReadRepo } from './read-commons.repo.js'
 
 // === helpers ===
 
+const cr = 'execution.callReconstruction'
+
 const crPaths = {
-  status: 'execution.callReconstruction.status',
-  error: 'execution.callReconstruction.error',
-  data: 'execution.callReconstruction.data',
-  txContext: 'execution.callReconstruction.data.txContext',
+  status: cr + '.status',
+  error: cr + '.error',
+  data: cr + '.data',
+  txContext: cr + '.data.txContext',
 }
 
-const baseRead = createReadRepo<Settlement, SettlementKey>(settlements, k => ({
+const baseRead = makeReadRepo<Settlement, SettlementKey>(settlements, k => ({
   chainId: k.chainId,
   orderHash: k.orderHash,
 }))
 
 export const settlementRepo: SettlementPort & ById<WithId<Settlement>, ObjectId> = {
   // === read ===
+
   ...baseRead,
 
   findPendingCallReconstruction(chainId: number, limit: number) {
@@ -36,7 +39,6 @@ export const settlementRepo: SettlementPort & ById<WithId<Settlement>, ObjectId>
 
   // === write ===
 
-  // settlement should never be overwritten => insertOne (unique chainId + orderHash pair)
   save(settlement: Settlement) {
     return settlements().insertOne({
       ...settlement,

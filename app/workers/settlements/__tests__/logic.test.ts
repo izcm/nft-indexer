@@ -1,13 +1,14 @@
 import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
+
+// TODO: https://vitest.dev/config/ **define import aliases in vitest config**
 import { describe, expect, it } from 'vitest'
 import { Abi, encodeFunctionData, getAbiItem, parseSignature } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
-// TODO: https://vitest.dev/config/ **define import aliases in vitest config**
 import { convertBigintsDeep } from '#app/lib/utils/bigint.js'
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 
-import { parseTxInputs } from '#app/workers/settlements/logic.js'
+import { decodeSettlementCall } from '../logic.js'
 
 import {
   fakeFill,
@@ -52,7 +53,7 @@ describe('parseTxInputs', () => {
 
     // act
 
-    const meta = await parseTxInputs(tx, receipt, abi)
+    const meta = await decodeSettlementCall(tx, receipt, abi)
 
     // assert
 

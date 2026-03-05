@@ -1,59 +1,70 @@
-import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { orderRepoFor } from '#app/repos/order.repo.js'
-import { settlementRepo } from '#app/repos/settlement.repo.js'
-import type { SettlementKey } from './model.js'
-import { Settlement, SettlementCall } from './model.js'
+import type { Settlement, SettlementKey, SettlementCall } from './model.js'
+import type { SettlementPort } from './port.js'
+
+import type { OrderPort } from '../order/port.js'
+import type { NFTCollectionPort } from '../nft-collection/port.js'
+
 import type { Address } from '../shared/types/eth.js'
 
 const TAG = 'settlement'
 
-// === PRIMARY ACTIONS ===
-
-export async function ingestSettlement(settlement: Settlement) {
-  await settlementRepo.save(settlement)
-
-  const { chainId, orderHash, collection } = settlement
-  void onSettlementCreated({ chainId, orderHash, collection })
+type Deps = {
+  settlements: SettlementPort
+  orders: OrderPort
+  nftCollections: NFTCollectionPort
 }
 
-export async function ingestSettlementMeta({
-  chainId,
-  orderHash,
-  meta,
-}: SettlementKey & { meta: SettlementCall }) {
-  try {
-    await settlementRepo.finalizeCallReconstruction({ chainId, orderHash, meta })
+export const makeSettlementActions = ({ settlements, orders, nftCollections }: Deps) => {
+  // --- primary actions ---
 
-    // corresponding order for settlement is a 'nice to have'
-    //  => fire and forget
-    // orderRepo.ensure(chainId, )
-  } catch (err) {
-    throw new Error(`[${TAG}:meta] failed to finalize settlement metadata`, { cause: err })
+  async function ingestSettlement(settlement: Settlement) {
+    await settlements.save(settlement)
+
+    const { chainId, orderHash, collection } = settlement
+    void onSettlementCreated({ chainId, orderHash, collection })
   }
-}
 
-// === SECONDARY ACTIONS ===
+  async function ingestSettlementMeta({
+    chainId,
+    orderHash,
+    meta,
+  }: SettlementKey & { meta: SettlementCall }) {
+    try {
+      await settlements.finalizeCallReconstruction({ chainId, orderHash, meta })
 
-export async function onSettlementCreated({
-  chainId,
-  orderHash,
-  collection,
-}: SettlementKey & { collection: Address }) {
-  const tag = `${TAG}:created`
+      // corresponding order for settlement is a 'nice to have'
+      //  => fire and forget
+      // orderRepo.ensure(chainId, ) // **feature on pause**
+    } catch (err) {
+      throw new Error(`[${TAG}:meta] failed to finalize settlement metadata`, { cause: err })
+    }
+  }
 
-  const orderRepo = orderRepoFor(chainId)
+  // --- secondary actions ---
 
-  // note collection
-  void nftCollectionRepo
-    .noteNFTCollection({ chainId, address: collection })
-    ?.catch(err => console.error(`[${tag}] failed to note NFT collection`, err))
+  function onSettlementCreated({
+    chainId,
+    orderHash,
+    collection,
+  }: SettlementKey & { collection: Address }) {
+    const tag = `${TAG}:created`
 
-  // mark order as filled
-  void orderRepo
-    .findByHash(orderHash)
-    .then(order => {
-      if (!order) return
-      return orderRepo.markFilled(orderHash)
-    })
-    .catch(err => console.error(`[${tag}] failed to mark order as filled`, err))
+    // note collection
+    void nftCollections
+      .noteNFTCollection({ chainId, address: collection })
+      ?.catch(err => console.error(`[${tag}] failed to note NFT collection`, err))
+
+    // mark order as filled
+    const orderKey = { chainId, orderHash }
+
+    void orders
+      .findByKey(orderKey)
+      .then(order => {
+        if (!order) return
+        return orders.updateStatus({ ...orderKey, status: 'filled' })
+      })
+      .catch(err => console.error(`[${tag}] failed to mark order as filled`, err))
+  }
+
+  return { ingestSettlement, ingestSettlementMeta }
 }

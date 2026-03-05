@@ -1,12 +1,14 @@
-import { nftCollections } from '#app/db/collections.js'
-import { NFTCollectionChainMeta } from '#app/domain/nft-collection/model.js'
-import { Status } from '#app/domain/shared/status.js'
-import { addrOf } from '#tests/helpers/evm-fixtures.js'
-import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
 import { ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { nftCollections } from '#app/db/collections.js'
+import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import type { NFTCollectionChainMeta } from '#app/domain/nft-collection/model.js'
+import { Status } from '#app/domain/shared/status.js'
+
+import { addrOf } from '#tests/helpers/evm-fixtures.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
+import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -25,7 +27,7 @@ const TEST_CHAIN_ID = 1
 const TEST_ADDR = addrOf('collection:default')
 
 describe('nftCollectionRepo', () => {
-  // === defaults ===
+  // === helpers ===
 
   const repo = nftCollectionRepo
 

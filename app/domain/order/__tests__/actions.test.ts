@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeOrderRecord } from '#tests/helpers/fixtures.js'
 
-import { ingestOrder } from '../actions.js'
 import { orderRepo } from '#app/repos/order.repo.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { validOrder } from '../rules.js'
+import { isValidOrder } from '../rules.js'
 
 vi.mock('#app/repos/order.repo.js', () => ({
   orderRepo: {
@@ -36,7 +35,7 @@ describe('domain actions - orders', () => {
       const expected = { id: 'abc123', didUpsert: true }
 
       vi.mocked(orderRepo).ensure.mockResolvedValueOnce(expected as any)
-      vi.mocked(validOrder).mockReturnValueOnce(true)
+      vi.mocked(isValidOrder).mockReturnValueOnce(true)
       vi.mocked(nftCollectionRepo).noteNFTCollection.mockResolvedValueOnce(undefined)
 
       const result = await ingestOrder(chainId, order)
