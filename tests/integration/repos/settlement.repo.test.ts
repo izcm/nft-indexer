@@ -2,9 +2,11 @@ import { ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { settlements } from '#app/db/collections.js'
+
 import type { Settlement } from '#app/domain/settlement/model.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
+
 import type { DeepPartial } from '#app/lib/utils/deep-partial.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
 

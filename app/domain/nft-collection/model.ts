@@ -11,14 +11,6 @@ export const nftCollectionKeyOf = (collection: NFTCollectionBase): NFTCollection
   address: collection.address,
 })
 
-export type NFTCollectionStats = {
-  chainId: number
-  collection: Address
-  day: number // unix timestamp at 00:00 UTC
-  volume: string // wei
-  floorPrice: string
-}
-
 // metaStatus meaning:
 // PENDING  -> no metadata fetched yet
 // DONE     -> all intended metadata sources processed
@@ -52,13 +44,20 @@ export type NFTCollectionBase = {
 
   // CTX
   updatedAt: number
+  createdAt: number
 }
 
 // incremental metadata eg. fetched across requests / partial updates
 export type NFTCollectionMetaPatch = Partial<
   Omit<
     NFTCollectionBase,
-    'chainId' | 'address' | 'metaStatus' | 'chainMetaStatus' | 'chainMetaError' | 'updatedAt'
+    | 'chainId'
+    | 'address'
+    | 'metaStatus'
+    | 'chainMetaStatus'
+    | 'chainMetaError'
+    | 'updatedAt'
+    | 'createdAt'
   >
 >
 

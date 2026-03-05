@@ -1,4 +1,4 @@
-import { OrderCore, OrderRecord } from '#app/domain/order/model.js'
+import { Order, OrderRecord } from '#app/domain/order/model.js'
 import { secondsToUnixMs } from '#app/lib/utils/time.js'
 
 // todo: start and end must handle bigints
@@ -22,7 +22,7 @@ export type OrderDTO = {
   start: number
   end: number
 
-  rawOrder: OrderCore
+  rawOrder: Order
 }
 
 export const orderDTO = {
@@ -46,7 +46,7 @@ export const orderDTO = {
       start: secondsToUnixMs(Number(order.start)),
       end: secondsToUnixMs(Number(order.end)),
 
-      rawOrder: { ...order, signature: undefined } as OrderCore,
+      rawOrder: order,
     }
   },
 }

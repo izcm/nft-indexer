@@ -14,6 +14,7 @@ export const seedCollections = async (
     metaStatus: 'PENDING',
     chainMetaStatus: 'PENDING',
     updatedAt: i,
+    createdAt: i,
     ...overrides,
   }))
 

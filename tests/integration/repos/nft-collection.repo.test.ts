@@ -40,6 +40,7 @@ describe('nftCollectionRepo', () => {
     metaStatus: Status.PENDING,
     chainMetaStatus: Status.PENDING,
     updatedAt: 0,
+    createdAt: 0,
   })
 
   /* ======================================

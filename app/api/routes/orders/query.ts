@@ -86,8 +86,8 @@ export const ordersQuery = (fastify: FastifyInstance) => {
         cursor: q.cursor,
         from: q.from,
         to: q.to,
-        rangeField: 'createdAt',
-        sortField: q.sortField as OrderSortField,
+        rangeField: 'createdAt', // todo: dont hardcode this
+        sortField: (q.sortField as OrderSortField) ?? 'createdAt',
         sortDir: q.sortDir,
         filters,
       }

@@ -56,6 +56,7 @@ export const nftCollectionRepo: NFTCollectionPort & ById<NFTCollection, ObjectId
           metaStatus: Status.PENDING,
           chainMetaStatus: Status.PENDING,
           updatedAt: Date.now(),
+          createdAt: Date.now(),
         },
       },
       { upsert: true }
