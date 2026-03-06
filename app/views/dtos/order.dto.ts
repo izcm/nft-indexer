@@ -26,6 +26,8 @@ export type OrderDTO = {
   end: number
 
   rawOrder: Order
+
+  status: string
 }
 
 export const orderDTO = {
@@ -53,6 +55,8 @@ export const orderDTO = {
       end: secondsToUnixMs(Number(order.end)),
 
       rawOrder: order,
+
+      status: r.status,
     }
   },
 }

@@ -19,7 +19,7 @@ import { settlementQueryableFields } from './schemas.js'
 import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
 
 // --- DI ---
-import { readByKey } from '#app/di/read.js'
+import { readByKey, readPage } from '#app/di/read.js'
 
 export const settlementsQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(
@@ -48,15 +48,15 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
           properties: {
             ...settlementQueryableFields,
             ...paginationQueryParams,
-          },
-          sortField: {
-            type: 'string',
-            enum: [...SETTLEMENT_SORT_FIELDS],
-          },
-          include: {
-            type: 'array',
-            maxItems: SETTLEMENT_INCLUDES.length,
-            items: { type: 'string', enum: SETTLEMENT_INCLUDES },
+            sortField: {
+              type: 'string',
+              enum: [...SETTLEMENT_SORT_FIELDS],
+            },
+            include: {
+              type: 'array',
+              maxItems: SETTLEMENT_INCLUDES.length,
+              items: { type: 'string', enum: SETTLEMENT_INCLUDES },
+            },
           },
         },
       },
@@ -76,6 +76,8 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
         sortDir: q.sortDir,
         filters,
       }
+
+      return readPage('settlement', { ...domainPageQuery, include: q.include })
     }
   )
 }

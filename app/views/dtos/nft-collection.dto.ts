@@ -1,10 +1,17 @@
 import type { NFTCollection } from '#app/domain/nft-collection/model.js'
 
 export type NFTCollectionDTO = {
+  id: string
+
   chainId: number
   address: string
+
+  name?: string
+  symbol?: string
+  tokenType?: string
+  totalSupply?: string
+
   imageUrl?: string
-  bannerImageUrl?: string
   marketData?: {
     floorPrice?: number
   }
@@ -12,35 +19,23 @@ export type NFTCollectionDTO = {
     twitterUsername?: string
     externalUrl?: string
   }
-  metaStatus: string
-  metaError?: string
-  chainMetaStatus: string
-  chainMetaError?: string
-  name?: string
-  symbol?: string
-  tokenType?: string
-  totalSupply?: string
-  updatedAt: number
 }
 
 export const nftCollectionDTO = {
   from(c: NFTCollection): NFTCollectionDTO {
     return {
+      id: `${c.chainId}:${c.address}`,
       chainId: c.chainId,
       address: c.address,
-      imageUrl: c.imageUrl,
-      bannerImageUrl: c.bannerImageUrl,
-      marketData: c.marketData,
-      socials: c.socials,
-      metaStatus: c.metaStatus,
-      metaError: c.metaError,
-      chainMetaStatus: c.chainMetaStatus,
-      chainMetaError: c.chainMetaError,
+
       name: c.name,
       symbol: c.symbol,
       tokenType: c.tokenType,
       totalSupply: c.totalSupply,
-      updatedAt: c.updatedAt,
+
+      imageUrl: c.imageUrl,
+      marketData: c.marketData,
+      socials: c.socials,
     }
   },
 }

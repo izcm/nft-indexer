@@ -10,12 +10,9 @@ const handlers = {
 } as const
 
 export const nftCollectionsQuery = (fastify: FastifyInstance) => {
-  fastify.get<{ Params: { chainId: number; address: string } }>(
-    '/:chainId/:address',
-    async (_req, _res) => {
-      // return repo.find
-    }
-  )
+  fastify.get<{ Params: { id: string } }>('/:id', async (_req, _res) => {
+    // return repo.find
+  })
 
   fastify.get<{ Querystring: { chainId: number; by?: keyof typeof handlers; limit: number } }>(
     '/top',

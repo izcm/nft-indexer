@@ -54,7 +54,7 @@ export const settlementRepo: SettlementPort = {
       { chainId, orderHash },
       {
         $set: {
-          [crPaths.txContext]: meta['txContext'],
+          [crPaths.data]: meta,
           [crPaths.status]: Status.DONE,
         },
       }

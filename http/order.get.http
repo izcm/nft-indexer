@@ -1,2 +1,2 @@
 ### GET ORDER
-GET http://localhost:5000/api/orders?limit=100
+GET http://localhost:5000/api/orders?status=expired&limit=100

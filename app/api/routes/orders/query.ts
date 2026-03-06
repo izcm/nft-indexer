@@ -68,15 +68,14 @@ export const ordersQuery = (fastify: FastifyInstance) => {
 
       const filters: Record<string, unknown> = {}
 
-      const deepKeys = new Set(Object.keys(orderCoreQueryableFields))
+      const orderCoreKeys = new Set(Object.keys(orderCoreQueryableFields))
 
-      // for (const key of Object.keys(orderRecordQueryableFields)) {
-      for (const key of deepKeys) {
+      for (const key of Object.keys(orderRecordQueryableFields)) {
         const v = q[key]
         if (v === undefined) continue
 
         // key is OrderCore field => prefix path with "order"
-        const path = deepKeys.has(key) ? `order.${key}` : key
+        const path = orderCoreKeys.has(key) ? `order.${key}` : key
 
         filters[path] = v
       }
