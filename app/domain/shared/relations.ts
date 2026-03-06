@@ -9,11 +9,12 @@ import {
   type NFTCollection,
   type NFTCollectionKey,
 } from '#app/domain/nft-collection/model.js'
-import type {
-  PagedResource,
-  ResourceMap,
-  ResourceName,
-  ResourceType,
+import {
+  RESOURCE_NAMES,
+  type PagedResource,
+  type ResourceMap,
+  type ResourceName,
+  type ResourceType,
 } from '#app/domain/shared/types/resources.js'
 
 export const pkOf = {
@@ -45,7 +46,14 @@ export const relations = {
   },
 } as const
 
+export type AllExcept<R extends ResourceName> = Exclude<ResourceName, R>
+
 export type WithIncludes<R extends ResourceName> = ResourceType<R> & {
-  [K in ResourceName]?: ResourceType<K>
+  [K in Exclude<ResourceName, R>]?: ResourceType<K>
 }
+
 export type includeFor<R extends PagedResource> = keyof (typeof relations)[R]
+
+export const ORDER_INCLUDES = RESOURCE_NAMES.filter(r => r !== 'order')
+export const SETTLEMENT_INCLUDES = RESOURCE_NAMES.filter(r => r !== 'settlement')
+// export const NFTCOLLECTION_INCLUDES = RESOURCE_NAMES.filter(r => r !== 'nftCollection') // not allegeable per now

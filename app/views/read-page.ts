@@ -7,7 +7,10 @@ import { applyDTOs } from './shared/apply-dtos.js'
 import { hydratePage } from './shared/hydrate-page.js'
 
 export const makeReadPage = (readers: Readers) =>
-  async function readPage<R extends PagedResource>(r: R, query: HttpPageRequest<ResourceType<R>>) {
+  async function readPage<R extends PagedResource>(
+    r: R,
+    query: HttpPageRequest<ResourceType<R>, R>
+  ) {
     const { include, from, to, limit, cursor, ...filters } = query
 
     const page = await hydratePage(readers, r, query, {

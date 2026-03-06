@@ -12,10 +12,8 @@ export type DomainPageQuery<TEntity extends object> = {
   from?: number
   to?: number
 
-  rangeField?: string
-  sortField: string
-  // rangeField?: keyof TEntity
-  // sortField: keyof TEntity
+  rangeField?: keyof TEntity
+  sortField: keyof TEntity
   sortDir: SortDir
 
   filters?: Record<string, any>

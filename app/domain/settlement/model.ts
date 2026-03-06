@@ -57,3 +57,9 @@ export type Fill = {
   tokenId: string
   actor: Address
 }
+
+// --- pagination ---
+
+export const SETTLEMENT_SORT_FIELDS = ['ingestedAd']
+
+export type SettlementSortField = (typeof SETTLEMENT_SORT_FIELDS)[number]

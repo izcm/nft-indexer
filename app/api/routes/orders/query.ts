@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 
+import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
 import { ORDER_ID_REGEX } from '#app/domain/constants/regex.js'
+
 import { ORDER_SORT_FIELDS } from '#app/domain/order/model.js'
-import { RESOURCE_NAMES } from '#app/domain/shared/types/resources.js'
 import type {
   OrderKey,
   OrderQueryModel,
@@ -12,6 +13,7 @@ import type {
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
+import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
 
 import { orderCoreQueryableFields, orderRecordQueryableFields } from './schemas.js'
 import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
@@ -37,7 +39,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
   )
 
   fastify.get<{
-    Querystring: HttpPageRequest<OrderQueryModel> & Record<string, unknown>
+    Querystring: HttpPageRequest<OrderQueryModel, 'order'> & Record<string, unknown>
   }>(
     '/',
     {
@@ -54,8 +56,8 @@ export const ordersQuery = (fastify: FastifyInstance) => {
             },
             include: {
               type: 'array',
-              maxItems: RESOURCE_NAMES.length - 1,
-              items: { type: 'string', enum: RESOURCE_NAMES },
+              maxItems: ORDER_INCLUDES.length,
+              items: { type: 'string', enum: ORDER_INCLUDES },
             },
           },
         },
@@ -79,7 +81,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
       }
 
       const domainPageQuery: DomainPageQuery<OrderRecord> = {
-        limit: q.limit,
+        limit: q.limit ?? DEFAULT_PAGE_LIMIT,
         cursor: q.cursor,
         from: q.from,
         to: q.to,
