@@ -56,4 +56,3 @@ export type includeFor<R extends PagedResource> = keyof (typeof relations)[R]
 
 export const ORDER_INCLUDES = RESOURCE_NAMES.filter(r => r !== 'order')
 export const SETTLEMENT_INCLUDES = RESOURCE_NAMES.filter(r => r !== 'settlement')
-// export const NFTCOLLECTION_INCLUDES = RESOURCE_NAMES.filter(r => r !== 'nftCollection') // not allegeable per now

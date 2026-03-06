@@ -24,7 +24,7 @@ export function applyDTOs<R extends ResourceName>(resource: R, page: WithInclude
     for (const key of Object.keys(dtos) as (keyof typeof dtos)[]) {
       if (key === resource) continue
 
-      const rel = item[key]
+      const rel = item[key as Exclude<ResourceName, R>] // skipped key === resource so this is safe
       if (!rel) continue
 
       out[key] = callDTO(key, rel)

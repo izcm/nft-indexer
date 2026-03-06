@@ -1,25 +1,25 @@
 import { FastifyInstance } from 'fastify'
 
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
-import { ADDR_REGEX, SETTLEMENT_REGEX_ID } from '#app/domain/constants/regex.js'
+import { SETTLEMENT_REGEX_ID } from '#app/domain/constants/regex.js'
 
-import { RESOURCE_NAMES } from '#app/domain/shared/types/resources.js'
 import {
   Settlement,
   SETTLEMENT_SORT_FIELDS,
+  SettlementSortField,
   type SettlementKey,
 } from '#app/domain/settlement/model.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
-import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
+import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'
+import { DomainPageQuery } from '#app/domain/shared/types/page.js'
 
 import { settlementQueryableFields } from './schemas.js'
 import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
 
 // --- DI ---
 import { readByKey } from '#app/di/read.js'
-import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'
 
 export const settlementsQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(
@@ -47,6 +47,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
           additionalProperties: false,
           properties: {
             ...settlementQueryableFields,
+            ...paginationQueryParams,
           },
           sortField: {
             type: 'string',
@@ -61,17 +62,20 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
       },
     },
     async req => {
-      const { from, to, limit, cursor, ...filters } = req.query
+      const q = req.query
 
-      return repo.findPage({
+      const filters: Record<string, unknown> = {}
+
+      const domainPageQuery: DomainPageQuery<Settlement> = {
+        limit: q.limit ?? DEFAULT_PAGE_LIMIT,
+        cursor: q.cursor,
+        from: q.from,
+        to: q.to,
+        rangeField: 'ingestedAt', // todo: dont hardcode
+        sortField: (q.sortField as SettlementSortField) ?? 'ingestedAt',
+        sortDir: q.sortDir,
         filters,
-        from,
-        to,
-        cursor,
-        sortField: 'ingestedAt', // todo: don't hardcode here either
-        sortDir: 'asc',
-        limit: limit ?? DEFAULT_PAGE_LIMIT,
-      })
+      }
     }
   )
 }
