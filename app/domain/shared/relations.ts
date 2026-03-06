@@ -46,9 +46,6 @@ export const relations = {
 } as const
 
 export type WithIncludes<R extends ResourceName> = ResourceType<R> & {
-  _id: unknown
-} & Partial<{
-    [K in ResourceName]: ResourceMap[K] & { _id: unknown }
-  }>
-
+  [K in ResourceName]?: ResourceType<K>
+}
 export type includeFor<R extends PagedResource> = keyof (typeof relations)[R]

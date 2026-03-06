@@ -3,13 +3,13 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { orders } from '#app/db/collections.js'
 import { OrderRecord } from '#app/domain/order/model.js'
-import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { orderRepo } from '#app/repos/order.repo.js'
 
 // test helpers
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
 import { fakeOrderRecord } from '#tests/helpers/fixtures.js'
+import { addrOf } from '#tests/helpers/evm-fixtures.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -39,26 +39,6 @@ describe('orderRepo', () => {
   /* ======================================
     repo read
   ====================================== */
-
-  describe('findById', () => {
-    it('returns expected doc', async () => {
-      const { insertedId, orderRecord } = await givenOrderDocExists()
-
-      const row = await repo.findById(insertedId)
-      if (!row) throw new Error('row missing')
-
-      expect(row._id).toBeInstanceOf(ObjectId)
-      expect(row).toMatchObject(orderRecord)
-    })
-
-    it('returns null when id does not exist', async () => {
-      const id = new ObjectId()
-
-      const row = await repo.findById(id)
-
-      expect(row).toBeNull()
-    })
-  })
 
   describe('findByOrderKey', () => {
     it('findByOrderKey returns expected doc for chainId + orderHash', async () => {

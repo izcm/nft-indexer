@@ -1,10 +1,11 @@
 import { ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { nftCollections } from '#app/db/collections.js'
-import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import type { NFTCollectionChainMeta } from '#app/domain/nft-collection/model.js'
 import { Status } from '#app/domain/shared/status.js'
+
+import { nftCollections } from '#app/db/collections.js'
+import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
@@ -48,18 +49,6 @@ describe('nftCollectionRepo', () => {
   ====================================== */
 
   describe('read', () => {
-    it('findById returns expected doc', async () => {
-      const col = mockNFTCollection()
-
-      const { insertedId } = await nftCollections().insertOne(col)
-
-      const row = await repo.findById(insertedId)
-      if (!row) throw new Error('row missing')
-
-      expect(row).toBeDefined()
-      expect(row).toMatchObject(col)
-    })
-
     it('findByNFTCollectionKey returns expected doc', async () => {
       const col = mockNFTCollection()
 

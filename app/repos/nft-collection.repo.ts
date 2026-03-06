@@ -10,7 +10,6 @@ import type {
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 
 import type { Address } from '#app/domain/shared/types/eth.js'
-import type { ById } from '#app/domain/shared/interfaces/read-commons.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './read-commons.repo.js'
@@ -34,7 +33,7 @@ const baseRead = makeReadRepo<NFTCollection, NFTCollectionKey>(nftCollections, k
   address: k.address,
 }))
 
-export const nftCollectionRepo: NFTCollectionPort & ById<NFTCollection, ObjectId> = {
+export const nftCollectionRepo: NFTCollectionPort = {
   // === read ===
   ...baseRead,
 

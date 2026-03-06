@@ -1,18 +1,31 @@
-import type { Settlement } from '#app/domain/settlement/model.js'
+import type { Settlement, SettlementCall } from '#app/domain/settlement/model.js'
+import { BlockRef, Hash } from '#app/domain/shared/types/eth.js'
 import { secondsToUnixMs } from '#app/lib/utils/time.js'
 
 export type SettlementDTO = {
   chainId: number
-  txHash: string
   orderHash: string
+
+  txHash: string
+
   seller: string
   buyer: string
+
   collection: string
   tokenId: string
+
   currency: string
   price: string
+
   timestamp: number
-  executionDetails: Settlement['execution']
+
+  executionDetails: {
+    logIndex: number
+    txHash: Hash
+    block: BlockRef
+
+    call?: SettlementCall
+  }
 }
 
 export const settlementDTO = {
@@ -34,7 +47,12 @@ export const settlementDTO = {
 
       timestamp: secondsToUnixMs(s.execution.block.timestamp),
 
-      executionDetails: s.execution,
+      executionDetails: {
+        logIndex: s.execution.logIndex,
+        txHash: s.execution.txHash,
+        block: s.execution.block,
+        call: s.execution.callReconstruction.data,
+      },
     }
   },
 }

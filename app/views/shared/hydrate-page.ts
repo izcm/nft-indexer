@@ -5,10 +5,10 @@ import type {
   ResourceName,
   ResourceType,
 } from '#app/domain/shared/types/resources.js'
-import { PageableKeyReaders } from '#app/domain/shared/types/readers.js'
+import { Readers } from '#app/domain/shared/types/readers.js'
 
 export async function hydratePage<R extends PagedResource>(
-  readers: PageableKeyReaders,
+  readers: Readers,
   resource: R,
   args: DomainPageQuery<ResourceType<R>>,
   opts: { include?: includeFor<R>[] } = {}

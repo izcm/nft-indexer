@@ -53,26 +53,6 @@ describe('settlementRepo', () => {
   // === test repo read ===
 
   describe('read', () => {
-    describe('findBydId', () => {
-      it('returns existing doc id', async () => {
-        const { insertedId, settlement } = await givenSettlementDocExists()
-
-        const found = await repo.findById(insertedId)
-        if (!found) throw new Error('row missing')
-
-        expect(found._id).toBeInstanceOf(ObjectId)
-        expect(found).toMatchObject(settlement)
-      })
-
-      it('returns null when doc with id does not exist', async () => {
-        const id = new ObjectId()
-
-        const found = await repo.findById(id)
-
-        expect(found).toBeNull()
-      })
-    })
-
     describe('findBySettlementKey', () => {
       it('returns existing doc with chainId + orderHash', async () => {
         const settlement = (await givenSettlementDocExists()).settlement

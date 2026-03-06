@@ -1,18 +1,25 @@
 import { FastifyInstance } from 'fastify'
-import { ObjectId } from 'mongodb'
 
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
-import { ADDR_REGEX } from '#app/domain/constants/regex.js'
+import { ADDR_REGEX, SETTLEMENT_REGEX_ID } from '#app/domain/constants/regex.js'
 
-import { byIdParams } from '#app/api/shared/schemas.js'
+import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
+import type { SettlementKey } from '#app/domain/settlement/model.js'
+import { parseDomainId } from '#app/domain/shared/ids.js'
+
 import { settlementRepo as repo } from '#app/repos/settlement.repo.js'
+
+import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
+
+import { readByKey } from '#app/di/read.js'
 
 export const settlementsQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(
     '/:id',
-    { schema: { params: byIdParams } },
+    { schema: { params: byIdParams(SETTLEMENT_REGEX_ID) } },
     async (req, res) => {
-      const doc = repo.findById(new ObjectId(req.params.id))
+      const { chainId, value: orderHash } = parseDomainId(req.params.id)
+      const doc = readByKey('settlement', { chainId, orderHash } as SettlementKey)
 
       if (!doc) {
         res.code(404)
@@ -23,11 +30,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
     }
   )
 
-  // ! NB !
-  // from / to + cursor can conflict (timestamp collision) which then returns an empty set
-  // callers are responsible for constructing sensible queries
-
-  fastify.get<{ Querystring: Record<string, any> }>(
+  fastify.get<{ Querystring: HttpPageRequest<any> & Record<string, unknown> }>(
     '/',
     {
       schema: {

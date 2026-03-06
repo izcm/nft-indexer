@@ -4,7 +4,6 @@ import { orders } from '#app/db/collections.js'
 import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/model.js'
 import type { OrderPort } from '#app/domain/order/port.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
-import type { ById } from '#app/domain/shared/interfaces/read-commons.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 
@@ -15,7 +14,7 @@ const baseRead = makeReadRepo<OrderRecord, OrderKey>(orders, k => ({
   orderHash: k.orderHash,
 }))
 
-export const orderRepo: OrderPort & ById<WithId<OrderRecord>, ObjectId> = {
+export const orderRepo: OrderPort = {
   // === read ===
   ...baseRead,
 

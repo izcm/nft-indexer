@@ -6,7 +6,10 @@ import { secondsToUnixMs } from '#app/lib/utils/time.js'
 // listener may store orders with full on 256 fields, these need to be handled
 
 export type OrderDTO = {
+  id: string
+
   chainId: number
+  orderHash: string
 
   type: 'ask' | 'bid'
   isCollectionBid: boolean
@@ -30,7 +33,10 @@ export const orderDTO = {
     const { order } = r
 
     return {
+      id: `${r.chainId}:${r.orderHash}`,
+
       chainId: r.chainId,
+      orderHash: r.orderHash,
 
       type: order.side === 0 ? 'ask' : 'bid',
       isCollectionBid: order.isCollectionBid,

@@ -1,18 +1,16 @@
-import { Collection, Filter, Document as MongoDoc, ObjectId, WithId } from 'mongodb'
+import { Collection, Filter, Document as MongoDoc, WithId } from 'mongodb'
+
+import { DomainPageQuery } from '#app/domain/shared/types/page.js'
+import { ByKey, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
+
 import { findPageGeneric } from './shared/pagination/find-page-generic.js'
 import { mapDomainToRepoQuery } from './shared/pagination/page-mapper.js'
-import { DomainPageQuery } from '#app/domain/shared/types/page.js'
-import { ById, ByKey, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 
 export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
   getCol: () => Collection<TDoc>,
   keyToFilter: (k: TKey) => Filter<TDoc>
 ) => {
   return {
-    findById(id: ObjectId) {
-      return getCol().findOne({ _id: id } as Filter<TDoc>)
-    },
-
     findByKey(key: TKey) {
       return getCol().findOne(keyToFilter(key))
     },
@@ -43,5 +41,5 @@ export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
         baseQuery: query as Filter<TDoc>,
       })
     },
-  } satisfies ById<WithId<TDoc>, ObjectId> & ByKey<WithId<TDoc>, TKey> & Pageable<WithId<TDoc>>
+  } satisfies ByKey<WithId<TDoc>, TKey> & Pageable<WithId<TDoc>>
 }

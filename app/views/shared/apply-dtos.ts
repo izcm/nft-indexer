@@ -1,15 +1,11 @@
+import type { ResourceName, ResourceType } from '#app/domain/shared/types/resources.js'
+import type { WithIncludes } from '#app/domain/shared/relations.js'
+
 import { toOrderDTO } from '../dtos/order.dto.js'
 import { toSettlementDTO } from '../dtos/settlement.dto.js'
 import { toNFTCollectionDTO } from '../dtos/nft-collection.dto.js'
-import { ResourceMap, ResourceName, ResourceType } from '../../domain/shared/types/resources.js'
 
-type DTOMap = {
-  [R in keyof ResourceMap]: (x: ResourceType<R>) => any
-}
-
-type WithIncludes<R extends ResourceName> = ResourceType<R> & Partial<ResourceMap>
-
-export const dtos: DTOMap = {
+export const dtos: { [R in ResourceName]: (x: ResourceType<R>) => any } = {
   settlement: toSettlementDTO,
   order: toOrderDTO,
   nftCollection: toNFTCollectionDTO,

@@ -4,7 +4,6 @@ import { settlements } from '#app/db/collections.js'
 import type { Settlement, SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
 import type { SettlementPort } from '#app/domain/settlement/port.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
-import type { ByKey, ById, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './read-commons.repo.js'
@@ -25,7 +24,7 @@ const baseRead = makeReadRepo<Settlement, SettlementKey>(settlements, k => ({
   orderHash: k.orderHash,
 }))
 
-export const settlementRepo: SettlementPort & ById<WithId<Settlement>, ObjectId> = {
+export const settlementRepo: SettlementPort = {
   // === read ===
 
   ...baseRead,
