@@ -61,4 +61,16 @@ export const orderDTO = {
   },
 }
 
+// export const orderDTO = {
+//   withRelations(
+//     r: OrderRecord,
+//     relations: { collectionName?: string }
+//   ): OrderDTO & { collectionName?: string } {
+//     return {
+//       ...orderDTO.from(r),
+//       collectionName: relations.collectionName,
+//     }
+//   },
+// }
+
 export const toOrderDTO = orderDTO.from

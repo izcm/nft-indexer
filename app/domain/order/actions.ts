@@ -22,11 +22,11 @@ export const makeOrderActions = ({ orders, nftCollections }: Deps) => {
       throw new InvalidOrderError()
     }
 
-    const { id, didUpsert } = await orders.ensure(chainId, order)
+    const res = await orders.ensure(chainId, order)
 
     void onOrderCreated({ chainId, address: order.collection })
 
-    return { id, didUpsert }
+    return { chainId: res.chainId, orderHash: res.orderHash, didUpsert: res.didUpsert }
   }
 
   // --- secondary actions ---

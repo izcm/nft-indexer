@@ -1,4 +1,3 @@
-import { ObjectId, WithId } from 'mongodb'
 import { orders } from '#app/db/collections.js'
 
 import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/model.js'
@@ -53,7 +52,7 @@ export const orderRepo: OrderPort = {
     const id = doc._id
     const didUpsert = res.lastErrorObject?.updatedExisting === false
 
-    return { id, didUpsert }
+    return { chainId, orderHash, didUpsert }
   },
 
   async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {

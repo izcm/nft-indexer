@@ -1,8 +1,20 @@
+import type { FastifyInstance } from 'fastify'
+
 import {
   topNFTCollectionsByActiveOrders,
   topNFTCollectionsBySettlements,
 } from '#app/views/top-nft-collections.js'
-import type { FastifyInstance } from 'fastify'
+
+import type { NFTCollection, NFTCollectionKey } from '#app/domain/nft-collection/model.js'
+import { OrderSortField } from '#app/domain/order/model.js'
+
+import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
+import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
+import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
+import { parseDomainId } from '#app/domain/shared/ids.js'
+
+// -- DI ---
+import { readByKey, readPage } from '#app/di/read.js'
 
 const handlers = {
   'active-orders': topNFTCollectionsByActiveOrders,
@@ -10,9 +22,42 @@ const handlers = {
 } as const
 
 export const nftCollectionsQuery = (fastify: FastifyInstance) => {
-  fastify.get<{ Params: { id: string } }>('/:id', async (_req, _res) => {
-    // return repo.find
+  fastify.get<{ Params: { id: string } }>('/:id', async (req, res) => {
+    const { chainId, value: address } = parseDomainId(req.params.id)
+    const doc = await readByKey('nftCollection', { chainId, address } as NFTCollectionKey)
+
+    if (!doc) {
+      res.code(404)
+      return
+    }
+
+    return doc
   })
+
+  fastify.get<{
+    Querystring: HttpPageRequest<NFTCollection, 'nftCollection'> & Record<string, unknown>
+  }>(
+    '/',
+    {
+      schema: {
+        querystring: {
+          type: 'object',
+          additionalProperties: false,
+        },
+      },
+    },
+    async req => {
+      const q = req.query
+
+      const domainPageQuery: DomainPageQuery<NFTCollection> = {
+        limit: q.limit ?? DEFAULT_PAGE_LIMIT,
+        sortField: (q.sortField as OrderSortField) ?? 'createdAt',
+        sortDir: q.sortDir,
+      }
+
+      return readPage('nftCollection', { ...domainPageQuery, include: [] })
+    }
+  )
 
   fastify.get<{ Querystring: { chainId: number; by?: keyof typeof handlers; limit: number } }>(
     '/top',

@@ -33,7 +33,7 @@ describe('domain actions - orders', () => {
       const orderRecord = fakeOrderRecord()
       const { chainId, order } = orderRecord
 
-      const expected = { id: 'abc123', didUpsert: true }
+      const expected = { chainId, orderHash: 'abc123', didUpsert: true }
 
       deps.orders.ensure.mockResolvedValueOnce(expected as any)
       deps.nftCollections.noteNFTCollection.mockResolvedValueOnce(undefined)

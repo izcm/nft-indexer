@@ -38,6 +38,7 @@ export type OrderRecord = {
   createdAt: number
 }
 
+// todo: remove this and store raw
 export type Signature = {
   r: Hash
   s: Hash
@@ -58,6 +59,7 @@ export type Order = {
   nonce: string
 
   signature: Signature
+  // signature: Hash // 0x{r]{s}{v} todo: do this instead
 }
 
 export type OrderCore = Omit<Order, 'signature'>

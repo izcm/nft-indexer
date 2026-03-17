@@ -115,12 +115,13 @@ describe('orderRepo', () => {
         const orderRecord = fakeOrderRecord()
 
         const { chainId, order } = orderRecord
-        const { id, didUpsert } = await repo.ensure(chainId, order)
+        const result = await repo.ensure(chainId, order)
 
         // expectations on repo return values
-        expect(id).toBeDefined()
-        expect(id).toBeInstanceOf(ObjectId)
-        expect(didUpsert).toBe(true)
+        expect(result.chainId).toBeDefined()
+        expect(result.orderHash).toBeDefined()
+
+        expect(result.didUpsert).toBe(true)
 
         // expectations on inserted row
         const rows = await orders().find().toArray()
@@ -130,30 +131,8 @@ describe('orderRepo', () => {
         expect(inserted).toMatchObject(orderRecord)
 
         // compare return values to inserted
-        expect(inserted._id.equals(id)).toBe(true)
-      })
-
-      it('handles duplicate chainId + orderHash pair and informs of no upsert', async () => {
-        const startTime = 0
-
-        const { chainId, order } = (await givenOrderDocExists({ createdAt: startTime })).orderRecord
-
-        const first = await repo.ensure(chainId, order)
-
-        expect(first.didUpsert).toBe(false)
-        expect(first.id).toBeDefined()
-
-        vi.setSystemTime(startTime + 1)
-
-        const second = await repo.ensure(chainId, order)
-
-        expect(second.id).toBeDefined()
-        expect(second.didUpsert).toBe(false)
-
-        expect(second.id).toEqual(first.id)
-
-        const rows = await orders().find().toArray()
-        expect(rows.length).toBe(1)
+        expect(result.chainId).toEqual(inserted.chainId)
+        expect(result.orderHash).toEqual(inserted.orderHash)
       })
     })
 

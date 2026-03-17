@@ -19,7 +19,7 @@ export const ordersIngest = (fastify: FastifyInstance) => {
       },
     },
     async (req, res) => {
-      const chainId = req.headers['x-chain-id']
+      const xChainId = req.headers['x-chain-id']
 
       const order: Order = {
         ...toDomainOrderCore(req.body),
@@ -27,15 +27,13 @@ export const ordersIngest = (fastify: FastifyInstance) => {
       }
 
       try {
-        const { id, didUpsert } = await actions.ingestOrder(chainId, order)
-
+        const { chainId, orderHash, didUpsert } = await actions.ingestOrder(xChainId, order)
         const code = didUpsert ? 201 : 200
 
-        res.code(code).header('Location', `/api/orders/${id}`)
+        res.code(code).header('Location', `/api/orders/${chainId}:${orderHash}`)
 
-        return {
-          id,
-        }
+        // todo: keyToId()
+        return { id: `${chainId}:${orderHash}` }
       } catch (err) {
         if (err instanceof InvalidOrderError) {
           return res.code(400).send(err.message)

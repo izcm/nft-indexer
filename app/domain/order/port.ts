@@ -1,4 +1,5 @@
 import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
+import { Hash } from '../shared/types/eth.js'
 import type { Order, OrderKey, OrderRecord, OrderStatus } from './model.js'
 
 /**
@@ -9,7 +10,10 @@ export interface OrderPort extends ByKey<OrderRecord, OrderKey>, Pageable<OrderR
   /**
    * Upsert order. Returns id and whether it was newly created.
    */
-  ensure(chainId: number, order: Order): Promise<{ id: any; didUpsert: boolean }>
+  ensure(
+    chainId: number,
+    order: Order
+  ): Promise<{ chainId: number; orderHash: Hash; didUpsert: boolean }>
 
   /**
    * Update order status (active/filled/cancelled/expired).

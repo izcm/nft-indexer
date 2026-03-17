@@ -1,4 +1,8 @@
-import type { PagedResource, ResourceType } from '#app/domain/shared/types/resources.js'
+import type {
+  PagedResource,
+  ResourceName,
+  ResourceType,
+} from '#app/domain/shared/types/resources.js'
 import type { Readers } from '#app/domain/shared/types/readers.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
 import type { includeFor } from '../domain/shared/relations.js'
@@ -7,20 +11,29 @@ import { applyDTOs } from './shared/apply-dtos.js'
 import { hydratePage } from './shared/hydrate-page.js'
 
 export const makeReadPage = (readers: Readers) =>
-  async function readPage<R extends PagedResource>(
-    r: R,
+  async function readPage<R extends ResourceName>(
+    // nftcollections 1:M relationship => don't do includes per today
+    resource: R,
     query: HttpPageRequest<ResourceType<R>, R>
   ) {
-    const { include, from, to, limit, cursor, ...filters } = query
+    if (resource === 'nftCollection') {
+      const page = await readers.nftCollection.findPage(query)
 
-    const page = await hydratePage(readers, r, query, {
-      include: include as includeFor<R>[] | undefined,
+      return {
+        items: applyDTOs('nftCollection', page.items),
+        nextCursor: page.nextCursor,
+      }
+    }
+
+    // resource 1:1 includes
+    const pagedResource = resource as PagedResource
+
+    const page = await hydratePage(readers, pagedResource, query as any, {
+      include: query.include as includeFor<PagedResource>[] | undefined,
     })
 
-    const toDTO = applyDTOs(r, page.items)
-
     return {
-      items: toDTO,
+      items: applyDTOs(pagedResource, page.items),
       nextCursor: page.nextCursor,
     }
   }
