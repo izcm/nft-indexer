@@ -10,7 +10,7 @@ import { OrderSortField } from '#app/domain/order/model.js'
 
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
-import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
+import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
 // -- DI ---

@@ -4,7 +4,7 @@ import type {
   PagedResource,
   ResourceName,
   ResourceType,
-} from '#app/domain/shared/types/resources.js'
+} from '#app/domain/shared/types/resource.js'
 import { Readers } from '#app/domain/shared/types/readers.js'
 
 export async function hydratePage<R extends PagedResource>(

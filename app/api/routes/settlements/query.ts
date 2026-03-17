@@ -9,7 +9,7 @@ import {
   SettlementSortField,
   type SettlementKey,
 } from '#app/domain/settlement/model.js'
-import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
+import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
 import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'

@@ -40,6 +40,7 @@ describe('nftCollectionRepo', () => {
     address: TEST_ADDR,
     metaStatus: Status.PENDING,
     chainMetaStatus: Status.PENDING,
+    backfillDone: false,
     updatedAt: 0,
     createdAt: 0,
   })
@@ -67,7 +68,7 @@ describe('nftCollectionRepo', () => {
     })
 
     it('findMissingChainMeta returns only collections with chainMetaStatus PENDING', async () => {
-      const { chainId, address } = makeParams()
+      const { chainId } = makeParams()
 
       // seed matching docs
       await seedCollections(chainId, 3, 'pending')
@@ -76,10 +77,29 @@ describe('nftCollectionRepo', () => {
       await seedCollections(chainId, 1, 'failed', { chainMetaStatus: Status.FAILED })
       await seedCollections(chainId, 1, 'done', { chainMetaStatus: Status.DONE })
 
-      const rows = await repo.findMissingChainMeta(TEST_CHAIN_ID, 100)
+      const rows = await repo.findMissingChainMeta(chainId, 100)
 
       expect(rows.length).toBe(3)
       expect(rows.every(r => r.chainMetaStatus === Status.PENDING)).toBe(true)
+    })
+
+    it('findBackfillNotDone only returns collection where backfillDone is false and correct chainId', async () => {
+      const { chainId } = makeParams()
+
+      // seed matching docs
+      await seedCollections(chainId, 3, 'target', { backfillDone: false })
+
+      // seed non-matching docs
+      const otherChainId = chainId + 1
+      await seedCollections(otherChainId, 2, 'wrong_chain', { backfillDone: false })
+      await seedCollections(otherChainId, 1, 'wrong_status', { backfillDone: true })
+
+      const rows = await repo.findBackfillNotDone(chainId)
+
+      expect(rows.length).toBe(3)
+      expect(rows.every(r => r.chainMetaStatus === Status.PENDING && r.chainId === chainId)).toBe(
+        true
+      )
     })
   })
 

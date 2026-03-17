@@ -13,6 +13,7 @@ export const seedCollections = async (
     address: addrOf(`collection:${i}:${seed}`),
     metaStatus: 'PENDING',
     chainMetaStatus: 'PENDING',
+    backfillDone: false,
     updatedAt: i,
     createdAt: i,
     ...overrides,

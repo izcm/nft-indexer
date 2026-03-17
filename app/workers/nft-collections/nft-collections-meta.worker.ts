@@ -7,7 +7,7 @@ import { isErc721 } from '#app/lib/blockchain/interfaces/erc165.js'
 
 import { nftCollectionRepoFor } from '#app/repos/nft-collection.repo.js'
 
-export const runNFTCollectionWorker = async (client: AppClient) => {
+export async function runNFTCollectionWorker(client: AppClient) {
   const chainId = client.chain.id
   const repo = nftCollectionRepoFor(chainId)
 

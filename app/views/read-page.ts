@@ -2,9 +2,9 @@ import type {
   PagedResource,
   ResourceName,
   ResourceType,
-} from '#app/domain/shared/types/resources.js'
+} from '#app/domain/shared/types/resource.js'
 import type { Readers } from '#app/domain/shared/types/readers.js'
-import type { HttpPageRequest } from '#app/domain/shared/types/requests.js'
+import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import type { includeFor } from '../domain/shared/relations.js'
 
 import { applyDTOs } from './shared/apply-dtos.js'

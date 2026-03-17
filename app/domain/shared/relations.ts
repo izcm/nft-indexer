@@ -15,7 +15,7 @@ import {
   type ResourceMap,
   type ResourceName,
   type ResourceType,
-} from '#app/domain/shared/types/resources.js'
+} from '#app/domain/shared/types/resource.js'
 
 export const pkOf = {
   settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),

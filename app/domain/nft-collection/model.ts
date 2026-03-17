@@ -22,7 +22,7 @@ export type NFTCollectionBase = {
   chainId: number
   address: Address
 
-  // BASE META
+  // web2 meta
   imageUrl?: string
   bannerImageUrl?: string
 
@@ -38,13 +38,17 @@ export type NFTCollectionBase = {
   metaStatus: Status
   metaError?: string
 
-  // CHAIN META
+  // chain meta
   chainMetaStatus: Status
   chainMetaError?: string
 
-  // CTX
+  // db ctx
   updatedAt: number
   createdAt: number
+
+  // backfill
+  lastScannedBlock?: number
+  backfillDone: boolean
 }
 
 // incremental metadata eg. fetched across requests / partial updates

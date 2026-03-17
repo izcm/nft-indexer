@@ -1,5 +1,5 @@
 import type { ByKey } from '#app/domain/shared/interfaces/read-commons.js'
-import type { ResourceKey, ResourceName, ResourceType } from '#app/domain/shared/types/resources.js'
+import type { ResourceKey, ResourceName, ResourceType } from '#app/domain/shared/types/resource.js'
 import { callDTO } from './shared/apply-dtos.js'
 
 type ByIdReaders = {

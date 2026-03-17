@@ -1,4 +1,4 @@
-import type { ResourceName, ResourceType } from '#app/domain/shared/types/resources.js'
+import type { ResourceName, ResourceType } from '#app/domain/shared/types/resource.js'
 import type { WithIncludes } from '#app/domain/shared/relations.js'
 
 import { toOrderDTO } from '../dtos/order.dto.js'

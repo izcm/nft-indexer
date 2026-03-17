@@ -52,8 +52,13 @@ export const nftCollectionRepo: NFTCollectionPort = {
         $setOnInsert: {
           chainId,
           address,
+
           metaStatus: Status.PENDING,
           chainMetaStatus: Status.PENDING,
+
+          lastScannedBlock: 0,
+          backfillDone: false,
+
           updatedAt: Date.now(),
           createdAt: Date.now(),
         },
@@ -63,7 +68,6 @@ export const nftCollectionRepo: NFTCollectionPort = {
   },
 
   // === read ===
-
   findMissingChainMeta(chainId: number, limit: number) {
     return nftCollections()
       .find({ chainId, chainMetaStatus: Status.PENDING })
@@ -71,8 +75,11 @@ export const nftCollectionRepo: NFTCollectionPort = {
       .toArray()
   },
 
-  // === write ===
+  findBackfillNotDone(chainId: number): Promise<NFTCollection[]> {
+    return nftCollections().find({ chainId, backfillDone: false }).toArray()
+  },
 
+  // === write ===
   async finalizeChainMeta({
     chainId,
     address,

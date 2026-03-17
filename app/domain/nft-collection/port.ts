@@ -27,6 +27,11 @@ export interface NFTCollectionPort
   findMissingChainMeta(chainId: number, limit: number): Promise<NFTCollection[]>
 
   /**
+   * Backfill of nfts
+   */
+  findBackfillNotDone(chainId: number): Promise<NFTCollection[]>
+
+  /**
    * Finalize chain metadata after successful fetch.
    */
   finalizeChainMeta(
