@@ -1,6 +1,3 @@
-import { UNIX_SECONDS_MAX } from '#app/domain/constants/limits.js'
-import { BYTES32_REGEX } from '#app/domain/constants/regex.js'
-
 // range + sort fields are set separately in each query route
 export const paginationQueryParams = {
   limit: { type: 'integer', minimum: 1, maximum: 100 },

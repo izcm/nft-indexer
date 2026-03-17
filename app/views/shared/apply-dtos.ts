@@ -11,7 +11,7 @@ export const dtos: { [R in ResourceName]: (x: ResourceType<R>) => any } = {
   nftCollection: toNFTCollectionDTO,
 } as const
 
-function callDTO<K extends ResourceName>(key: K, value: ResourceType<K>) {
+export function callDTO<K extends ResourceName>(key: K, value: ResourceType<K>) {
   return dtos[key](value)
 }
 

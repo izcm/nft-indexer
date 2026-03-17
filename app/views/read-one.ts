@@ -1,14 +1,19 @@
 import type { ByKey } from '#app/domain/shared/interfaces/read-commons.js'
 import type { ResourceKey, ResourceName, ResourceType } from '#app/domain/shared/types/resources.js'
+import { callDTO } from './shared/apply-dtos.js'
 
 type ByIdReaders = {
   [K in ResourceName]: ByKey<ResourceType<K>, any>
 }
 
 export const makeReadOne = (readers: ByIdReaders) =>
-  function readByKey<R extends ResourceName>(
+  async function readByKey<R extends ResourceName>(
     resource: R,
     key: ResourceKey<R>
   ): Promise<ResourceType<R> | null> {
-    return readers[resource].findByKey(key)
+    const result = await readers[resource].findByKey(key)
+
+    if (!result) return null
+
+    return callDTO(resource, result)
   }
