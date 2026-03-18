@@ -1,20 +1,30 @@
+import { Status } from '../shared/status.js'
 import { Address } from '../shared/types/eth.js'
 
-type NFTAttribute = {
+export type NFTKey = {
+  chainId: number
+  address: Address
+  tokenId: string
+}
+
+export type NFTAttribute = {
   trait_type: string
   value: string
 }
 
-export type NFTMetadata = {
-  name: string
-  description: string
-  image: string
-  attributes: NFTAttribute[]
-}
-
-export type NFT = NFTMetadata & {
-  id: string
+export type NFT = {
   chainId: number
   collection: Address
-  tokenId: bigint
+  tokenId: string
+
+  tokenUri?: string
+  name?: string
+  description?: string
+  image?: string
+  attributes?: NFTAttribute[]
+
+  metaStatus: Status
+  metaError?: string
+
+  createdAtBlock: bigint
 }

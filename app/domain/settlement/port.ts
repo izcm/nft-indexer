@@ -9,6 +9,7 @@ export interface SettlementPort extends ByKey<Settlement, SettlementKey>, Pageab
   /**
    * Save settlement. Should error on duplicate chainId + orderHash.
    */
+  // todo: this shouldnt throw error + rename it 'ensure'
   save(settlement: Settlement): Promise<any>
 
   /**

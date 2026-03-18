@@ -1,6 +1,6 @@
 import { AppClient } from '#app/clients.js'
-import { runNFTCollectionWorker } from './nft-collections/worker.js'
-import { runSettlementWorker } from './settlements/worker.js'
+import { runNFTCollectionChainMetaWorker } from './nft-collections/nft-collection-meta.worker.js'
+import { runSettlementWorker } from './settlements/call-reconstruction.worker.js'
 
 // ------------------
 // WORKERS
@@ -18,7 +18,7 @@ const workers = (client: AppClient): Worker[] => [
   },
   {
     name: 'nft-collection',
-    run: () => runNFTCollectionWorker(client),
+    run: () => runNFTCollectionChainMetaWorker(client),
   },
 ]
 

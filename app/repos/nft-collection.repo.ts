@@ -1,4 +1,3 @@
-import { ObjectId } from 'mongodb'
 import { nftCollections } from '#app/db/collections.js'
 
 import type {
@@ -35,9 +34,22 @@ const baseRead = makeReadRepo<NFTCollection, NFTCollectionKey>(nftCollections, k
 
 export const nftCollectionRepo: NFTCollectionPort = {
   // === read ===
+
   ...baseRead,
 
+  findMissingChainMeta(chainId: number, limit: number) {
+    return nftCollections()
+      .find({ chainId, chainMetaStatus: Status.PENDING })
+      .limit(limit)
+      .toArray()
+  },
+
+  findBackfillNotDone(chainId: number): Promise<NFTCollection[]> {
+    return nftCollections().find({ chainId, backfillDone: false }).toArray()
+  },
+
   // === write ===
+
   async noteNFTCollection(key: NFTCollectionKey) {
     const { chainId, address } = key
 
@@ -67,19 +79,6 @@ export const nftCollectionRepo: NFTCollectionPort = {
     )
   },
 
-  // === read ===
-  findMissingChainMeta(chainId: number, limit: number) {
-    return nftCollections()
-      .find({ chainId, chainMetaStatus: Status.PENDING })
-      .limit(limit)
-      .toArray()
-  },
-
-  findBackfillNotDone(chainId: number): Promise<NFTCollection[]> {
-    return nftCollections().find({ chainId, backfillDone: false }).toArray()
-  },
-
-  // === write ===
   async finalizeChainMeta({
     chainId,
     address,
