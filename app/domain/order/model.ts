@@ -1,4 +1,5 @@
 import type { Address, Hash } from '../shared/types/eth.js'
+import type { WithTimestamps } from '../shared/types/with-timestamps.js'
 
 export type OrderKey = {
   chainId: number
@@ -21,22 +22,11 @@ export type SideLabel = keyof typeof OrderSide
 
 export type OrderStatus = 'active' | 'filled' | 'cancelled' | 'expired'
 
-export type OrderRecord = {
-  chainId: number
-  orderHash: Hash
-
-  order: Order
-
-  status: OrderStatus
-
-  // filledTxHash = txHash
-  // filledBlock = blockNumber
-  // filledLogIndex = logIndex
-
-  updatedAt: number
-
-  createdAt: number
-}
+export type OrderRecord = OrderKey &
+  WithTimestamps & {
+    order: Order
+    status: OrderStatus
+  }
 
 // todo: remove this and store raw
 export type Signature = {

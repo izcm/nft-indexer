@@ -1,5 +1,5 @@
 import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
-import { Hash } from '../shared/types/eth.js'
+import type { Hash } from '../shared/types/eth.js'
 import type { Order, OrderKey, OrderRecord, OrderStatus } from './model.js'
 
 /**

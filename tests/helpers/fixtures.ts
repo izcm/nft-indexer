@@ -108,7 +108,8 @@ export const fakeSettlement = (overrides: Partial<Settlement> = {}): Settlement 
       status: Status.PENDING,
     },
   },
-  ingestedAt: 0,
+  createdAt: 0,
+  updatedAt: 0,
   ...overrides,
 })
 

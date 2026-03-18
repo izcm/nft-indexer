@@ -71,8 +71,8 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
         cursor: q.cursor,
         from: q.from,
         to: q.to,
-        rangeField: 'ingestedAt', // todo: dont hardcode
-        sortField: (q.sortField as SettlementSortField) ?? 'ingestedAt',
+        rangeField: 'createdAt', // todo: dont hardcode
+        sortField: (q.sortField as SettlementSortField) ?? 'createdAt',
         sortDir: q.sortDir,
         filters,
       }

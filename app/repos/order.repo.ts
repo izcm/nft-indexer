@@ -6,26 +6,28 @@ import type { Hash } from '#app/domain/shared/types/eth.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 
-import { makeReadRepo } from './read-commons.repo.js'
+import { makeReadRepo } from './shared/_read.js'
+import { makeTsWrite } from './shared/_write.js'
 
 const baseRead = makeReadRepo<OrderRecord, OrderKey>(orders, k => ({
   chainId: k.chainId,
   orderHash: k.orderHash,
 }))
 
+const write = makeTsWrite(orders)
+
 export const orderRepo: OrderPort = {
   // === read ===
   ...baseRead,
 
   // === write ===
-
   async ensure(chainId: number, order: Order) {
     const { signature, ...orderCore } = order
     const orderHash = hashOrderStruct(orderCore)
 
     const now = Date.now()
 
-    const res = await orders().findOneAndUpdate(
+    const res = await write.updateOne(
       { chainId, orderHash },
       {
         $setOnInsert: {
@@ -36,32 +38,22 @@ export const orderRepo: OrderPort = {
             signature,
           },
           status: 'active',
-          createdAt: now,
-          updatedAt: now, // updatedAt only updates when order.status is modified
         },
       },
-      {
-        upsert: true,
-        returnDocument: 'after',
-        includeResultMetadata: true,
-      }
+      { upsert: true }
     )
 
-    const doc = res.value!
-
-    const id = doc._id
-    const didUpsert = res.lastErrorObject?.updatedExisting === false
+    const didUpsert = !!res.upsertedCount
 
     return { chainId, orderHash, didUpsert }
   },
 
   async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
-    await orders().updateOne(
+    await write.updateOne(
       { chainId, orderHash },
       {
         $set: {
           status,
-          updatedAt: Date.now(),
         },
       }
     )
@@ -72,7 +64,6 @@ export const orderRepo: OrderPort = {
  * WRAPPER
  * - Prettifies multichain code
  */
-
 export const orderRepoFor = (chainId: number) => ({
   findByKey(orderHash: Hash) {
     return orderRepo.findByKey({ chainId, orderHash })

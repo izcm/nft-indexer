@@ -20,7 +20,7 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
-  await orders().deleteMany({})
+  await orders().deleteMany()
 })
 
 describe('orderRepo', () => {

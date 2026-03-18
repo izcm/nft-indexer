@@ -47,4 +47,9 @@ export interface NFTCollectionPort
    * Patch off-chain metadata (e.g. creator socials).
    */
   patchMeta(args: NFTCollectionKey & { patch: NFTCollectionMetaPatch }): Promise<void>
+
+  /**
+   * Update lastScannedBlock for a collection.
+   */
+  updateLastScannedBlock(args: NFTCollectionKey & { block: number }): Promise<void>
 }

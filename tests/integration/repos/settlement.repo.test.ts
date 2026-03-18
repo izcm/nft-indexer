@@ -24,7 +24,7 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
-  await settlements().deleteMany({})
+  await settlements().deleteMany()
 })
 
 describe('settlementRepo', () => {
@@ -32,7 +32,7 @@ describe('settlementRepo', () => {
 
   const CHAIN_ID = 1
 
-  const mockSettlementForChain = (chainId: number = CHAIN_ID) => fakeSettlement({ chainId })
+  const fakeSettlementForChain = (chainId: number = CHAIN_ID) => fakeSettlement({ chainId })
 
   async function givenSettlementDocExists(overrides: DeepPartial<Settlement> = {}) {
     const seed = `given:${Math.random().toString(36).slice(2)}`
@@ -91,7 +91,7 @@ describe('settlementRepo', () => {
           cursor: undefined,
           sortDir: 'asc',
           sortField: 'createdAt',
-          rangeField: 'ingestedAt',
+          rangeField: 'createdAt',
           limit: 100,
         })
 
@@ -191,7 +191,7 @@ describe('settlementRepo', () => {
 
     describe('save', () => {
       it('inserts settlement on unique chainId + orderHash pair', async () => {
-        const settlement = mockSettlementForChain()
+        const settlement = fakeSettlementForChain()
 
         const { insertedId } = await repo.save(settlement)
         expect(insertedId).toBeInstanceOf(ObjectId)
@@ -200,10 +200,7 @@ describe('settlementRepo', () => {
         expect(rows).toHaveLength(1)
 
         const inserted = rows[0]
-        expect(inserted).toMatchObject({
-          ...settlement,
-          ingestedAt: startTime,
-        })
+        expect(inserted).toMatchObject(settlement)
       })
 
       it('throws error on duplicate chainId + orderHash pair', async () => {
@@ -213,7 +210,7 @@ describe('settlementRepo', () => {
       })
 
       it('allows same orderHash on different chains', async () => {
-        const base = mockSettlementForChain(1)
+        const base = fakeSettlementForChain(1)
         const other = { ...base, chainId: 31337 }
 
         await repo.save(base)

@@ -41,7 +41,8 @@ export async function seedSettlements(
         },
       },
 
-      ingestedAt: now,
+      updatedAt: now,
+      createdAt: now,
     } as Settlement
 
     return applyDeepPartial(base, overrides)

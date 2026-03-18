@@ -1,4 +1,3 @@
-import { ObjectId, WithId } from 'mongodb'
 import { settlements } from '#app/db/collections.js'
 
 import type { Settlement, SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
@@ -6,7 +5,8 @@ import type { SettlementPort } from '#app/domain/settlement/port.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
-import { makeReadRepo } from './read-commons.repo.js'
+import { makeReadRepo } from './shared/_read.js'
+import { makeTsWrite } from './shared/_write.js'
 
 // === helpers ===
 
@@ -23,6 +23,8 @@ const baseRead = makeReadRepo<Settlement, SettlementKey>(settlements, k => ({
   chainId: k.chainId,
   orderHash: k.orderHash,
 }))
+
+const write = makeTsWrite(settlements)
 
 export const settlementRepo: SettlementPort = {
   // === read ===
@@ -41,7 +43,10 @@ export const settlementRepo: SettlementPort = {
   save(settlement: Settlement) {
     return settlements().insertOne({
       ...settlement,
-      ingestedAt: Date.now(),
+
+      // todo: make 'write' implement insertOne
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     })
   },
 
@@ -50,7 +55,7 @@ export const settlementRepo: SettlementPort = {
     orderHash,
     meta,
   }: SettlementKey & { meta: SettlementCall }) {
-    await settlements().updateOne(
+    await write.updateOne(
       { chainId, orderHash },
       {
         $set: {
@@ -66,7 +71,7 @@ export const settlementRepo: SettlementPort = {
     orderHash,
     error,
   }: SettlementKey & { error: string }) {
-    await settlements().updateOne(
+    await write.updateOne(
       { chainId, orderHash },
       {
         $set: {

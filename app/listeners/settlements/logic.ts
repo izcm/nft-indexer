@@ -49,6 +49,7 @@ export function settlementFromLog(log: SettlementLog, chainId: number): Settleme
       },
     },
 
-    ingestedAt: 0,
+    updatedAt: 0,
+    createdAt: 0,
   }
 }

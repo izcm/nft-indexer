@@ -3,8 +3,8 @@ import { Collection, Filter, Document as MongoDoc, WithId } from 'mongodb'
 import { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import { ByKey, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 
-import { findPageGeneric } from './shared/pagination/find-page-generic.js'
-import { mapDomainToRepoQuery } from './shared/pagination/page-mapper.js'
+import { findPageGeneric } from './pagination/find-page-generic.js'
+import { mapDomainToRepoQuery } from './pagination/page-mapper.js'
 
 export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
   getCol: () => Collection<TDoc>,

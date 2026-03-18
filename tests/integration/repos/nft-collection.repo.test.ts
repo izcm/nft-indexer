@@ -159,6 +159,21 @@ describe('nftCollectionRepo', () => {
 
   // === update ===
 
+  describe('updateLastScannedBlock', () => {
+    it('sets lastScannedBlock on an existing collection', async () => {
+      const col = mockNFTCollection()
+      await nftCollections().insertOne(col)
+
+      const { chainId, address } = col
+      await repo.updateLastScannedBlock({ chainId, address, block: 9999 })
+
+      const row = await nftCollections().findOne({ chainId, address })
+      if (!row) throw new Error('row missing')
+
+      expect(row.lastScannedBlock).toBe(9999)
+    })
+  })
+
   describe('meta / status writers', () => {
     const startTime = 0
     const writeTime = 100

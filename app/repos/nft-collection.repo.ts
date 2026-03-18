@@ -11,7 +11,8 @@ import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 import type { Address } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
-import { makeReadRepo } from './read-commons.repo.js'
+import { makeReadRepo } from './shared/_read.js'
+import { makeTsWrite } from './shared/_write.js'
 
 // === cache ===
 
@@ -31,6 +32,10 @@ const baseRead = makeReadRepo<NFTCollection, NFTCollectionKey>(nftCollections, k
   chainId: k.chainId,
   address: k.address,
 }))
+
+// === init write helper ===
+
+const write = makeTsWrite(nftCollections)
 
 export const nftCollectionRepo: NFTCollectionPort = {
   // === read ===
@@ -58,7 +63,7 @@ export const nftCollectionRepo: NFTCollectionPort = {
 
     seenCollections.add(cacheKey)
 
-    await nftCollections().updateOne(
+    await write.updateOne(
       { chainId, address },
       {
         $setOnInsert: {
@@ -70,9 +75,6 @@ export const nftCollectionRepo: NFTCollectionPort = {
 
           lastScannedBlock: 0,
           backfillDone: false,
-
-          updatedAt: Date.now(),
-          createdAt: Date.now(),
         },
       },
       { upsert: true }
@@ -84,29 +86,31 @@ export const nftCollectionRepo: NFTCollectionPort = {
     address,
     chainMeta,
   }: NFTCollectionKey & { chainMeta: Partial<NFTCollectionChainMeta> }) {
-    await nftCollections().updateOne(
+    await write.updateOne(
       { chainId, address },
       {
         $set: {
           ...chainMeta,
           chainMetaStatus: Status.DONE,
-          updatedAt: Date.now(),
         },
       }
     )
   },
 
   async markChainMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
-    await nftCollections().updateOne(
+    await write.updateOne(
       { chainId, address },
       {
         $set: {
           chainMetaStatus: Status.FAILED,
           chainMetaError: error,
-          updatedAt: Date.now(),
         },
       }
     )
+  },
+
+  async updateLastScannedBlock({ chainId, address, block }: NFTCollectionKey & { block: number }) {
+    await nftCollections().updateOne({ chainId, address }, { $set: { lastScannedBlock: block } })
   },
 
   async patchMeta({
@@ -114,12 +118,11 @@ export const nftCollectionRepo: NFTCollectionPort = {
     address,
     patch,
   }: NFTCollectionKey & { patch: NFTCollectionMetaPatch }) {
-    await nftCollections().updateOne(
+    await write.updateOne(
       { chainId, address },
       {
         $set: {
           ...patch,
-          updatedAt: Date.now(),
         },
       }
     )

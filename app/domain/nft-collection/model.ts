@@ -1,5 +1,6 @@
 import type { Status } from '../shared/status.js'
 import type { Address } from '../shared/types/eth.js'
+import { WithTimestamps } from '../shared/types/with-timestamps.js'
 
 export type NFTCollectionKey = {
   chainId: number
@@ -18,38 +19,32 @@ export const nftCollectionKeyOf = (collection: NFTCollectionBase): NFTCollection
 
 // chainMetaStatus tracks status of the meta derived from contract calls
 
-export type NFTCollectionBase = {
-  chainId: number
-  address: Address
+export type NFTCollectionBase = NFTCollectionKey &
+  WithTimestamps & {
+    // web2 meta
+    imageUrl?: string
+    bannerImageUrl?: string
 
-  // web2 meta
-  imageUrl?: string
-  bannerImageUrl?: string
+    marketData?: {
+      floorPrice?: number
+    }
 
-  marketData?: {
-    floorPrice?: number
+    socials?: {
+      twitterUsername?: string
+      externalUrl?: string
+    }
+
+    metaStatus: Status
+    metaError?: string
+
+    // chain meta
+    chainMetaStatus: Status
+    chainMetaError?: string
+
+    // backfill
+    lastScannedBlock?: number
+    backfillDone: boolean
   }
-
-  socials?: {
-    twitterUsername?: string
-    externalUrl?: string
-  }
-
-  metaStatus: Status
-  metaError?: string
-
-  // chain meta
-  chainMetaStatus: Status
-  chainMetaError?: string
-
-  // db ctx
-  updatedAt: number
-  createdAt: number
-
-  // backfill
-  lastScannedBlock?: number
-  backfillDone: boolean
-}
 
 // incremental metadata eg. fetched across requests / partial updates
 export type NFTCollectionMetaPatch = Partial<

@@ -5,9 +5,6 @@ import { AppClient } from '#app/clients.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { nftRepo } from '#app/repos/nft.repo.js'
 
-import type { NFT } from '#app/domain/nft/model.js'
-import { Status } from '#app/domain/shared/status.js'
-
 const STEP = 5000n
 const MAX_STEPS = 3
 
@@ -22,7 +19,7 @@ export async function runNFTBackfillWorker(client: AppClient) {
   const latest = await client.getBlockNumber()
 
   for (const c of collections) {
-    const from = BigInt(c.lastScannedBlock ?? 0)
+    let from = BigInt(c.lastScannedBlock ?? 0)
 
     // logs in span from => to
     // action categorized as`mint:
@@ -47,24 +44,18 @@ export async function runNFTBackfillWorker(client: AppClient) {
 
       // loop returned logs
       for (const log of logs) {
-        const { to, tokenId } = log.args
+        const { tokenId } = log.args
         if (tokenId === undefined) continue
 
-        const nft: NFT = {
-          chainId,
-          collection: c.address,
-          tokenId: tokenId.toString(),
-          metaStatus: Status.PENDING,
-          createdAtBlock: log.blockNumber,
-        }
-
-        await nftRepo.ensure(nft)
+        await nftRepo.ensure(
+          { chainId, collection: c.address, tokenId: tokenId.toString() },
+          Number(log.blockNumber)
+        )
       }
 
       // the returned logs keep
-      to = to + STEP
+      from = to + 1n
 
-      if (to >= latest) to = latest
       step++
     }
   }

@@ -1,9 +1,10 @@
 import { Status } from '../shared/status.js'
-import { Address } from '../shared/types/eth.js'
+import type { Address } from '../shared/types/eth.js'
+import type { WithTimestamps } from '../shared/types/with-timestamps.js'
 
 export type NFTKey = {
   chainId: number
-  address: Address
+  collection: Address
   tokenId: string
 }
 
@@ -12,19 +13,16 @@ export type NFTAttribute = {
   value: string
 }
 
-export type NFT = {
-  chainId: number
-  collection: Address
-  tokenId: string
+export type NFT = NFTKey &
+  WithTimestamps & {
+    tokenUri?: string
+    name?: string
+    description?: string
+    image?: string
+    attributes?: NFTAttribute[]
 
-  tokenUri?: string
-  name?: string
-  description?: string
-  image?: string
-  attributes?: NFTAttribute[]
+    metaStatus: Status
+    metaError?: string
 
-  metaStatus: Status
-  metaError?: string
-
-  createdAtBlock: bigint
-}
+    createdAtBlock: number
+  }

@@ -20,7 +20,8 @@ describe('Settlement log => Settlement domain mapping', () => {
     expect(settlement.seller).toBe(args.seller)
     expect(settlement.buyer).toBe(args.buyer)
 
-    expect(settlement.ingestedAt).toBe(0) // set in db
+    expect(settlement.createdAt).toBe(0)
+    expect(settlement.updatedAt).toBe(0)
 
     // chain / execution ctx
     const { execution } = settlement

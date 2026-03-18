@@ -7,10 +7,10 @@ import type { NFT, NFTKey } from './model.js'
 
 export interface NFTPort extends ByKey<NFT, NFTKey> {
   /**
-   * Ensures NFT exists
+   * Ensures NFT exists in db
    * Prevents duplicate keys without throwing errors
    */
-  ensure(nft: NFT): Promise<{ key: NFTKey; didUpsert: boolean }>
+  ensure(key: NFTKey, createdAtBlock: number): Promise<{ key: NFTKey; didUpsert: boolean }>
 
   /**
    * Find nfts missing on-chain meta eg. for parsing attributes from tokenuri
