@@ -94,7 +94,7 @@ describe('nftCollectionRepo', () => {
       await seedCollections(otherChainId, 2, 'wrong_chain', { backfillDone: false })
       await seedCollections(otherChainId, 1, 'wrong_status', { backfillDone: true })
 
-      const rows = await repo.findBackfillNotDone(chainId)
+      const rows = await repo.findBackfillNotDone(chainId, 10)
 
       expect(rows.length).toBe(3)
       expect(rows.every(r => r.chainMetaStatus === Status.PENDING && r.chainId === chainId)).toBe(

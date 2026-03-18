@@ -1,25 +1,27 @@
 import { parseAbiItem, zeroAddress } from 'viem'
 
+import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
 import { AppClient } from '#app/clients.js'
 
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 import { nftRepo } from '#app/repos/nft.repo.js'
 
-const STEP = 5000n
-const MAX_STEPS = 3
+const STEP = 9n
+const MAX_STEPS = 1000
 
 const TRANSFER_EVENT = parseAbiItem(
-  'event Transfer(address indexed from, address indexed to, uint256 tokenId)'
+  'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'
 )
 
 export async function runNFTBackfillWorker(client: AppClient) {
   const chainId = client.chain.id
 
-  const collections = await nftCollectionRepo.findBackfillNotDone(chainId)
+  const collections = await nftCollectionRepo.findBackfillNotDone(chainId, DEFAULT_WORKER_LIMIT)
   const latest = await client.getBlockNumber()
 
   for (const c of collections) {
-    let from = BigInt(c.lastScannedBlock ?? 0)
+    // let from = BigInt(c.lastScannedBlock ?? 24480751)
+    let from = 24480751n // todo: remove this
 
     // logs in span from => to
     // action categorized as`mint:
@@ -44,13 +46,15 @@ export async function runNFTBackfillWorker(client: AppClient) {
 
       // loop returned logs
       for (const log of logs) {
+        console.log(log)
         const { tokenId } = log.args
         if (tokenId === undefined) continue
 
-        await nftRepo.ensure(
+        const something = await nftRepo.ensure(
           { chainId, collection: c.address, tokenId: tokenId.toString() },
           Number(log.blockNumber)
         )
+        console.log(something)
       }
 
       // the returned logs keep

@@ -1,6 +1,7 @@
 import { AppClient } from '#app/clients.js'
+import { runNFTBackfillWorker } from './nft-collections/nft-backfill.worker.js'
 import { runNFTCollectionChainMetaWorker } from './nft-collections/nft-collection-meta.worker.js'
-import { runSettlementWorker } from './settlements/call-reconstruction.worker.js'
+import { runSettlementCalReconstructionWorker } from './settlements/call-reconstruction.worker.js'
 
 // ------------------
 // WORKERS
@@ -14,11 +15,13 @@ type Worker = {
 const workers = (client: AppClient): Worker[] => [
   {
     name: 'settlement',
-    run: () => runSettlementWorker(client),
+    run: () => runSettlementCalReconstructionWorker(client),
   },
   {
     name: 'nft-collection',
-    run: () => runNFTCollectionChainMetaWorker(client),
+    run: async () => {
+      await Promise.all([runNFTCollectionChainMetaWorker(client), runNFTBackfillWorker(client)])
+    },
   },
 ]
 

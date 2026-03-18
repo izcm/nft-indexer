@@ -49,8 +49,8 @@ export const nftCollectionRepo: NFTCollectionPort = {
       .toArray()
   },
 
-  findBackfillNotDone(chainId: number): Promise<NFTCollection[]> {
-    return nftCollections().find({ chainId, backfillDone: false }).toArray()
+  findBackfillNotDone(chainId: number, limit: number): Promise<NFTCollection[]> {
+    return nftCollections().find({ chainId, backfillDone: false }).limit(limit).toArray()
   },
 
   // === write ===

@@ -8,7 +8,7 @@ import { settlementRepoFor } from '#app/repos/settlement.repo.js'
 
 import { decodeSettlementCall } from './logic.js'
 
-export async function runSettlementWorker(client: AppClient) {
+export async function runSettlementCalReconstructionWorker(client: AppClient) {
   const chainId = client.chain.id
   const repo = settlementRepoFor(chainId)
 

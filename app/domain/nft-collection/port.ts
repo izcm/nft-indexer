@@ -29,7 +29,7 @@ export interface NFTCollectionPort
   /**
    * Backfill of nfts
    */
-  findBackfillNotDone(chainId: number): Promise<NFTCollection[]>
+  findBackfillNotDone(chainId: number, limit: number): Promise<NFTCollection[]>
 
   /**
    * Finalize chain metadata after successful fetch.
