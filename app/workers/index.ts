@@ -1,4 +1,9 @@
 import { AppClient } from '#app/clients.js'
+
+import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
+import type { NFTPort } from '#app/domain/nft/port.js'
+import type { SettlementPort } from '#app/domain/settlement/port.js'
+
 import { runNFTBackfillWorker } from './nft-collections/nft-backfill.worker.js'
 import { runNFTCollectionChainMetaWorker } from './nft-collections/nft-collection-meta.worker.js'
 import { runSettlementCalReconstructionWorker } from './settlements/call-reconstruction.worker.js'
@@ -7,28 +12,40 @@ import { runSettlementCalReconstructionWorker } from './settlements/call-reconst
 // WORKERS
 // ------------------
 
+type Ports = {
+  nftCollections: NFTCollectionPort
+  nfts: NFTPort
+  settlements: SettlementPort
+}
+
 type Worker = {
   name: string
   run: () => Promise<void>
 }
 
-const workers = (client: AppClient): Worker[] => [
+const workers = (client: AppClient, ports: Ports): Worker[] => [
   {
     name: 'settlement',
-    run: () => runSettlementCalReconstructionWorker(client),
+    run: () => runSettlementCalReconstructionWorker(client, ports.settlements),
   },
   {
     name: 'nft-collection',
     run: async () => {
-      await Promise.all([runNFTCollectionChainMetaWorker(client), runNFTBackfillWorker(client)])
+      await Promise.all([
+        runNFTCollectionChainMetaWorker(client, ports.nftCollections),
+        runNFTBackfillWorker(client, {
+          findBackfillNotDone: ports.nftCollections.findBackfillNotDone,
+          ensureNFT: ports.nfts.ensure,
+        }),
+      ])
     },
   },
 ]
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-export async function start(client: AppClient) {
-  const list = workers(client)
+export async function start(client: AppClient, ports: Ports) {
+  const list = workers(client, ports)
 
   while (true) {
     for (const worker of list) {

@@ -1,4 +1,5 @@
 import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
+import { Address } from '../shared/types/eth.js'
 import type {
   NFTCollection,
   NFTCollectionChainMeta,
@@ -53,3 +54,26 @@ export interface NFTCollectionPort
    */
   updateLastScannedBlock(args: NFTCollectionKey & { block: number }): Promise<void>
 }
+
+/**
+ * WRAPPER
+ * - Prettifies multichain code
+ */
+
+export const nftCollectionPortForChain = (port: NFTCollectionPort, chainId: number) => ({
+  findMissingChainMeta(limit: number) {
+    return port.findMissingChainMeta(chainId, limit)
+  },
+
+  finalizeChainMeta(address: Address, chainMeta: Partial<NFTCollectionChainMeta>) {
+    return port.finalizeChainMeta({ chainId, address, chainMeta })
+  },
+
+  markChainMetaFailed(address: Address, error: string) {
+    return port.markChainMetaFailed({ chainId, address, error })
+  },
+
+  patchMeta(address: Address, patch: NFTCollectionMetaPatch) {
+    return port.patchMeta({ chainId, address, patch })
+  },
+})

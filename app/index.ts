@@ -15,6 +15,11 @@ import { start as startServer } from './api/index.js'
 // workers
 import { start as startWorkers } from './workers/index.js'
 
+// di repos
+import { nftCollectionRepo } from './repos/nft-collection.repo.js'
+import { nftRepo } from './repos/nft.repo.js'
+import { settlementRepo } from './repos/settlement.repo.js'
+
 async function main() {
   const logSection = (title: string) => {
     const line = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
@@ -40,6 +45,13 @@ async function main() {
 
   const clients: AppClient[] = [anvilClient]
 
+  // di
+  const ports = {
+    nftCollections: nftCollectionRepo,
+    nfts: nftRepo,
+    settlements: settlementRepo,
+  }
+
   clients.forEach(client => {
     logSection('Listeners')
     console.log('starting listeners...')
@@ -47,7 +59,7 @@ async function main() {
 
     logSection('Workers')
     console.log('starting background workers...')
-    startWorkers(client)
+    startWorkers(client, ports)
   })
 }
 

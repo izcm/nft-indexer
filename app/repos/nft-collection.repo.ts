@@ -128,26 +128,3 @@ export const nftCollectionRepo: NFTCollectionPort = {
     )
   },
 }
-
-/**
- * WRAPPER
- * - Prettifies multichain code
- */
-
-export const nftCollectionRepoFor = (chainId: number) => ({
-  findMissingChainMeta(limit: number) {
-    return nftCollectionRepo.findMissingChainMeta(chainId, limit)
-  },
-
-  finalizeChainMeta(address: Address, chainMeta: Partial<NFTCollectionChainMeta>) {
-    return nftCollectionRepo.finalizeChainMeta({ chainId, address, chainMeta })
-  },
-
-  markChainMetaFailed(address: Address, error: string) {
-    return nftCollectionRepo.markChainMetaFailed({ chainId, address, error })
-  },
-
-  patchMeta(address: Address, patch: NFTCollectionMetaPatch) {
-    return nftCollectionRepo.patchMeta({ chainId, address, patch })
-  },
-})

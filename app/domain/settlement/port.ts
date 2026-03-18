@@ -1,4 +1,5 @@
 import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
+import type { Hash } from '../shared/types/eth.js'
 import type { Settlement, SettlementCall, SettlementKey } from './model.js'
 
 /**
@@ -28,3 +29,21 @@ export interface SettlementPort extends ByKey<Settlement, SettlementKey>, Pageab
    */
   markCallReconstructionFailed(args: SettlementKey & { error: string }): Promise<void>
 }
+
+/**
+ * WRAPPER
+ * - Prettifies multichain code
+ */
+export const settlementRepoForChain = (chainId: number, port: SettlementPort) => ({
+  findPendingMeta(limit: number) {
+    return port.findPendingCallReconstruction(chainId, limit)
+  },
+
+  finalizeCallReconstruction(orderHash: Hash, meta: SettlementCall) {
+    return port.finalizeCallReconstruction({ chainId, orderHash, meta })
+  },
+
+  markCallReconstructionFailed(orderHash: Hash, error: string) {
+    return port.markCallReconstructionFailed({ chainId, orderHash, error })
+  },
+})

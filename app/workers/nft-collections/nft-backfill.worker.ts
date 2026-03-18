@@ -1,22 +1,27 @@
 import { parseAbiItem, zeroAddress } from 'viem'
 
-import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
 import { AppClient } from '#app/clients.js'
 
-import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
-import { nftRepo } from '#app/repos/nft.repo.js'
+import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
+import { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
+import { NFTPort } from '#app/domain/nft/port.js'
 
-const STEP = 9n
+const STEP = 9n // rpc free tier restriction
 const MAX_STEPS = 1000
 
 const TRANSFER_EVENT = parseAbiItem(
   'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'
 )
 
-export async function runNFTBackfillWorker(client: AppClient) {
+type BackfillPort = {
+  findBackfillNotDone: NFTCollectionPort['findBackfillNotDone']
+  ensureNFT: NFTPort['ensure']
+}
+
+export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort) {
   const chainId = client.chain.id
 
-  const collections = await nftCollectionRepo.findBackfillNotDone(chainId, DEFAULT_WORKER_LIMIT)
+  const collections = await port.findBackfillNotDone(chainId, DEFAULT_WORKER_LIMIT)
   const latest = await client.getBlockNumber()
 
   for (const c of collections) {
@@ -46,15 +51,13 @@ export async function runNFTBackfillWorker(client: AppClient) {
 
       // loop returned logs
       for (const log of logs) {
-        console.log(log)
         const { tokenId } = log.args
         if (tokenId === undefined) continue
 
-        const something = await nftRepo.ensure(
+        await port.ensureNFT(
           { chainId, collection: c.address, tokenId: tokenId.toString() },
           Number(log.blockNumber)
         )
-        console.log(something)
       }
 
       // the returned logs keep
