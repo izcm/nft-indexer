@@ -1,5 +1,5 @@
 import type {
-  PagedResource,
+  PagedWithIncludesResource,
   ResourceName,
   ResourceType,
 } from '#app/domain/shared/types/resource.js'
@@ -16,7 +16,9 @@ export const makeReadPage = (readers: Readers) =>
     resource: R,
     query: HttpPageRequest<ResourceType<R>, R>
   ) {
-    if (resource === 'nftCollection') {
+    // non 1:1 relationships only support simple pagination
+    // todo: would be nice to have include working for more relationship types
+    if (resource === 'nftCollection' || resource === 'nft') {
       const page = await readers.nftCollection.findPage(query)
 
       return {
@@ -26,10 +28,10 @@ export const makeReadPage = (readers: Readers) =>
     }
 
     // resource 1:1 includes
-    const pagedResource = resource as PagedResource
+    const pagedResource = resource as PagedWithIncludesResource
 
     const page = await hydratePage(readers, pagedResource, query as any, {
-      include: query.include as includeFor<PagedResource>[] | undefined,
+      include: query.include as includeFor<PagedWithIncludesResource>[] | undefined,
     })
 
     return {

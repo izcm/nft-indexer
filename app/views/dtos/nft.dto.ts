@@ -1,0 +1,52 @@
+import type { NFT } from '#app/domain/nft/model.js'
+
+export type NFTDTO = {
+  id: string
+
+  chainId: number
+  collection: string
+  tokenId: string
+
+  tokenUri?: string
+  name?: string
+  description?: string
+  image?: string
+  attributes?: {
+    trait_type: string
+    value: string
+  }[]
+
+  metaStatus: string
+  metaError?: string
+
+  createdAtBlock: number
+  updatedAt: number
+  createdAt: number
+}
+
+export const nftDTO = {
+  from(n: NFT): NFTDTO {
+    return {
+      id: `${n.chainId}:${n.collection}:${n.tokenId}`,
+
+      chainId: n.chainId,
+      collection: n.collection,
+      tokenId: n.tokenId,
+
+      tokenUri: n.tokenUri,
+      name: n.name,
+      description: n.description,
+      image: n.image,
+      attributes: n.attributes,
+
+      metaStatus: n.metaStatus,
+      metaError: n.metaError,
+
+      createdAtBlock: n.createdAtBlock,
+      updatedAt: n.updatedAt,
+      createdAt: n.createdAt,
+    }
+  },
+}
+
+export const toNFTDTO = nftDTO.from

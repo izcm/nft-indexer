@@ -5,7 +5,7 @@ import type { NFT, NFTKey, NFTMeta } from './model.js'
  * NFT read / write definitions.
  */
 
-export interface NFTPort extends ByKey<NFT, NFTKey> {
+export interface NFTPort extends ByKey<NFT, NFTKey>, Pageable<NFT> {
   /**
    * Ensures NFT exists in db
    * Prevents duplicate keys without throwing errors

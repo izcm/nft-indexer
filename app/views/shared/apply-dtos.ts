@@ -4,11 +4,13 @@ import type { WithIncludes } from '#app/domain/shared/relations.js'
 import { toOrderDTO } from '../dtos/order.dto.js'
 import { toSettlementDTO } from '../dtos/settlement.dto.js'
 import { toNFTCollectionDTO } from '../dtos/nft-collection.dto.js'
+import { toNFTDTO } from '../dtos/nft.dto.js'
 
 export const dtos: { [R in ResourceName]: (x: ResourceType<R>) => any } = {
   settlement: toSettlementDTO,
   order: toOrderDTO,
   nftCollection: toNFTCollectionDTO,
+  nft: toNFTDTO,
 } as const
 
 export function callDTO<K extends ResourceName>(key: K, value: ResourceType<K>) {

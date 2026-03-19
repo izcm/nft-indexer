@@ -1,13 +1,13 @@
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import { pkOf, relations, WithIncludes, type includeFor } from '#app/domain/shared/relations.js'
 import type {
-  PagedResource,
+  PagedWithIncludesResource,
   ResourceName,
   ResourceType,
 } from '#app/domain/shared/types/resource.js'
 import { Readers } from '#app/domain/shared/types/readers.js'
 
-export async function hydratePage<R extends PagedResource>(
+export async function hydratePage<R extends PagedWithIncludesResource>(
   readers: Readers,
   resource: R,
   args: DomainPageQuery<ResourceType<R>>,

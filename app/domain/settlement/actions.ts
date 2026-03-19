@@ -5,6 +5,7 @@ import type { OrderPort } from '../order/port.js'
 import type { NFTCollectionPort } from '../nft-collection/port.js'
 
 import type { Address } from '../shared/types/eth.js'
+import type { RealtimePort } from '../shared/interfaces/realtime-port.js'
 
 const TAG = 'settlement'
 
@@ -12,9 +13,10 @@ type Deps = {
   settlements: Pick<SettlementPort, 'save' | 'finalizeCallReconstruction'>
   orders: Pick<OrderPort, 'findByKey' | 'updateStatus'>
   nftCollections: Pick<NFTCollectionPort, 'noteNFTCollection'>
+  realtime?: RealtimePort
 }
 
-export const makeSettlementActions = ({ settlements, orders, nftCollections }: Deps) => {
+export const makeSettlementActions = ({ settlements, orders, nftCollections, realtime }: Deps) => {
   // --- primary actions ---
 
   async function ingestSettlement(settlement: Settlement) {
@@ -64,6 +66,9 @@ export const makeSettlementActions = ({ settlements, orders, nftCollections }: D
         return orders.updateStatus({ ...orderKey, status: 'filled' })
       })
       .catch(err => console.error(`[${tag}] failed to mark order as filled`, err))
+
+    // realtime (eg. websocket)
+    realtime?.broadcast('settlement.created', { chainId, orderHash })
   }
 
   return { ingestSettlement, ingestSettlementMeta }

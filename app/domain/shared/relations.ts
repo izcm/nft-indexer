@@ -1,26 +1,27 @@
-import {
-  settlementKeyOf,
-  type Settlement,
-  type SettlementKey,
-} from '#app/domain/settlement/model.js'
-import { type OrderRecord, type OrderKey, orderKeyOf } from '#app/domain/order/model.js'
+import { settlementKeyOf, type Settlement, type SettlementKey } from '../settlement/model.js'
+
+import { orderKeyOf, type OrderRecord, type OrderKey } from '../order/model.js'
+
 import {
   nftCollectionKeyOf,
   type NFTCollection,
   type NFTCollectionKey,
-} from '#app/domain/nft-collection/model.js'
+} from '../nft-collection/model.js'
+
 import {
   RESOURCE_NAMES,
-  type PagedResource,
-  type ResourceMap,
+  type PagedWithIncludesResource,
   type ResourceName,
   type ResourceType,
-} from '#app/domain/shared/types/resource.js'
+} from '../shared/types/resource.js'
+
+import { nftKeyOf, type NFT, type NFTKey } from '../nft/model.js'
 
 export const pkOf = {
   settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),
   order: (o: OrderRecord): OrderKey => orderKeyOf(o),
   nftCollection: (c: NFTCollection): NFTCollectionKey => nftCollectionKeyOf(c),
+  nft: (n: NFT): NFTKey => nftKeyOf(n),
 } as const
 
 export const relations = {
@@ -52,7 +53,7 @@ export type WithIncludes<R extends ResourceName> = ResourceType<R> & {
   [K in Exclude<ResourceName, R>]?: ResourceType<K>
 }
 
-export type includeFor<R extends PagedResource> = keyof (typeof relations)[R]
+export type includeFor<R extends PagedWithIncludesResource> = keyof (typeof relations)[R]
 
 export const ORDER_INCLUDES = RESOURCE_NAMES.filter(r => r !== 'order')
 export const SETTLEMENT_INCLUDES = RESOURCE_NAMES.filter(r => r !== 'settlement')

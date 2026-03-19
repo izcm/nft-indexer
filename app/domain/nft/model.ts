@@ -8,6 +8,12 @@ export type NFTKey = {
   tokenId: string
 }
 
+export const nftKeyOf = (nft: NFT): NFTKey => ({
+  chainId: nft.chainId,
+  collection: nft.collection,
+  tokenId: nft.tokenId,
+})
+
 export type NFTMeta = {
   tokenUri?: string
   name?: string

@@ -4,16 +4,43 @@ import { settlementRepo } from '#app/repos/settlement.repo.js'
 
 import { makeOrderActions } from '#app/domain/order/actions.js'
 import { makeSettlementActions } from '#app/domain/settlement/actions.js'
+import { WebSocketServer } from 'ws'
+import { RealtimePort } from '#app/domain/shared/interfaces/realtime-port.js'
+
+// --- web socket ---
+
+const wss = new WebSocketServer({ port: 5001 })
+
+wss.on('connection', function connection(ws) {
+  ws.on('error', function (error) {
+    this.close()
+    console.error(error)
+  })
+})
+
+const realtime: RealtimePort = {
+  broadcast(event, payload) {
+    const msg = JSON.stringify({ event, payload })
+
+    wss.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(msg)
+      }
+    })
+  },
+}
 
 // --- inject actions ---
 
 export const orderActions = makeOrderActions({
   orders: orderRepo,
   nftCollections: nftCollectionRepo,
+  realtime,
 })
 
 export const settlementActions = makeSettlementActions({
   settlements: settlementRepo,
   orders: orderRepo,
   nftCollections: nftCollectionRepo,
+  realtime,
 })
