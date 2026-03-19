@@ -13,7 +13,7 @@ export function parseTokenUri(tokenUri: string) {
   }
 }
 
-export function parseAttributes(input: unknown) {
+export function sanitizeAttributes(input: unknown) {
   if (!Array.isArray(input)) return []
 
   const attributes = input
@@ -22,13 +22,14 @@ export function parseAttributes(input: unknown) {
       // it should be on form { trait_type, value}
       if (
         typeof a === 'object' &&
+        a !== null &&
         typeof a.trait_type === 'string' &&
-        typeof a.value === 'string'
+        (typeof a.value === 'string' || typeof a.value === 'number')
       ) {
         // a valid trait_type!
         return {
           trait_type: a.trait_type,
-          value: a.value,
+          value: a.value.toString(), // keeping it simple => all values stored as string
         }
       }
       return null
