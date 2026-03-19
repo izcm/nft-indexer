@@ -8,7 +8,7 @@ export type NFTKey = {
   tokenId: string
 }
 
-export type NFTMetadata = {
+export type NFTMeta = {
   tokenUri?: string
   name?: string
   description?: string
@@ -22,7 +22,7 @@ export type NFTAttribute = {
 }
 
 export type NFT = NFTKey &
-  NFTMetadata &
+  NFTMeta &
   WithTimestamps & {
     metaStatus: Status
     metaError?: string

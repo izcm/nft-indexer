@@ -1,6 +1,6 @@
-import type { NFTAttribute, NFTMetadata } from '#app/domain/nft/model.js'
+import type { NFTAttribute, NFTMeta } from '#app/domain/nft/model.js'
 
-export function parseTokenUri(tokenUri: string): NFTMetadata | null {
+export function parseTokenUri(tokenUri: string): NFTMeta | null {
   const prefix = 'data:application/json;base64,'
 
   if (!tokenUri.startsWith(prefix)) return null

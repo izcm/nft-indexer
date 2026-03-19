@@ -16,4 +16,13 @@ export const erc721For = (client: PublicClient) => ({
       functionName: 'symbol',
     })
   },
+
+  readTokenURI(address: Hex, tokenId: bigint) {
+    return client.readContract({
+      address,
+      abi: erc721Abi,
+      args: [tokenId],
+      functionName: 'tokenURI',
+    })
+  },
 })

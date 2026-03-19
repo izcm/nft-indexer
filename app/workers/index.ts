@@ -6,6 +6,7 @@ import type { SettlementPort } from '#app/domain/settlement/port.js'
 
 import { runNFTBackfillWorker } from './nft-collections/nft-backfill.worker.js'
 import { runNFTCollectionChainMetaWorker } from './nft-collections/nft-collection-meta.worker.js'
+import { runNFTMetaWorker } from './nfts/nft-meta.worker.js'
 import { runSettlementCalReconstructionWorker } from './settlements/call-reconstruction.worker.js'
 
 // ------------------
@@ -40,6 +41,10 @@ const workers = (client: AppClient, ports: Ports): Worker[] => [
         }),
       ])
     },
+  },
+  {
+    name: 'nfts',
+    run: () => runNFTMetaWorker(client, ports.nfts),
   },
 ]
 

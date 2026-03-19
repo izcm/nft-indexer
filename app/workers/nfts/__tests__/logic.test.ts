@@ -35,8 +35,6 @@ describe('parseTokenUri', () => {
     const uri = makeTokenUri(data)
     const result = parseTokenUri(uri)
 
-    expect(result).not.toBeNull()
-
     expect(result?.name).toBeUndefined()
     expect(result?.description).toBeUndefined()
     expect(result?.image).toBe('ok')
@@ -45,9 +43,9 @@ describe('parseTokenUri', () => {
   it('handles missing fields', () => {
     const uri = makeTokenUri({})
 
-    const res = parseTokenUri(uri)
+    const result = parseTokenUri(uri)
 
-    expect(res).toEqual({
+    expect(result).toEqual({
       name: undefined,
       description: undefined,
       image: undefined,
@@ -57,7 +55,7 @@ describe('parseTokenUri', () => {
 
   // === sad paths ===
 
-  it('returns null when string does not pass base64 check', () => {
+  it('returns null when prefix is invalid', () => {
     const result = parseTokenUri('not:base64')
     expect(result).toBeNull()
   })
