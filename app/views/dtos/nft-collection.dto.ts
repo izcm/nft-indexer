@@ -11,13 +11,8 @@ export type NFTCollectionDTO = {
   tokenType?: string
   totalSupply?: string
 
-  imageUrl?: string
   marketData?: {
     floorPrice?: number
-  }
-  socials?: {
-    twitterUsername?: string
-    externalUrl?: string
   }
 }
 
@@ -32,10 +27,6 @@ export const nftCollectionDTO = {
       symbol: c.symbol,
       tokenType: c.tokenType,
       totalSupply: c.totalSupply,
-
-      imageUrl: c.imageUrl,
-      marketData: c.marketData,
-      socials: c.socials,
     }
   },
 }

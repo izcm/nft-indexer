@@ -1,11 +1,6 @@
 import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
 import { Address } from '../shared/types/eth.js'
-import type {
-  NFTCollection,
-  NFTCollectionChainMeta,
-  NFTCollectionKey,
-  NFTCollectionMetaPatch,
-} from './model.js'
+import type { NFTCollection, NFTCollectionMeta, NFTCollectionKey } from './model.js'
 
 /**
  * NFTCollection read / write definitions.
@@ -25,7 +20,7 @@ export interface NFTCollectionPort
    * Find collections missing chain metadata (symbol, name, etc.).
    * Used by background workers.
    */
-  findMissingChainMeta(chainId: number, limit: number): Promise<NFTCollection[]>
+  findPendingMeta(chainId: number, limit: number): Promise<NFTCollection[]>
 
   /**
    * Backfill of nfts
@@ -33,21 +28,14 @@ export interface NFTCollectionPort
   findBackfillNotDone(chainId: number, limit: number): Promise<NFTCollection[]>
 
   /**
-   * Finalize chain metadata after successful fetch.
+   * Finalize on-chain metadata after successful fetch.
    */
-  finalizeChainMeta(
-    args: NFTCollectionKey & { chainMeta: Partial<NFTCollectionChainMeta> }
-  ): Promise<void>
+  finalizeMeta(args: NFTCollectionKey & { meta: Partial<NFTCollectionMeta> }): Promise<void>
 
   /**
-   * Mark chain metadata fetch as failed.
+   * Mark on-chain metadata fetch as failed.
    */
-  markChainMetaFailed(args: NFTCollectionKey & { error: string }): Promise<void>
-
-  /**
-   * Patch off-chain metadata (e.g. creator socials).
-   */
-  patchMeta(args: NFTCollectionKey & { patch: NFTCollectionMetaPatch }): Promise<void>
+  markMetaFailed(args: NFTCollectionKey & { error: string }): Promise<void>
 
   /**
    * Update lastScannedBlock for a collection.
@@ -61,19 +49,15 @@ export interface NFTCollectionPort
  */
 
 export const nftCollectionPortForChain = (port: NFTCollectionPort, chainId: number) => ({
-  findMissingChainMeta(limit: number) {
-    return port.findMissingChainMeta(chainId, limit)
+  findMissingMeta(limit: number) {
+    return port.findPendingMeta(chainId, limit)
   },
 
-  finalizeChainMeta(address: Address, chainMeta: Partial<NFTCollectionChainMeta>) {
-    return port.finalizeChainMeta({ chainId, address, chainMeta })
+  finalizeMeta(address: Address, chainMeta: Partial<NFTCollectionMeta>) {
+    return port.finalizeMeta({ chainId, address, meta: chainMeta })
   },
 
-  markChainMetaFailed(address: Address, error: string) {
-    return port.markChainMetaFailed({ chainId, address, error })
-  },
-
-  patchMeta(address: Address, patch: NFTCollectionMetaPatch) {
-    return port.patchMeta({ chainId, address, patch })
+  markMetaFailed(address: Address, error: string) {
+    return port.markMetaFailed({ chainId, address, error })
   },
 })

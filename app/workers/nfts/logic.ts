@@ -1,65 +1,39 @@
-// export function mapTokenUriToNFT(
-//   chainId: number,
-//   address: Address,
-//   tokenId: bigint,
-//   tokenUri: string
-// ): NFT {
-//   const meta = parseTokenURI(tokenUri)
+import { NFTAttribute } from '#app/domain/nft/model.js'
 
-//   return {
-//     id: `${chainId}:${address}:${tokenId}`,
-//     chainId: chainId,
-//     collection: address,
-//     tokenId: tokenId,
-//     ...meta,
-//   }
-// }
+export function parseTokenUri(tokenUri: string) {
+  const prefix = 'data:application/json;base64,'
 
-// // made defensively to future proof
-// export function parseTokenURI(tokenUri: string): NFTMetadata {
-//   let data
+  if (!tokenUri.startsWith(prefix)) return null
 
-//   try {
-//     const base64 = tokenUri.split(',')[1]
-//     const json = atob(base64)
-//     data = JSON.parse(json) as Record<string, unknown>
+  try {
+    const base64 = tokenUri.slice(prefix.length)
+    const json = atob(base64)
+  } catch {
+    return null
+  }
+}
 
-//     const name = typeof data.name === 'string' ? data.name : 'Unknown NFT'
-//     const description = typeof data.description === 'string' ? data.description : ''
-//     const image = typeof data.image === 'string' ? data.image : ''
+export function parseAttributes(input: unknown) {
+  if (!Array.isArray(input)) return []
 
-//     const attributes: NFTAttribute[] = Array.isArray(data.attributes)
-//       ? data.attributes
-//           .map(a => {
-//             // a is attribute => a is object
-//             // std fmt: {trait_type, value}
-//             if (
-//               typeof a === 'object' &&
-//               typeof (a.trait_type === 'string') &&
-//               typeof (a.value === 'string')
-//             ) {
-//               return {
-//                 trait_type: a.trait_type,
-//                 value: a.value,
-//               }
-//             }
-//             return null
-//           })
-//           .filter((a): a is NFTAttribute => a !== null)
-//       : []
+  const attributes = input
+    .map(a => {
+      // a is an attribute ?
+      // it should be on form { trait_type, value}
+      if (
+        typeof a === 'object' &&
+        typeof a.trait_type === 'string' &&
+        typeof a.value === 'string'
+      ) {
+        // a valid trait_type!
+        return {
+          trait_type: a.trait_type,
+          value: a.value,
+        }
+      }
+      return null
+    })
+    .filter((a): a is NFTAttribute => a !== null)
 
-//     return {
-//       name,
-//       description,
-//       image,
-//       attributes,
-//     }
-//   } catch (err) {
-//     return {
-//       name: 'Unknown NFT',
-//       description: '',
-//       image: NFT_PLACEHOLDER_IMAGE,
-//       attributes: [],
-//     }
-//   }
-// }
+  return attributes
+}

@@ -15,5 +15,5 @@ export interface NFTPort extends ByKey<NFT, NFTKey> {
   /**
    * Find nfts missing on-chain meta eg. for parsing attributes from tokenuri
    */
-  findMissingChainMeta(chainId: number, limit: number): Promise<NFT[]>
+  findPendingMeta(chainId: number, limit: number): Promise<NFT[]>
 }

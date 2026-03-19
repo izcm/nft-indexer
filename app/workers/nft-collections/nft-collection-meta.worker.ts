@@ -10,7 +10,7 @@ import { NFTCollectionPort, nftCollectionPortForChain } from '#app/domain/nft-co
 export async function runNFTCollectionChainMetaWorker(client: AppClient, port: NFTCollectionPort) {
   const collections = nftCollectionPortForChain(port, client.chain.id)
 
-  const pending = await collections.findMissingChainMeta(DEFAULT_WORKER_LIMIT)
+  const pending = await collections.findMissingMeta(DEFAULT_WORKER_LIMIT)
 
   for (const collection of pending) {
     const { address } = collection
@@ -18,15 +18,15 @@ export async function runNFTCollectionChainMetaWorker(client: AppClient, port: N
     const isSupported = await isErc721(client, address)
 
     if (!isSupported) {
-      await collections.markChainMetaFailed(address, 'unsupported nft standard')
+      await collections.markMetaFailed(address, 'unsupported nft standard')
       continue
     }
 
     try {
       const chainMeta = await readERC721Meta(client, address)
-      await collections.finalizeChainMeta(address, chainMeta)
+      await collections.finalizeMeta(address, chainMeta)
     } catch (err) {
-      await collections.markChainMetaFailed(
+      await collections.markMetaFailed(
         address,
         err instanceof Error ? err.message : 'unknown error'
       )

@@ -21,50 +21,34 @@ export const nftCollectionKeyOf = (collection: NFTCollectionBase): NFTCollection
 
 export type NFTCollectionBase = NFTCollectionKey &
   WithTimestamps & {
-    // web2 meta
-    imageUrl?: string
-    bannerImageUrl?: string
-
-    marketData?: {
-      floorPrice?: number
-    }
-
-    socials?: {
-      twitterUsername?: string
-      externalUrl?: string
-    }
-
+    // chain meta
     metaStatus: Status
     metaError?: string
-
-    // chain meta
-    chainMetaStatus: Status
-    chainMetaError?: string
 
     // backfill
     lastScannedBlock?: number
     backfillDone: boolean
   }
 
-// incremental metadata eg. fetched across requests / partial updates
-export type NFTCollectionMetaPatch = Partial<
-  Omit<
-    NFTCollectionBase,
-    | 'chainId'
-    | 'address'
-    | 'metaStatus'
-    | 'chainMetaStatus'
-    | 'chainMetaError'
-    | 'updatedAt'
-    | 'createdAt'
-  >
->
-
-export type NFTCollectionChainMeta = {
+export type NFTCollectionMeta = {
   name: string
   symbol: string
   tokenType: string
   totalSupply: string
 }
 
-export type NFTCollection = NFTCollectionBase & Partial<NFTCollectionChainMeta>
+// // incremental metadata eg. fetched across requests / partial updates
+// export type NFTCollectionMetaPatch = Partial<
+//   Omit<
+//     NFTCollectionBase,
+//     | 'chainId'
+//     | 'address'
+//     | 'metaStatus'
+//     | 'chainMetaStatus'
+//     | 'chainMetaError'
+//     | 'updatedAt'
+//     | 'createdAt'
+//   >
+// >
+
+export type NFTCollection = NFTCollectionBase & Partial<NFTCollectionMeta>

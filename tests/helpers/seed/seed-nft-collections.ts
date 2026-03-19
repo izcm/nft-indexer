@@ -11,8 +11,8 @@ export const seedCollections = async (
   const collections: NFTCollection[] = Array.from({ length: count }).map((_, i) => ({
     chainId,
     address: addrOf(`collection:${i}:${seed}`),
+    metaStatuss: 'PENDING',
     metaStatus: 'PENDING',
-    chainMetaStatus: 'PENDING',
     backfillDone: false,
     updatedAt: i,
     createdAt: i,

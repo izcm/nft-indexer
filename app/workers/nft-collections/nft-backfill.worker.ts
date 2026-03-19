@@ -15,6 +15,7 @@ const TRANSFER_EVENT = parseAbiItem(
 
 type BackfillPort = {
   findBackfillNotDone: NFTCollectionPort['findBackfillNotDone']
+  updateLastScannedBlock: NFTCollectionPort['updateLastScannedBlock']
   ensureNFT: NFTPort['ensure']
 }
 
@@ -54,10 +55,11 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
         const { tokenId } = log.args
         if (tokenId === undefined) continue
 
-        await port.ensureNFT(
-          { chainId, collection: c.address, tokenId: tokenId.toString() },
-          Number(log.blockNumber)
-        )
+        const block = Number(log.blockNumber)
+
+        await port.ensureNFT({ chainId, collection: c.address, tokenId: tokenId.toString() }, block)
+
+        await port.updateLastScannedBlock({ chainId, address: c.address, block })
       }
 
       // the returned logs keep

@@ -25,16 +25,17 @@ type Worker = {
 
 const workers = (client: AppClient, ports: Ports): Worker[] => [
   {
-    name: 'settlement',
+    name: 'settlements',
     run: () => runSettlementCalReconstructionWorker(client, ports.settlements),
   },
   {
-    name: 'nft-collection',
+    name: 'nft-collections',
     run: async () => {
       await Promise.all([
         runNFTCollectionChainMetaWorker(client, ports.nftCollections),
         runNFTBackfillWorker(client, {
           findBackfillNotDone: ports.nftCollections.findBackfillNotDone,
+          updateLastScannedBlock: ports.nftCollections.updateLastScannedBlock,
           ensureNFT: ports.nfts.ensure,
         }),
       ])

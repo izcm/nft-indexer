@@ -2,9 +2,8 @@ import { nftCollections } from '#app/db/collections.js'
 
 import type {
   NFTCollection,
-  NFTCollectionChainMeta,
+  NFTCollectionMeta,
   NFTCollectionKey,
-  NFTCollectionMetaPatch,
 } from '#app/domain/nft-collection/model.js'
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 
@@ -42,11 +41,8 @@ export const nftCollectionRepo: NFTCollectionPort = {
 
   ...baseRead,
 
-  findMissingChainMeta(chainId: number, limit: number) {
-    return nftCollections()
-      .find({ chainId, chainMetaStatus: Status.PENDING })
-      .limit(limit)
-      .toArray()
+  findPendingMeta(chainId: number, limit: number) {
+    return nftCollections().find({ chainId, metaStatus: Status.PENDING }).limit(limit).toArray()
   },
 
   findBackfillNotDone(chainId: number, limit: number): Promise<NFTCollection[]> {
@@ -70,8 +66,8 @@ export const nftCollectionRepo: NFTCollectionPort = {
           chainId,
           address,
 
+          metaStatuss: Status.PENDING,
           metaStatus: Status.PENDING,
-          chainMetaStatus: Status.PENDING,
 
           lastScannedBlock: 0,
           backfillDone: false,
@@ -81,29 +77,29 @@ export const nftCollectionRepo: NFTCollectionPort = {
     )
   },
 
-  async finalizeChainMeta({
+  async finalizeMeta({
     chainId,
     address,
-    chainMeta,
-  }: NFTCollectionKey & { chainMeta: Partial<NFTCollectionChainMeta> }) {
+    meta,
+  }: NFTCollectionKey & { meta: Partial<NFTCollectionMeta> }) {
     await write.updateOne(
       { chainId, address },
       {
         $set: {
-          ...chainMeta,
-          chainMetaStatus: Status.DONE,
+          ...meta,
+          metaStatus: Status.DONE,
         },
       }
     )
   },
 
-  async markChainMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
+  async markMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
     await write.updateOne(
       { chainId, address },
       {
         $set: {
-          chainMetaStatus: Status.FAILED,
-          chainMetaError: error,
+          metaStatus: Status.FAILED,
+          metaError: error,
         },
       }
     )
@@ -111,20 +107,5 @@ export const nftCollectionRepo: NFTCollectionPort = {
 
   async updateLastScannedBlock({ chainId, address, block }: NFTCollectionKey & { block: number }) {
     await nftCollections().updateOne({ chainId, address }, { $set: { lastScannedBlock: block } })
-  },
-
-  async patchMeta({
-    chainId,
-    address,
-    patch,
-  }: NFTCollectionKey & { patch: NFTCollectionMetaPatch }) {
-    await write.updateOne(
-      { chainId, address },
-      {
-        $set: {
-          ...patch,
-        },
-      }
-    )
   },
 }

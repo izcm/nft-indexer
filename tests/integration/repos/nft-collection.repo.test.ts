@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { NFTCollectionChainMeta } from '#app/domain/nft-collection/model.js'
+import type { NFTCollectionMeta } from '#app/domain/nft-collection/model.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { nftCollections } from '#app/db/collections.js'
@@ -74,13 +74,13 @@ describe('nftCollectionRepo', () => {
       await seedCollections(chainId, 3, 'pending')
 
       // seed non-matching docs
-      await seedCollections(chainId, 1, 'failed', { chainMetaStatus: Status.FAILED })
-      await seedCollections(chainId, 1, 'done', { chainMetaStatus: Status.DONE })
+      await seedCollections(chainId, 1, 'failed', { metaStatus: Status.FAILED })
+      await seedCollections(chainId, 1, 'done', { metaStatus: Status.DONE })
 
-      const rows = await repo.findMissingChainMeta(chainId, 100)
+      const rows = await repo.findPendingMeta(chainId, 100)
 
       expect(rows.length).toBe(3)
-      expect(rows.every(r => r.chainMetaStatus === Status.PENDING)).toBe(true)
+      expect(rows.every(r => r.metaStatus === Status.PENDING)).toBe(true)
     })
 
     it('findBackfillNotDone only returns collection where backfillDone is false and correct chainId', async () => {
@@ -97,9 +97,7 @@ describe('nftCollectionRepo', () => {
       const rows = await repo.findBackfillNotDone(chainId, 10)
 
       expect(rows.length).toBe(3)
-      expect(rows.every(r => r.chainMetaStatus === Status.PENDING && r.chainId === chainId)).toBe(
-        true
-      )
+      expect(rows.every(r => r.metaStatus === Status.PENDING && r.chainId === chainId)).toBe(true)
     })
   })
 
@@ -195,7 +193,7 @@ describe('nftCollectionRepo', () => {
 
       await nftCollections().insertOne(col)
 
-      const chainMeta: NFTCollectionChainMeta = {
+      const chainMeta: NFTCollectionMeta = {
         name: 'NAME',
         symbol: 'SYMBOL',
         tokenType: 'ERC721',
@@ -205,7 +203,7 @@ describe('nftCollectionRepo', () => {
       const { chainId, address } = col
       vi.setSystemTime(writeTime)
 
-      await repo.finalizeChainMeta({ chainId, address, chainMeta })
+      await repo.finalizeMeta({ chainId, address, meta: chainMeta })
 
       const row = await nftCollections().findOne({ chainId, address })
       if (!row) throw new Error('row missing')
@@ -228,7 +226,7 @@ describe('nftCollectionRepo', () => {
         const { chainId, address } = col
         vi.setSystemTime(writeTime)
 
-        await repo.markChainMetaFailed({ chainId, address, error })
+        await repo.markMetaFailed({ chainId, address, error })
 
         const row = await nftCollections().findOne({ chainId, address })
         if (!row) throw new Error('row missing')
@@ -238,36 +236,6 @@ describe('nftCollectionRepo', () => {
           chainMetaError: error,
           updatedAt: writeTime,
         })
-      })
-    })
-
-    it('patchMeta updates partial fields on an existing nft-collection', async () => {
-      const col = mockNFTCollection()
-
-      await nftCollections().insertOne({
-        ...col,
-        imageUrl: 'old-image',
-        bannerImageUrl: 'old-banner',
-        marketData: { floorPrice: 123 },
-        socials: { twitterUsername: 'old-tw', externalUrl: 'old-url' },
-      })
-
-      const { chainId, address } = col
-      vi.setSystemTime(writeTime)
-
-      await repo.patchMeta({ chainId, address, patch: { imageUrl: 'new-image' } })
-
-      const row = await nftCollections().findOne({ chainId, address })
-      if (!row) throw new Error('row missing')
-
-      expect(row).toMatchObject({
-        imageUrl: 'new-image',
-        bannerImageUrl: 'old-banner',
-        marketData: { floorPrice: 123 },
-        socials: { twitterUsername: 'old-tw', externalUrl: 'old-url' },
-        metaStatus: Status.PENDING,
-        chainMetaStatus: Status.PENDING,
-        updatedAt: writeTime,
       })
     })
   })
