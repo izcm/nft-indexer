@@ -8,19 +8,22 @@ export type NFTKey = {
   tokenId: string
 }
 
+export type NFTMetadata = {
+  tokenUri?: string
+  name?: string
+  description?: string
+  image?: string
+  attributes?: NFTAttribute[]
+}
+
 export type NFTAttribute = {
   trait_type: string
   value: string
 }
 
 export type NFT = NFTKey &
+  NFTMetadata &
   WithTimestamps & {
-    tokenUri?: string
-    name?: string
-    description?: string
-    image?: string
-    attributes?: NFTAttribute[]
-
     metaStatus: Status
     metaError?: string
 

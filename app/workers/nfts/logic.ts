@@ -1,6 +1,6 @@
-import { NFTAttribute } from '#app/domain/nft/model.js'
+import type { NFTAttribute, NFTMetadata } from '#app/domain/nft/model.js'
 
-export function parseTokenUri(tokenUri: string) {
+export function parseTokenUri(tokenUri: string): NFTMetadata | null {
   const prefix = 'data:application/json;base64,'
 
   if (!tokenUri.startsWith(prefix)) return null
@@ -8,6 +8,20 @@ export function parseTokenUri(tokenUri: string) {
   try {
     const base64 = tokenUri.slice(prefix.length)
     const json = atob(base64)
+    const data = JSON.parse(json)
+
+    const name = typeof data.name === 'string' ? data.name : undefined
+    const description = typeof data.description === 'string' ? data.description : undefined
+    const image = typeof data.image === 'string' ? data.image : undefined
+
+    const attributes = sanitizeAttributes(data.attributes)
+
+    return {
+      name,
+      description,
+      image,
+      attributes,
+    }
   } catch {
     return null
   }

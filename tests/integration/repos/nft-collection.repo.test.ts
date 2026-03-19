@@ -39,7 +39,6 @@ describe('nftCollectionRepo', () => {
     chainId: TEST_CHAIN_ID,
     address: TEST_ADDR,
     metaStatus: Status.PENDING,
-    chainMetaStatus: Status.PENDING,
     backfillDone: false,
     updatedAt: 0,
     createdAt: 0,
@@ -67,7 +66,7 @@ describe('nftCollectionRepo', () => {
       })
     })
 
-    it('findMissingChainMeta returns only collections with chainMetaStatus PENDING', async () => {
+    it('findMissingMeta returns only collections with metaStatus PENDING', async () => {
       const { chainId } = makeParams()
 
       // seed matching docs
@@ -126,7 +125,6 @@ describe('nftCollectionRepo', () => {
         chainId,
         address,
         metaStatus: Status.PENDING,
-        chainMetaStatus: Status.PENDING,
         updatedAt: 0,
       })
     })
@@ -188,12 +186,12 @@ describe('nftCollectionRepo', () => {
       vi.useRealTimers()
     })
 
-    it('finalizeChainMeta updates an nft-collection with chain meta and marks it DONE', async () => {
+    it('finalizeMeta updates an nft-collection with chain meta and marks it DONE', async () => {
       const col = mockNFTCollection()
 
       await nftCollections().insertOne(col)
 
-      const chainMeta: NFTCollectionMeta = {
+      const meta: NFTCollectionMeta = {
         name: 'NAME',
         symbol: 'SYMBOL',
         tokenType: 'ERC721',
@@ -203,19 +201,19 @@ describe('nftCollectionRepo', () => {
       const { chainId, address } = col
       vi.setSystemTime(writeTime)
 
-      await repo.finalizeMeta({ chainId, address, meta: chainMeta })
+      await repo.finalizeMeta({ chainId, address, meta: meta })
 
       const row = await nftCollections().findOne({ chainId, address })
       if (!row) throw new Error('row missing')
 
       expect(row).toMatchObject({
-        ...chainMeta,
-        chainMetaStatus: Status.DONE,
+        ...meta,
+        metaStatus: Status.DONE,
         updatedAt: writeTime,
       })
     })
 
-    describe('markChainMetaFailed', () => {
+    describe('markMetaFailed', () => {
       it('marks an existing nft-collection as FAILED + sets error', async () => {
         const col = mockNFTCollection()
 
@@ -232,8 +230,8 @@ describe('nftCollectionRepo', () => {
         if (!row) throw new Error('row missing')
 
         expect(row).toMatchObject({
-          chainMetaStatus: Status.FAILED,
-          chainMetaError: error,
+          metaStatus: Status.FAILED,
+          metaError: error,
           updatedAt: writeTime,
         })
       })
