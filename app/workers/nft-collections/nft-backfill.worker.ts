@@ -27,7 +27,7 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
 
   for (const c of collections) {
     // let from = BigInt(c.lastScannedBlock ?? 24480751)
-    let from = 24480751n // todo: remove this
+    let from = 24495448n // todo: remove this
 
     // logs in span from => to
     // action categorized as`mint:

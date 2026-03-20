@@ -12,6 +12,7 @@ import { ordersQuery } from './routes/orders/query.js'
 // schemas
 import { nftCollectionsQuery } from './routes/nft-collections/query.js'
 import { orderCreateBody } from './routes/orders/schemas.js'
+import { nftsQuery } from './routes/nfts/query.js'
 
 const app = Fastify({
   logger: true,
@@ -38,8 +39,9 @@ export const start = async () => {
   // routes - settlements
   app.register(settlementsQuery, { prefix: '/api/settlements' })
 
-  // routes - nft-collections
+  // routes - nft-collections & nfts
   app.register(nftCollectionsQuery, { prefix: '/api/nft-collections' })
+  app.register(nftsQuery, { prefix: '/api/nfts' })
 
   app.listen({ port: 5000, host: '0.0.0.0' }, function (err, address) {
     if (err) {

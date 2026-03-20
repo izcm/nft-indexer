@@ -22,7 +22,7 @@ export const nftRepo: NFTPort = {
   ...baseRead,
 
   findPendingMeta: function (chainId: number, limit: number): Promise<NFT[]> {
-    return nfts().find({ chainId }).limit(limit).toArray()
+    return nfts().find({ chainId, metaStatus: Status.PENDING }).limit(limit).toArray()
   },
 
   // === write ===

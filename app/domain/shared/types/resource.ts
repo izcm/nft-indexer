@@ -1,5 +1,5 @@
 import type { NFTCollection, NFTCollectionKey } from '#app/domain/nft-collection/model.js'
-import { NFT, NFTKey } from '#app/domain/nft/model.js'
+import type { NFT, NFTKey } from '#app/domain/nft/model.js'
 import type { OrderKey, OrderRecord } from '#app/domain/order/model.js'
 import type { Settlement, SettlementKey } from '#app/domain/settlement/model.js'
 

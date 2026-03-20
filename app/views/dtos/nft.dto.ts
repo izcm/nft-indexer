@@ -16,12 +16,7 @@ export type NFTDTO = {
     value: string
   }[]
 
-  metaStatus: string
-  metaError?: string
-
   createdAtBlock: number
-  updatedAt: number
-  createdAt: number
 }
 
 export const nftDTO = {
@@ -39,12 +34,7 @@ export const nftDTO = {
       image: n.image,
       attributes: n.attributes,
 
-      metaStatus: n.metaStatus,
-      metaError: n.metaError,
-
       createdAtBlock: n.createdAtBlock,
-      updatedAt: n.updatedAt,
-      createdAt: n.createdAt,
     }
   },
 }

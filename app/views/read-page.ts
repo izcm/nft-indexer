@@ -19,15 +19,15 @@ export const makeReadPage = (readers: Readers) =>
     // non 1:1 relationships only support simple pagination
     // todo: would be nice to have include working for more relationship types
     if (resource === 'nftCollection' || resource === 'nft') {
-      const page = await readers.nftCollection.findPage(query)
+      const page = await readers[resource].findPage(query)
 
       return {
-        items: applyDTOs('nftCollection', page.items),
+        items: applyDTOs(resource, page.items),
         nextCursor: page.nextCursor,
       }
     }
 
-    // resource 1:1 includes
+    // resource 1:1 includes todo: add order toNFT / settlement toNFT
     const pagedResource = resource as PagedWithIncludesResource
 
     const page = await hydratePage(readers, pagedResource, query as any, {

@@ -46,7 +46,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
       schema: {
         querystring: {
           type: 'object',
-          additionalProperties: false,
+          additionalProperties: true,
           properties: {
             ...orderRecordQueryableFields,
             ...paginationQueryParams,

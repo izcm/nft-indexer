@@ -33,10 +33,6 @@ export const makeSettlementActions = ({ settlements, orders, nftCollections, rea
   }: SettlementKey & { meta: SettlementCall }) {
     try {
       await settlements.finalizeCallReconstruction({ chainId, orderHash, meta })
-
-      // corresponding order for settlement is a 'nice to have'
-      //  => fire and forget
-      // orderRepo.ensure(chainId, ) // **feature on pause**
     } catch (err) {
       throw new Error(`[${TAG}:meta] failed to finalize settlement metadata`, { cause: err })
     }

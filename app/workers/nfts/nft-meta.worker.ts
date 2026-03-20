@@ -19,7 +19,6 @@ export async function runNFTMetaWorker(client: AppClient, port: MetaPort) {
     const { chainId, collection, tokenId } = nft
 
     try {
-      console.log(`getting meta of this stuff`)
       const tokenUri = await erc721For(client).readTokenURI(collection, BigInt(tokenId))
 
       const meta = parseTokenUri(tokenUri)

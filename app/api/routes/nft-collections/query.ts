@@ -13,7 +13,7 @@ import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
-// -- DI ---
+// --- DI ---
 import { readByKey, readPage } from '#app/di/read.js'
 
 const handlers = {
@@ -59,6 +59,7 @@ export const nftCollectionsQuery = (fastify: FastifyInstance) => {
     }
   )
 
+  // not in use (project started out as multi-collection)
   fastify.get<{ Querystring: { chainId: number; by?: keyof typeof handlers; limit: number } }>(
     '/top',
     {
