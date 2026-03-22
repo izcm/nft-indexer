@@ -23,22 +23,11 @@ export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
         .toArray()
     },
 
-    findPage(pageQuery: DomainPageQuery<TDoc>) {
-      const { filters = {}, from, to, rangeField } = pageQuery
-      const query: Record<string, any> = { ...filters }
-
-      if ((from || to) && rangeField) {
-        const k = String(rangeField)
-        query[k] = {}
-        if (from) query[k].$gte = from
-        if (to) query[k].$lte = to
-      }
-
-      const repoCore = mapDomainToRepoQuery<TDoc>(pageQuery as any, getCol())
+    findPage(domainPageQuery: DomainPageQuery<TDoc>) {
+      const repoQuery = mapDomainToRepoQuery<TDoc>(domainPageQuery as any, getCol())
 
       return findPageGeneric<TDoc>({
-        ...repoCore,
-        baseQuery: query as Filter<TDoc>,
+        ...repoQuery,
       })
     },
   } satisfies ByKey<WithId<TDoc>, TKey> & Pageable<WithId<TDoc>>

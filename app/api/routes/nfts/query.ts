@@ -30,23 +30,25 @@ export const nftsQuery = (fastify: FastifyInstance) => {
     async (req, res) => {
       const query = req.query
 
+      let filters: Record<string, unknown> = {}
+
       // parse nft attributes
-      //  db.nfts.find({ "attributes.trait_type": "Color", "attributes.value": "Aqua Mint" })
       if (Array.isArray(query.trait) && Array.isArray(query.value)) {
         if (query.trait.length !== query.value.length) {
           return res.status(400).send({
             message: 'trait/value length mismatch',
           })
-
-          const pairs = (query.trait as string[]).map((trait, i) => ({
-            ['attributes.trait_type']: trait,
-            ['attributes.value']: (query.value as string[])[i],
-          }))
         }
+
+        filters.attributes = (query.trait as string[]).map((trait, i) => ({
+          trait,
+          value: (query.value as string[])[i],
+        }))
       }
+
       const domainPageQuery: DomainPageQuery<NFT> = {
         ...basePageQuery(query),
-        filters: {},
+        filters,
       }
 
       return readPage('nft', { ...domainPageQuery, include: [] })

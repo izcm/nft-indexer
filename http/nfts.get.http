@@ -1,1 +1,2 @@
-GET http://localhost:5000/api/nfts
+GET http://localhost:5000/api/nfts?trait=Color&value=Aqua%20Mint&trait=Color&value=Blood%20Red
+
