@@ -1,5 +1,7 @@
 import 'dotenv/config'
 
+import './di/write.js'
+
 // db
 import { initDb } from './db/mongo.js'
 

@@ -29,7 +29,7 @@ export const nftRepo: NFTPort = {
   async ensure(key: NFTKey, createdAtBlock: number): Promise<{ key: NFTKey; didUpsert: boolean }> {
     const { chainId, collection, tokenId } = key
 
-    const res = await nfts().updateOne(
+    const res = await write.updateOne(
       {
         chainId,
         collection,

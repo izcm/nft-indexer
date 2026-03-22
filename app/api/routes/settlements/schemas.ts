@@ -1,12 +1,32 @@
+import { paginationQueryParams } from '#app/api/shared/schemas.js'
+
 import { ADDR_REGEX } from '#app/domain/constants/regex.js'
+import { SETTLEMENT_SORT_FIELDS } from '#app/domain/settlement/model.js'
+import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'
 
 export const settlementQueryableFields = {
   collection: { type: 'string', pattern: ADDR_REGEX },
   tokenId: { type: 'string', pattern: '^[0-9]+$' },
   seller: { type: 'string', pattern: ADDR_REGEX },
   buyer: { type: 'string', pattern: ADDR_REGEX },
-  from: { type: 'integer', minimum: 0 }, // timestamp
-  to: { type: 'integer', minimum: 0 }, // timestamp
-  limit: { type: 'integer', minimum: 1, maximum: 100 },
-  cursor: { type: 'string', pattern: '^[0-9]+_[a-fA-F0-9]{24}$' },
 } as const
+
+export const settlementPageQuery = {
+  querystring: {
+    type: 'object',
+    additionalProperties: true,
+    properties: {
+      // ...settlementQueryableFields, // buildfilters work as whitelist
+      ...paginationQueryParams,
+      sortField: {
+        type: 'string',
+        enum: [...SETTLEMENT_SORT_FIELDS],
+      },
+      include: {
+        type: 'array',
+        maxItems: SETTLEMENT_INCLUDES.length,
+        items: { type: 'string', enum: SETTLEMENT_INCLUDES },
+      },
+    },
+  },
+}

@@ -1,9 +1,13 @@
+import { paginationQueryParams } from '#app/api/shared/schemas.js'
+
 import { UNIX_SECONDS_MAX } from '#app/domain/constants/limits.js'
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
+import { ORDER_SORT_FIELDS } from '#app/domain/order/model.js'
+import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
 
 // === query ===
 
-export const orderCoreFieldSchemas = {
+export const orderCoreFieldSchema = {
   actor: { type: 'string', pattern: ADDR_REGEX },
   collection: { type: 'string', pattern: ADDR_REGEX },
   tokenId: { type: 'string' },
@@ -15,7 +19,7 @@ export const orderCoreFieldSchemas = {
   end: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
 } as const
 
-export const orderCoreQueryableFields = orderCoreFieldSchemas
+export const orderCoreQueryableFields = orderCoreFieldSchema
 export const orderRecordQueryableFields = {
   ...orderCoreQueryableFields,
   status: { type: 'string', enum: ['active', 'filled', 'cancelled', 'expired'] },
@@ -40,7 +44,7 @@ export const orderCreateBody = {
     'signature',
   ],
   properties: {
-    ...orderCoreFieldSchemas,
+    ...orderCoreFieldSchema,
     nonce: { type: 'string' },
     signature: {
       type: 'object',
@@ -55,3 +59,24 @@ export const orderCreateBody = {
   },
   additionalProperties: false,
 } as const
+
+// === page schema ===
+export const orderPageSchema = {
+  querystring: {
+    type: 'object',
+    additionalProperties: true,
+    properties: {
+      ...orderRecordQueryableFields,
+      ...paginationQueryParams,
+      sortField: {
+        type: 'string',
+        enum: [...ORDER_SORT_FIELDS],
+      },
+      include: {
+        type: 'array',
+        maxItems: ORDER_INCLUDES.length,
+        items: { type: 'string', enum: ORDER_INCLUDES },
+      },
+    },
+  },
+}

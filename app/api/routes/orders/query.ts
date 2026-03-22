@@ -1,22 +1,16 @@
 import type { FastifyInstance } from 'fastify'
 
-import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
 import { ORDER_ID_REGEX } from '#app/domain/constants/regex.js'
-
-import { ORDER_SORT_FIELDS } from '#app/domain/order/model.js'
-import type {
-  OrderKey,
-  OrderQueryModel,
-  OrderRecord,
-  OrderSortField,
-} from '#app/domain/order/model.js'
+import type { OrderKey, OrderQueryModel, OrderRecord } from '#app/domain/order/model.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
-import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
 
-import { orderCoreQueryableFields, orderRecordQueryableFields } from './schemas.js'
-import { byIdParams, paginationQueryParams } from '../../shared/schemas.js'
+import { byIdParams } from '#app/api/shared/schemas.js'
+import { getOr404 } from '#app/api/shared/get-or-404.js'
+import { basePageQuery, buildFilters } from '#app/api/shared/page-query.js'
+
+import { orderCoreQueryableFields, orderPageSchema, orderRecordQueryableFields } from './schemas.js'
 
 // -- DI ---
 import { readByKey, readPage } from '#app/di/read.js'
@@ -27,14 +21,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
     { schema: { params: byIdParams(ORDER_ID_REGEX) } },
     async (req, res) => {
       const { chainId, value: orderHash } = parseDomainId(req.params.id)
-      const doc = await readByKey('order', { chainId, orderHash } as OrderKey)
-
-      if (!doc) {
-        res.code(404)
-        return
-      }
-
-      return doc
+      return getOr404(() => readByKey('order', { chainId, orderHash } as OrderKey), res)
     }
   )
 
@@ -43,55 +30,24 @@ export const ordersQuery = (fastify: FastifyInstance) => {
   }>(
     '/',
     {
-      schema: {
-        querystring: {
-          type: 'object',
-          additionalProperties: true,
-          properties: {
-            ...orderRecordQueryableFields,
-            ...paginationQueryParams,
-            sortField: {
-              type: 'string',
-              enum: [...ORDER_SORT_FIELDS],
-            },
-            include: {
-              type: 'array',
-              maxItems: ORDER_INCLUDES.length,
-              items: { type: 'string', enum: ORDER_INCLUDES },
-            },
-          },
-        },
-      },
+      schema: orderPageSchema,
     },
     async req => {
-      const q = req.query
+      const query = req.query
 
-      const filters: Record<string, unknown> = {}
-
-      const orderCoreKeys = new Set(Object.keys(orderCoreQueryableFields))
-
-      for (const key of Object.keys(orderRecordQueryableFields)) {
-        const v = q[key]
-        if (v === undefined) continue
-
-        // key is OrderCore field => prefix path with "order"
-        const path = orderCoreKeys.has(key) ? `order.${key}` : key
-
-        filters[path] = v
-      }
+      const filters = buildFilters(
+        query,
+        orderRecordQueryableFields,
+        new Set(Object.keys(orderCoreQueryableFields)),
+        'order'
+      )
 
       const domainPageQuery: DomainPageQuery<OrderRecord> = {
-        limit: q.limit ?? DEFAULT_PAGE_LIMIT,
-        cursor: q.cursor,
-        from: q.from,
-        to: q.to,
-        rangeField: 'createdAt', // todo: dont hardcode this
-        sortField: (q.sortField as OrderSortField) ?? 'createdAt',
-        sortDir: q.sortDir,
+        ...basePageQuery(query),
         filters,
       }
 
-      return readPage('order', { ...domainPageQuery, include: q.include })
+      return readPage('order', { ...domainPageQuery, include: query.include })
     }
   )
 }
