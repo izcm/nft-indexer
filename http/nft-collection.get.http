@@ -1,1 +1,1 @@
-GET http://localhost:5000/api/nft-collections/top?by=active-orders&chainId=31337&limit=3
+    GET http://localhost:5000/api/nft-collections

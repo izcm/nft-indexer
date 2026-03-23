@@ -69,7 +69,7 @@ export const nftCollectionRepo: NFTCollectionPort = {
           metaStatuss: Status.PENDING,
           metaStatus: Status.PENDING,
 
-          lastScannedBlock: 0,
+          lastScannedBlock: 24500000,
           backfillDone: false,
         },
       },

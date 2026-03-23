@@ -27,7 +27,7 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
 
   for (const c of collections) {
     // let from = BigInt(c.lastScannedBlock ?? 24480751)
-    let from = 24500000n // todo: remove this
+    let from = BigInt(c.lastScannedBlock ?? 24500000)
 
     // logs in span from => to
     // action categorized as`mint:
@@ -38,6 +38,7 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
 
     while (from < latest && step < MAX_STEPS) {
       let to = from + STEP
+
       if (to > latest) to = latest
 
       const logs = await client.getLogs({
@@ -58,9 +59,10 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
         const block = Number(log.blockNumber)
 
         await port.ensureNFT({ chainId, collection: c.address, tokenId: tokenId.toString() }, block)
-
-        await port.updateLastScannedBlock({ chainId, address: c.address, block })
       }
+
+      // here or
+      await port.updateLastScannedBlock({ chainId, address: c.address, block: Number(to) })
 
       // the returned logs keep
       from = to + 1n
