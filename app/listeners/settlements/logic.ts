@@ -1,21 +1,21 @@
-import type { Hex } from 'viem'
 import type { Settlement } from '#app/domain/settlement/model.js'
+import type { Address, Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
 export type SettlementLog = {
   eventName: 'Settlement'
   args: {
-    orderHash: Hex
-    collection: Hex
+    orderHash: Hash
+    collection: Address
     tokenId: bigint
-    seller: Hex
-    buyer: Hex
-    currency: Hex
+    seller: Address
+    buyer: Address
+    currency: Address
     price: bigint
   }
   blockNumber: bigint
   blockTimestamp: bigint
-  transactionHash: Hex
+  transactionHash: Hash
   logIndex: bigint
 }
 

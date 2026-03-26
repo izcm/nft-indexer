@@ -27,31 +27,20 @@ export type SettlementDTO = {
   // Transaction details
   logIndex: number
 
-  callReconstructed: boolean
-  txInputs?: {
-    order?: {
-      signer: string
-      collection: string
-      tokenId: string
-      currency: string
-      price: string
-      start: string
-      end: string
-      nonce: string
-    }
-    fill?: {
-      tokenId: string
-      actor: string
-    }
-    gasUsed?: string
-    gasPrice?: string
+  txContext?: {
+    txIndex: number
+    functionSelector: string
+    functionName: string
+    contractAddress: string
+    gasUsed: number
+    gasPrice: number
   }
 }
 
 export const settlementDTO = {
   from(s: Settlement): SettlementDTO {
     const call = s.execution.callReconstruction.data
-    const reconstructed = s.execution.callReconstruction.status === Status.DONE
+    const isDone = s.execution.callReconstruction.status === Status.DONE
 
     return {
       id: `${s.chainId}:${s.orderHash}`,
@@ -73,29 +62,19 @@ export const settlementDTO = {
 
       logIndex: s.execution.logIndex,
 
-      callReconstructed: reconstructed,
-      ...(reconstructed && call
-        ? {
-            txInputs: {
-              order: {
-                signer: call.txInput.signer,
-                collection: call.txInput.order.collection,
-                tokenId: call.txInput.order.tokenId,
-                currency: call.txInput.order.currency,
-                price: call.txInput.order.price,
-                start: call.txInput.order.start,
-                end: call.txInput.order.end,
-                nonce: call.txInput.order.nonce,
-              },
-              fill: {
-                tokenId: call.txInput.fill.tokenId,
-                actor: call.txInput.fill.actor,
-              },
-              gasUsed: call.txContext.gasUsed.toString(),
-              gasPrice: call.txContext.effectiveGasPrice.toString(),
-            },
-          }
-        : {}),
+      // 👇 key change: always present, but maybe undefined
+      txContext:
+        isDone && call
+          ? {
+              txIndex: call.txContext.index,
+              functionSelector: call.txContext.functionSelector,
+              functionName: call.txContext.functionName,
+              contractAddress: call.txContext.contractAddress ?? '',
+
+              gasUsed: Number(call.txContext.gasUsed),
+              gasPrice: Number(call.txContext.effectiveGasPrice),
+            }
+          : undefined,
     }
   },
 }
