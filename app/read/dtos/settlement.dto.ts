@@ -1,5 +1,4 @@
 import type { Settlement, SettlementCall } from '#app/domain/settlement/model.js'
-import type { Hash } from '#app/domain/shared/types/eth.js'
 import { secondsToUnixMs } from '#app/lib/utils/time.js'
 import { Status } from '#app/domain/shared/status.js'
 
@@ -28,24 +27,25 @@ export type SettlementDTO = {
   // Transaction details
   logIndex: number
 
-  // Call reconstruction
-  // callReconstructed: boolean
-  // order?: {
-  //   signer: string
-  //   collection: string
-  //   tokenId: string
-  //   currency: string
-  //   price: string
-  //   start: string
-  //   end: string
-  //   nonce: string
-  // }
-  // fill?: {
-  //   tokenId: string
-  //   actor: string
-  // }
-  // gasUsed?: string
-  // gasPrice?: string
+  callReconstructed: boolean
+  txInputs?: {
+    order?: {
+      signer: string
+      collection: string
+      tokenId: string
+      currency: string
+      price: string
+      start: string
+      end: string
+      nonce: string
+    }
+    fill?: {
+      tokenId: string
+      actor: string
+    }
+    gasUsed?: string
+    gasPrice?: string
+  }
 }
 
 export const settlementDTO = {
@@ -73,27 +73,29 @@ export const settlementDTO = {
 
       logIndex: s.execution.logIndex,
 
-      // callReconstructed: reconstructed,
-      // ...(reconstructed && call
-      //   ? {
-      //       order: {
-      //         signer: call.txInput.signer,
-      //         collection: call.txInput.order.collection,
-      //         tokenId: call.txInput.order.tokenId,
-      //         currency: call.txInput.order.currency,
-      //         price: call.txInput.order.price,
-      //         start: call.txInput.order.start,
-      //         end: call.txInput.order.end,
-      //         nonce: call.txInput.order.nonce,
-      //       },
-      //       fill: {
-      //         tokenId: call.txInput.fill.tokenId,
-      //         actor: call.txInput.fill.actor,
-      //       },
-      //       gasUsed: call.txContext.gasUsed.toString(),
-      //       gasPrice: call.txContext.effectiveGasPrice.toString(),
-      //     }
-      //   : {}),
+      callReconstructed: reconstructed,
+      ...(reconstructed && call
+        ? {
+            txInputs: {
+              order: {
+                signer: call.txInput.signer,
+                collection: call.txInput.order.collection,
+                tokenId: call.txInput.order.tokenId,
+                currency: call.txInput.order.currency,
+                price: call.txInput.order.price,
+                start: call.txInput.order.start,
+                end: call.txInput.order.end,
+                nonce: call.txInput.order.nonce,
+              },
+              fill: {
+                tokenId: call.txInput.fill.tokenId,
+                actor: call.txInput.fill.actor,
+              },
+              gasUsed: call.txContext.gasUsed.toString(),
+              gasPrice: call.txContext.effectiveGasPrice.toString(),
+            },
+          }
+        : {}),
     }
   },
 }

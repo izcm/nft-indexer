@@ -14,7 +14,7 @@ export async function runSettlementCalReconstructionWorker(
   const chainId = client.chain.id
   const settlements = settlementRepoForChain(chainId, port)
 
-  const pending = await settlements.findPendingMeta(25)
+  const pending = await settlements.findPendingCallReconstruction(25)
 
   if (pending.length === 0) return
 

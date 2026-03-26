@@ -34,8 +34,6 @@ export function mapDomainToRepoQuery<TDoc extends MongoDoc>(
     if (to) baseQuery[k].$lte = to
   }
 
-  console.log(JSON.stringify(baseQuery))
-
   return {
     dbCollection,
     sortField: String(domainPageQuery.sortField),

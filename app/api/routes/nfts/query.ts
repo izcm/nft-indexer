@@ -29,8 +29,7 @@ export const nftsQuery = (fastify: FastifyInstance) => {
     },
     async (req, res) => {
       const query = req.query
-
-      let filters: Record<string, unknown> = {}
+      let filters: Record<string, unknown> = { ...req.query }
 
       // parse nft attributes
       if (Array.isArray(query.trait) && Array.isArray(query.value)) {
@@ -44,6 +43,9 @@ export const nftsQuery = (fastify: FastifyInstance) => {
           trait,
           value: (query.value as string[])[i],
         }))
+
+        delete filters.trait
+        delete filters.value
       }
 
       const domainPageQuery: DomainPageQuery<NFT> = {

@@ -1,10 +1,11 @@
-import type { Abi, AbiFunction, Hex } from 'viem'
+import type { Abi, AbiFunction, Address, Hash, Hex, Signature } from 'viem'
 import { decodeFunctionData, getAbiItem, recoverTypedDataAddress, serializeSignature } from 'viem'
 
-import type { OrderCore, Signature, SideLabel } from '#app/domain/order/model.js'
-import type { Fill, SettlementCall } from '#app/domain/settlement/model.js'
+import type { SettlementCall } from '#app/domain/settlement/model.js'
 
-import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
+import { dmrktDomain, dmrktTypes, OrderCore712 } from '#app/lib/blockchain/eip712.js'
+import { convertBigintsDeep } from '#app/lib/utils/bigint.js'
+import { OrderCore } from '#app/domain/order/model.js'
 
 export async function decodeSettlementCall(
   tx: any,
@@ -35,26 +36,35 @@ export async function decodeSettlementCall(
     throw new Error('[tx-parser] no args found when parsing tx.inputs')
   }
 
-  const [fill, order, sig] = args as [Fill, OrderCore, Signature]
+  const [fill, order712, sig] = args as [
+    { tokenId: bigint; actor: Address },
+    OrderCore712,
+    { r: Hash; s: Hash; v: bigint },
+  ]
 
-  if (!order || !sig) {
+  if (!order712 || !sig) {
     throw new Error('[tx-parser] error parsing ORDER or SIGNATURE')
   }
 
-  const sigHex = serializeSignature({ r: sig.r as Hex, s: sig.s as Hex, v: BigInt(sig.v) })
+  const sigHex = serializeSignature({ r: sig.r, s: sig.s, v: BigInt(sig.v) })
 
   const signer = await recoverTypedDataAddress({
     domain: dmrktDomain,
     types: dmrktTypes,
     primaryType: 'Order',
-    message: toOrder712(order),
+    message: order712,
     signature: sigHex,
   })
 
+  const orderCore = convertBigintsDeep(order712) as unknown as OrderCore
+
   return {
     txInput: {
-      order,
-      fill,
+      order: orderCore,
+      fill: {
+        tokenId: fill.tokenId.toString(),
+        actor: fill.actor,
+      },
       signer,
     },
 

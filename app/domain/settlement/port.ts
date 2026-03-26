@@ -35,7 +35,7 @@ export interface SettlementPort extends ByKey<Settlement, SettlementKey>, Pageab
  * - Prettifies multichain code
  */
 export const settlementRepoForChain = (chainId: number, port: SettlementPort) => ({
-  findPendingMeta(limit: number) {
+  findPendingCallReconstruction(limit: number) {
     return port.findPendingCallReconstruction(chainId, limit)
   },
 

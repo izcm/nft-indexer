@@ -47,15 +47,12 @@ export type SettlementCall = {
 
   txInput: {
     order: OrderCore
-    fill: Fill
+    fill: {
+      tokenId: string
+      actor: Address
+    }
     signer: Address
   }
-}
-
-// todo: this should be in some shared package a2z/packages
-export type Fill = {
-  tokenId: string
-  actor: Address
 }
 
 // --- query layer ---

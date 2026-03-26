@@ -30,7 +30,6 @@ describe('parseTxInputs', () => {
     if (!settleFunc) throw new Error('did not find settle function in provided abi')
 
     // arrange
-
     const order = fakeOrderCore()
     const fill = fakeFill()
 
@@ -52,13 +51,11 @@ describe('parseTxInputs', () => {
     const receipt = fakeReceipt
 
     // act
-
     const meta = await decodeSettlementCall(tx, receipt, abi)
 
     // assert
-
-    expect(convertBigintsDeep(meta.txInput.order)).toEqual(order)
-    expect(convertBigintsDeep(meta.txInput.fill)).toEqual(fill)
+    expect(meta.txInput.order).toEqual(order)
+    expect(meta.txInput.fill).toEqual(fill)
     expect(meta.txInput.signer).toBe(signerAcount.address)
   })
 })

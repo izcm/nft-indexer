@@ -2,8 +2,8 @@ import { orderRepo } from '#app/repos/order.repo.js'
 import { settlementRepo } from '#app/repos/settlement.repo.js'
 import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
 
-import { makeReadPage } from '#app/views/read-page.js'
-import { makeReadOne } from '#app/views/read-one.js'
+import { makeReadPage } from '#app/read/read-page.js'
+import { makeReadOne } from '#app/read/read-one.js'
 import { Readers } from '#app/domain/shared/types/readers.js'
 import { nftRepo } from '#app/repos/nft.repo.js'
 

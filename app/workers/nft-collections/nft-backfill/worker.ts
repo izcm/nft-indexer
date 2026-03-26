@@ -3,11 +3,11 @@ import { parseAbiItem, zeroAddress } from 'viem'
 import { AppClient } from '#app/clients.js'
 
 import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
-import { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
-import { NFTPort } from '#app/domain/nft/port.js'
+import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
+import type { NFTPort } from '#app/domain/nft/port.js'
 
 const STEP = 9n // rpc free tier restriction
-const MAX_STEPS = 1000
+const MAX_STEPS = 5000
 
 const TRANSFER_EVENT = parseAbiItem(
   'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'
@@ -27,7 +27,7 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
 
   for (const c of collections) {
     // let from = BigInt(c.lastScannedBlock ?? 24480751)
-    let from = BigInt(c.lastScannedBlock ?? 24500000)
+    let from = BigInt(c.lastScannedBlock ?? 24530000)
 
     // logs in span from => to
     // action categorized as`mint:
