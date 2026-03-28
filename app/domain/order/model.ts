@@ -55,7 +55,7 @@ export type Order = {
 export type OrderCore = Omit<Order, 'signature'>
 
 // --- query layer ---
-// todo: move to read-models
+
 export type OrderQueryModel = OrderCore & { status: OrderStatus }
 
 export const ORDER_SORT_FIELDS = ['createdAt', 'updatedAt'] as const

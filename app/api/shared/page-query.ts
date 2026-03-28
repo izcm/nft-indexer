@@ -31,6 +31,27 @@ export function buildFilters(
   return filters
 }
 
+export function buildAttributeFilters(q: Record<string, unknown>) {
+  const rawTraits = q.trait
+  const rawValues = q.value
+
+  const traits = typeof rawTraits === 'string' ? rawTraits.split(',') : []
+  const values = typeof rawValues === 'string' ? rawValues.split(',') : []
+
+  if (!traits.length && !values.length) return {}
+
+  if (traits.length !== values.length) {
+    throw new Error('trait/value length mismatch')
+  }
+
+  return {
+    attributes: traits.map((trait, i) => ({
+      trait,
+      value: values[i],
+    })),
+  }
+}
+
 export const basePageQuery = (q: any) => {
   return {
     limit: q.limit ?? DEFAULT_PAGE_LIMIT,

@@ -16,7 +16,6 @@ export const settlementPageQuery = {
     type: 'object',
     additionalProperties: true,
     properties: {
-      // ...settlementQueryableFields, // buildfilters work as whitelist
       ...paginationQueryParams,
       sortField: {
         type: 'string',

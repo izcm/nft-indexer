@@ -13,6 +13,8 @@ export const attributesQueryFields = {
   // value: {
   //   oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'string' }],
   // },
+
+  // nft attributes of order.tokenId (string can be array separated by ',')
   trait: { type: 'string' },
   value: { type: 'string' },
 }

@@ -4,14 +4,15 @@ import type { NFT, NFTKey } from '#app/domain/nft/model.js'
 
 import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
+import { parseTripleDomainId } from '#app/domain/shared/ids.js'
 
 import { getOr404 } from '#app/api/shared/get-or-404.js'
-import { basePageQuery } from '#app/api/shared/page-query.js'
+import { basePageQuery, buildAttributeFilters, buildFilters } from '#app/api/shared/page-query.js'
+
+import { nftPageSchema, nftQueryableFields } from './schema.js'
 
 // --- DI ---
 import { readByKey, readPage } from '#app/di/read.js'
-import { parseTripleDomainId } from '#app/domain/shared/ids.js'
-import { nftPageSchema } from './schema.js'
 
 export const nftsQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>('/:id', async (req, res) => {
@@ -29,37 +30,10 @@ export const nftsQuery = (fastify: FastifyInstance) => {
     },
     async (req, res) => {
       const query = req.query
-      let filters: Record<string, unknown> = { ...req.query }
 
-      const rawTraits = query.trait
-      const rawValues = query.value
-
-      const traits = Array.isArray(rawTraits)
-        ? rawTraits
-        : typeof rawTraits === 'string'
-          ? rawTraits.split(',')
-          : []
-
-      const values = Array.isArray(rawValues)
-        ? rawValues
-        : typeof rawValues === 'string'
-          ? rawValues.split(',')
-          : []
-
-      if (traits.length || values.length) {
-        if (traits.length !== values.length) {
-          return res.status(400).send({
-            message: 'trait/value length mismatch',
-          })
-        }
-
-        filters.attributes = traits.map((trait, i) => ({
-          trait,
-          value: values[i],
-        }))
-
-        delete filters.trait
-        delete filters.value
+      const filters = {
+        ...buildFilters(query, nftQueryableFields),
+        ...buildAttributeFilters(query),
       }
 
       const domainPageQuery: DomainPageQuery<NFT> = {

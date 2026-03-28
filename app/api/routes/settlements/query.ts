@@ -9,7 +9,7 @@ import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
 import { byIdParams } from '#app/api/shared/schemas.js'
-import { basePageQuery, buildFilters } from '#app/api/shared/page-query.js'
+import { basePageQuery, buildAttributeFilters, buildFilters } from '#app/api/shared/page-query.js'
 import { getOr404 } from '#app/api/shared/get-or-404.js'
 
 import { settlementPageQuery, settlementQueryableFields } from './schemas.js'
@@ -35,7 +35,10 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
     async req => {
       const query = req.query
 
-      const filters = buildFilters(query, settlementQueryableFields)
+      const filters = {
+        ...buildFilters(query, settlementQueryableFields),
+        ...buildAttributeFilters(query),
+      }
 
       const domainPageQuery: DomainPageQuery<Settlement> = {
         ...basePageQuery(query),
