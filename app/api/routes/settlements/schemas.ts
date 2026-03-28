@@ -6,7 +6,7 @@ import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'
 
 export const settlementQueryableFields = {
   collection: { type: 'string', pattern: ADDR_REGEX },
-  tokenId: { type: 'string', pattern: '^[0-9]+$' },
+  tokenId: { type: 'array', items: { type: 'string' } }, // eg. list of owned tokenIds
   seller: { type: 'string', pattern: ADDR_REGEX },
   buyer: { type: 'string', pattern: ADDR_REGEX },
 } as const

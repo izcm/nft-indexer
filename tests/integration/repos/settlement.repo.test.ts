@@ -8,12 +8,13 @@ import type { Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import type { DeepPartial } from '#app/lib/utils/deep-partial.js'
-import { settlementRepo } from '#app/repos/settlement.repo.js'
+import { settlementRepo } from '#app/repos/mongo/settlement.repo.js'
 
 import { bytes32 } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedSettlements } from '#tests/helpers/seed/seed-settlements.js'
 import { fakeSettlement, fakeSettlementCall } from '#tests/helpers/fixtures.js'
+import { SettlementDoc } from '#app/repos/mongo/docs.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -32,9 +33,9 @@ describe('settlementRepo', () => {
 
   const CHAIN_ID = 1
 
-  const fakeSettlementForChain = (chainId: number = CHAIN_ID) => fakeSettlement({ chainId })
+  const fakeSettlementDocForChain = (chainId: number = CHAIN_ID) => fakeSettlement({ chainId })
 
-  async function givenSettlementDocExists(overrides: DeepPartial<Settlement> = {}) {
+  async function givenSettlementDocDocExists(overrides: DeepPartial<SettlementDoc> = {}) {
     const seed = `given:${Math.random().toString(36).slice(2)}`
 
     const result = await seedSettlements(CHAIN_ID, seed, 1, 0, overrides)
@@ -53,9 +54,9 @@ describe('settlementRepo', () => {
   // === test repo read ===
 
   describe('read', () => {
-    describe('findBySettlementKey', () => {
+    describe('findBySettlementDocKey', () => {
       it('returns existing doc with chainId + orderHash', async () => {
-        const settlement = (await givenSettlementDocExists()).settlement
+        const settlement = (await givenSettlementDocDocExists()).settlement
         const { chainId, orderHash } = settlement
 
         const found = await repo.findByKey({ chainId, orderHash })
@@ -191,7 +192,7 @@ describe('settlementRepo', () => {
 
     describe('save', () => {
       it('inserts settlement on unique chainId + orderHash pair', async () => {
-        const settlement = fakeSettlementForChain()
+        const settlement = fakeSettlementDocForChain()
 
         const { insertedId } = await repo.save(settlement)
         expect(insertedId).toBeInstanceOf(ObjectId)
@@ -204,13 +205,13 @@ describe('settlementRepo', () => {
       })
 
       it('throws error on duplicate chainId + orderHash pair', async () => {
-        const { settlement, insertedId } = await givenSettlementDocExists() // first insert
+        const { settlement, insertedId } = await givenSettlementDocDocExists() // first insert
 
         await expect(repo.save(settlement)).rejects.toThrow() // attempt second insert
       })
 
       it('allows same orderHash on different chains', async () => {
-        const base = fakeSettlementForChain(1)
+        const base = fakeSettlementDocForChain(1)
         const other = { ...base, chainId: 31337 }
 
         await repo.save(base)
@@ -226,11 +227,11 @@ describe('settlementRepo', () => {
     })
 
     describe('callReconstruction builders', () => {
-      const readCR = (s: Settlement) => s.execution.callReconstruction
+      const readCR = (s: SettlementDoc) => s.execution.callReconstruction
 
       describe('finalizeCallReconstruction', () => {
         it('updates an existing settlement call reconstruction and marks it DONE', async () => {
-          const { settlement } = await givenSettlementDocExists({
+          const { settlement } = await givenSettlementDocDocExists({
             execution: { callReconstruction: { status: Status.PENDING } },
           })
           const meta = fakeSettlementCall()
@@ -273,7 +274,7 @@ describe('settlementRepo', () => {
             },
           }
 
-          const { settlement } = await givenSettlementDocExists({
+          const { settlement } = await givenSettlementDocDocExists({
             execution: {
               ...existingExecution,
               callReconstruction: { status: Status.PENDING },
@@ -302,7 +303,7 @@ describe('settlementRepo', () => {
 
       describe('markCallReconstructionFailed', () => {
         it('marks an existing settlement call reconstruction as FAILED and stores the error message', async () => {
-          const { settlement } = await givenSettlementDocExists({
+          const { settlement } = await givenSettlementDocDocExists({
             execution: { callReconstruction: { status: Status.PENDING } },
           })
           const errorMessage = 'some error'
@@ -328,7 +329,7 @@ describe('settlementRepo', () => {
           const firstError = 'first'
           const secondError = 'second'
 
-          const { settlement } = await givenSettlementDocExists({
+          const { settlement } = await givenSettlementDocDocExists({
             execution: {
               callReconstruction: { status: Status.FAILED, error: firstError },
             },

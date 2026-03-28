@@ -5,7 +5,7 @@ import { nfts } from '#app/db/collections.js'
 import type { NFT } from '#app/domain/nft/model.js'
 import { Status } from '#app/domain/shared/status.js'
 
-import { nftRepo } from '#app/repos/nft.repo.js'
+import { nftRepo } from '#app/repos/mongo/nft.repo.js'
 
 // test helpers
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'

@@ -2,8 +2,6 @@ import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import type { Collection, Document as MongoDoc } from 'mongodb'
 import type { GenericPageArgs } from './types.js'
 
-// bug: trait=Rarity&value=Epic&trait=Color&value=Magenta
-//{"$and":[{"attributes":{"$elemMatch":{"trait_type":"Color","value":"Magenta"}}}]}
 export function mapDomainToRepoQuery<TDoc extends MongoDoc>(
   domainPageQuery: DomainPageQuery<any>,
   dbCollection: Collection<TDoc>

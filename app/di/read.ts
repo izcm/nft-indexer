@@ -1,11 +1,11 @@
-import { orderRepo } from '#app/repos/order.repo.js'
-import { settlementRepo } from '#app/repos/settlement.repo.js'
-import { nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import { orderRepo } from '#app/repos/mongo/order.repo.js'
+import { settlementRepo } from '#app/repos/mongo/settlement.repo.js'
+import { nftCollectionRepo } from '#app/repos/mongo/nft-collection.repo.js'
 
 import { makeReadPage } from '#app/read/read-page.js'
 import { makeReadOne } from '#app/read/read-one.js'
 import { Readers } from '#app/domain/shared/types/readers.js'
-import { nftRepo } from '#app/repos/nft.repo.js'
+import { nftRepo } from '#app/repos/mongo/nft.repo.js'
 
 const readers: Readers = {
   order: orderRepo,

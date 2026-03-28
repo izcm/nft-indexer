@@ -10,6 +10,7 @@ type MetaPort = {
   findPendingMeta: NFTPort['findPendingMeta']
   finalizeMeta: NFTPort['finalizeMeta']
   markMetaFailed: NFTPort['markMetaFailed']
+  projectNFT: NFTPort['projectNFT']
 }
 
 export async function runNFTMetaWorker(client: AppClient, port: MetaPort) {
@@ -22,6 +23,7 @@ export async function runNFTMetaWorker(client: AppClient, port: MetaPort) {
       const tokenUri = await erc721For(client).readTokenURI(collection, BigInt(tokenId))
 
       const meta = parseTokenUri(tokenUri)
+
       if (!meta) {
         await port.markMetaFailed({
           chainId,
@@ -33,6 +35,8 @@ export async function runNFTMetaWorker(client: AppClient, port: MetaPort) {
       }
 
       await port.finalizeMeta({ chainId, collection, tokenId, meta })
+
+      await port.projectNFT({ chainId, collection, tokenId }, meta)
     } catch (err) {
       await port.markMetaFailed({
         chainId,

@@ -18,9 +18,9 @@ import { start as startServer } from './api/index.js'
 import { start as startWorkers } from './workers/index.js'
 
 // di repos
-import { nftCollectionRepo } from './repos/nft-collection.repo.js'
-import { nftRepo } from './repos/nft.repo.js'
-import { settlementRepo } from './repos/settlement.repo.js'
+import { nftCollectionRepo } from './repos/mongo/nft-collection.repo.js'
+import { nftRepo } from './repos/mongo/nft.repo.js'
+import { settlementRepo } from './repos/mongo/settlement.repo.js'
 
 async function main() {
   const logSection = (title: string) => {

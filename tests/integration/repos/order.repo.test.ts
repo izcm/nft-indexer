@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { orders } from '#app/db/collections.js'
 import { OrderRecord } from '#app/domain/order/model.js'
-import { orderRepo } from '#app/repos/order.repo.js'
+import { orderRepo } from '#app/repos/mongo/order.repo.js'
 
 // test helpers
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'

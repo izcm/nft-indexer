@@ -1,4 +1,4 @@
-import { nfts } from '#app/db/collections.js'
+import { nfts, orders, settlements } from '#app/db/collections.js'
 
 import type { NFT, NFTKey, NFTMeta } from '#app/domain/nft/model.js'
 import type { NFTPort } from '#app/domain/nft/port.js'
@@ -74,5 +74,26 @@ export const nftRepo: NFTPort = {
         },
       }
     )
+  },
+
+  async projectNFT({ chainId, collection, tokenId }: NFTKey, meta: NFTMeta) {
+    await Promise.all([
+      orders().updateMany(
+        { chainId, 'order.collection': collection, 'order.tokenId': tokenId },
+        {
+          $set: {
+            attributes: meta.attributes,
+          },
+        }
+      ),
+      settlements().updateMany(
+        { chainId, collection, tokenId },
+        {
+          $set: {
+            attributes: meta.attributes,
+          },
+        }
+      ),
+    ])
   },
 }

@@ -66,7 +66,6 @@ export const nftCollectionRepo: NFTCollectionPort = {
           chainId,
           address,
 
-          metaStatuss: Status.PENDING,
           metaStatus: Status.PENDING,
 
           lastScannedBlock: 24500000,

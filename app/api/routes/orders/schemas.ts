@@ -10,7 +10,7 @@ import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
 export const orderCoreFieldSchema = {
   actor: { type: 'string', pattern: ADDR_REGEX },
   collection: { type: 'string', pattern: ADDR_REGEX },
-  tokenId: { type: 'string' },
+  tokenId: { type: 'string' }, // eg. list of owned tokenIds
   currency: { type: 'string', pattern: ADDR_REGEX },
   price: { type: 'string' },
   side: { type: 'integer', minimum: 0 },
@@ -22,6 +22,7 @@ export const orderCoreFieldSchema = {
 export const orderCoreQueryableFields = orderCoreFieldSchema
 export const orderRecordQueryableFields = {
   ...orderCoreQueryableFields,
+  tokenId: { type: 'array', items: { type: 'string' } }, // eg. list of owned tokenIds
   status: { type: 'string', enum: ['active', 'filled', 'cancelled', 'expired'] },
 } as const
 
@@ -45,6 +46,7 @@ export const orderCreateBody = {
   ],
   properties: {
     ...orderCoreFieldSchema,
+    tokenId: { type: 'string' }, // eg. list of owned tokenIds
     nonce: { type: 'string' },
     signature: {
       type: 'object',

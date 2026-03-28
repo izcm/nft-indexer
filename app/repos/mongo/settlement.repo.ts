@@ -1,4 +1,4 @@
-import { settlements } from '#app/db/collections.js'
+import { nfts, settlements } from '#app/db/collections.js'
 
 import type { Settlement, SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
 import type { SettlementPort } from '#app/domain/settlement/port.js'
@@ -7,6 +7,7 @@ import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
+import { SettlementDoc } from './docs.js'
 
 // === helpers ===
 
@@ -19,7 +20,7 @@ const crPaths = {
   txContext: cr + '.data.txContext',
 }
 
-const baseRead = makeReadRepo<Settlement, SettlementKey>(settlements, k => ({
+const baseRead = makeReadRepo<SettlementDoc, SettlementKey>(settlements, k => ({
   chainId: k.chainId,
   orderHash: k.orderHash,
 }))
@@ -40,9 +41,19 @@ export const settlementRepo: SettlementPort = {
 
   // === write ===
 
-  save(settlement: Settlement) {
+  async save(s: Settlement) {
+    const nft = await nfts().findOne({
+      chainId: s.chainId,
+      collection: s.collection,
+      tokenId: s.tokenId,
+    })
+
+    // fetch nft
     return settlements().insertOne({
-      ...settlement,
+      ...s,
+
+      // nft attributes for pagination filters
+      attributes: nft?.attributes,
 
       // todo: make 'write' implement insertOne
       createdAt: Date.now(),

@@ -1,15 +1,16 @@
-import { orders } from '#app/db/collections.js'
+import { nfts, orders } from '#app/db/collections.js'
 
-import type { Order, OrderKey, OrderRecord, OrderStatus } from '#app/domain/order/model.js'
+import type { Order, OrderKey, OrderStatus } from '#app/domain/order/model.js'
 import type { OrderPort } from '#app/domain/order/port.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
+import { OrderDoc } from './docs.js'
 
 import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
 
-const baseRead = makeReadRepo<OrderRecord, OrderKey>(orders, k => ({
+const baseRead = makeReadRepo<OrderDoc, OrderKey>(orders, k => ({
   chainId: k.chainId,
   orderHash: k.orderHash,
 }))
@@ -23,7 +24,15 @@ export const orderRepo: OrderPort = {
   // === write ===
   async ensure(chainId: number, order: Order) {
     const { signature, ...orderCore } = order
-    const orderHash = hashOrderStruct(orderCore)
+    const orderHash = hashOrderStruct(orderCore) // todo: move this out of repo
+
+    const { collection, tokenId } = orderCore
+
+    const nft = await nfts().findOne({
+      chainId,
+      collection,
+      tokenId,
+    })
 
     const now = Date.now()
 
@@ -38,6 +47,9 @@ export const orderRepo: OrderPort = {
             signature,
           },
           status: 'active',
+
+          // nft attributes for pagination filters
+          attributes: nft?.attributes ?? null,
         },
       },
       { upsert: true }

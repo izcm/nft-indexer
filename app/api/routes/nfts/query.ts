@@ -31,17 +31,31 @@ export const nftsQuery = (fastify: FastifyInstance) => {
       const query = req.query
       let filters: Record<string, unknown> = { ...req.query }
 
-      // parse nft attributes
-      if (Array.isArray(query.trait) && Array.isArray(query.value)) {
-        if (query.trait.length !== query.value.length) {
+      const rawTraits = query.trait
+      const rawValues = query.value
+
+      const traits = Array.isArray(rawTraits)
+        ? rawTraits
+        : typeof rawTraits === 'string'
+          ? rawTraits.split(',')
+          : []
+
+      const values = Array.isArray(rawValues)
+        ? rawValues
+        : typeof rawValues === 'string'
+          ? rawValues.split(',')
+          : []
+
+      if (traits.length || values.length) {
+        if (traits.length !== values.length) {
           return res.status(400).send({
             message: 'trait/value length mismatch',
           })
         }
 
-        filters.attributes = (query.trait as string[]).map((trait, i) => ({
+        filters.attributes = traits.map((trait, i) => ({
           trait,
-          value: (query.value as string[])[i],
+          value: values[i],
         }))
 
         delete filters.trait

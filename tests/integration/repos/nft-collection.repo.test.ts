@@ -5,7 +5,10 @@ import type { NFTCollectionMeta } from '#app/domain/nft-collection/model.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { nftCollections } from '#app/db/collections.js'
-import { __resetSeenCollectionsForTest, nftCollectionRepo } from '#app/repos/nft-collection.repo.js'
+import {
+  __resetSeenCollectionsForTest,
+  nftCollectionRepo,
+} from '#app/repos/mongo/nft-collection.repo.js'
 
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'

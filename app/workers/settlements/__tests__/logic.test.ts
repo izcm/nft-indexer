@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest'
 import { Abi, encodeFunctionData, getAbiItem, parseSignature } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
-import { convertBigintsDeep } from '#app/lib/utils/bigint.js'
 import { dmrktDomain, dmrktTypes, toOrder712 } from '#app/lib/blockchain/eip712.js'
 
 import { decodeSettlementCall } from '../logic.js'

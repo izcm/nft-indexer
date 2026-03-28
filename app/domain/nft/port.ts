@@ -28,4 +28,10 @@ export interface NFTPort extends ByKey<NFT, NFTKey>, Pageable<NFT> {
    * Mark on-chain metadata fetch as failed.
    */
   markMetaFailed(args: NFTKey & { error: string }): Promise<void>
+
+  /**
+   * Project on order & settlement docs to enable pagination filters on nft attributes. Kind of mongo specific.
+   *  todo: maybe move out of domain
+   */
+  projectNFT(key: NFTKey, meta: NFTMeta): Promise<void>
 }

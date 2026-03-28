@@ -7,8 +7,14 @@ export const nftQueryableFields = {
 }
 
 export const attributesQueryFields = {
-  trait: { type: 'array', items: { type: 'string' } },
-  value: { type: 'array', items: { type: 'string' } },
+  // trait: {
+  //   oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'string' }],
+  // },
+  // value: {
+  //   oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'string' }],
+  // },
+  trait: { type: 'string' },
+  value: { type: 'string' },
 }
 
 export const nftPageSchema = {

@@ -1,3 +1,6 @@
+import { Hex } from 'viem'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+
 import { nftCollections, orders } from '#app/db/collections.js'
 import { OrderSide } from '#app/domain/order/model.js'
 import { ActiveCounts, topNFTCollectionsByActiveOrders } from '#app/read/top-nft-collections.js'
@@ -5,8 +8,7 @@ import { addrOf } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
 import { seedCollections as _seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
 import { seedOrders as _seedOrders } from '#tests/helpers/seed/seed-orders.js'
-import { Hex } from 'viem'
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+
 beforeAll(async () => {
   await startTestMongo()
 })

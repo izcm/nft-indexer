@@ -1,8 +1,8 @@
 import { settlements } from '#app/db/collections.js'
 import { Settlement } from '#app/domain/settlement/model.js'
-import { addrOf, bytes32, priceWei } from '#tests/helpers/evm-fixtures.js'
 import { applyDeepPartial, type DeepPartial } from '#app/lib/utils/deep-partial.js'
-import { base } from 'viem/chains'
+
+import { addrOf, bytes32, priceWei } from '#tests/helpers/evm-fixtures.js'
 
 const s = (x: number | bigint) => x.toString()
 

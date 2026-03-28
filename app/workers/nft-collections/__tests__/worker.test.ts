@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { runNFTBackfillWorker } from '../worker.js'
+import { runNFTBackfillWorker } from '../backfill-worker.js'
 
 describe('runNFTBackfillWorker', () => {
   const getBlockNumber = vi.fn()
