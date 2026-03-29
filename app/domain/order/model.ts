@@ -1,4 +1,4 @@
-import type { Address, Hash } from '../shared/types/eth.js'
+import type { Address, ChainEvent, Hash } from '../shared/types/eth.js'
 import type { WithTimestamps } from '../shared/types/with-timestamps.js'
 
 export type OrderKey = {
@@ -26,6 +26,9 @@ export type OrderRecord = OrderKey &
   WithTimestamps & {
     order: Order
     status: OrderStatus
+
+    // 'OrderCancelled' chain event
+    cancellation?: ChainEvent
   }
 
 // todo: remove this and store raw

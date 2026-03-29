@@ -1,5 +1,5 @@
 // TODO: https://vitest.dev/config/ **define import aliases in vitest config**
-import { settlementFromLog } from '#app/listeners/settlements/logic.js'
+import { settlementFromLog } from '#app/listeners/settlements/from-log.js'
 import { fakeSettlementLog } from '#tests/helpers/fixtures.js'
 import { describe, expect, it } from 'vitest'
 

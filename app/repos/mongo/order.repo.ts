@@ -2,7 +2,7 @@ import { nfts, orders } from '#app/db/collections.js'
 
 import type { Order, OrderKey, OrderStatus } from '#app/domain/order/model.js'
 import type { OrderPort } from '#app/domain/order/port.js'
-import type { Hash } from '#app/domain/shared/types/eth.js'
+import type { Address, ChainEvent, Hash } from '#app/domain/shared/types/eth.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { OrderDoc } from './docs.js'
@@ -60,6 +60,29 @@ export const orderRepo: OrderPort = {
     return { chainId, orderHash, didUpsert }
   },
 
+  async cancelOrdersByChainIdNonce({
+    chainId,
+    user,
+    nonce,
+    cancellation,
+  }: {
+    chainId: number
+    user: Address
+    nonce: string
+    cancellation: ChainEvent
+  }): Promise<void> {
+    await write.updateMany(
+      { chainId, 'order.actor': user, 'order.nonce': nonce },
+      {
+        $set: {
+          status: 'cancelled',
+          cancellation,
+        },
+      },
+      { upsert: false }
+    )
+  },
+
   async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
     await write.updateOne(
       { chainId, orderHash },
@@ -67,7 +90,8 @@ export const orderRepo: OrderPort = {
         $set: {
           status,
         },
-      }
+      },
+      { upsert: false }
     )
   },
 }

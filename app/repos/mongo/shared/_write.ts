@@ -29,5 +29,21 @@ export const makeTsWrite = <TDoc extends MongoDoc & WithTimestamps>(
         options
       )
     },
+
+    updateMany(filter: Filter<TDoc>, update: UpdateFilter<TDoc>, options?: UpdateOptions) {
+      const col = getCol()
+
+      return col.updateOne(
+        filter,
+        {
+          ...update,
+          $set: {
+            ...(update.$set ?? {}),
+            updatedAt: Date.now(),
+          } as Partial<TDoc>,
+        },
+        options
+      )
+    },
   }
 }

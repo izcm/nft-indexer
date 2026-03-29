@@ -2,17 +2,16 @@ import { isValidOrder } from './rules.js'
 import type { Order, OrderKey } from './model.js'
 import type { OrderPort } from './port.js'
 
-import type { NFTCollectionKey } from '../nft-collection/model.js'
 import type { NFTCollectionPort } from '../nft-collection/port.js'
 
 import type { RealtimePort } from '../shared/interfaces/realtime-port.js'
+import type { Address, ChainEvent } from '../shared/types/eth.js'
 import { InvalidOrderError } from '../shared/errors.js'
-import { Address } from '../shared/types/eth.js'
 
 const TAG = 'order'
 
 type Deps = {
-  orders: Pick<OrderPort, 'ensure'>
+  orders: Pick<OrderPort, 'ensure' | 'cancelOrdersByChainIdNonce'>
   nftCollections: Pick<NFTCollectionPort, 'noteNFTCollection'>
   realtime?: RealtimePort
 }
@@ -36,6 +35,20 @@ export const makeOrderActions = ({ orders, nftCollections, realtime }: Deps) => 
     return { chainId: res.chainId, orderHash: res.orderHash, didUpsert: res.didUpsert }
   }
 
+  async function applyOrderCancelled({
+    chainId,
+    user,
+    nonce,
+    cancellation,
+  }: {
+    chainId: number
+    user: Address
+    nonce: string
+    cancellation: ChainEvent
+  }) {
+    await orders.cancelOrdersByChainIdNonce({ chainId, user, nonce, cancellation })
+  }
+
   // --- secondary actions ---
 
   function onOrderCreated({ chainId, orderHash, address }: OrderKey & { address: Address }) {
@@ -46,5 +59,5 @@ export const makeOrderActions = ({ orders, nftCollections, realtime }: Deps) => 
     realtime?.broadcast('order.created', { chainId, orderHash })
   }
 
-  return { ingestOrder }
+  return { ingestOrder, applyOrderCancelled }
 }

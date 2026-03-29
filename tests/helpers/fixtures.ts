@@ -4,7 +4,7 @@ import { Status } from '#app/domain/shared/status.js'
 import type { Address, Hash } from '#app/domain/shared/types/eth.js'
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import type { TxContext } from '#app/domain/shared/types/eth.js'
-import type { SettlementLog } from '#app/listeners/settlements/logic.js'
+import type { SettlementLog } from '#app/listeners/settlements/from-log.js'
 import {
   addrOf,
   bytes32,

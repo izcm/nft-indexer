@@ -1,7 +1,7 @@
 import type { OrderCore } from '../order/model.js'
 
 import { Status } from '../shared/status.js'
-import type { Address, Hash } from '../shared/types/eth.js'
+import type { Address, ChainEvent, Hash } from '../shared/types/eth.js'
 import type { BlockRef, TxContext } from '../shared/types/eth.js'
 import type { WithTimestamps } from '../shared/types/with-timestamps.js'
 
@@ -26,11 +26,7 @@ export type Settlement = SettlementKey &
     currency: Address
     price: string
 
-    execution: {
-      logIndex: number
-      txHash: Hash
-      block: BlockRef
-
+    execution: ChainEvent & {
       callReconstruction: {
         status: Status
         error?: string

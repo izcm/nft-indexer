@@ -2,7 +2,10 @@ import type { Settlement } from '#app/domain/settlement/model.js'
 import type { Address, Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
-export type SettlementLog = {
+import { chainEventFromBaseLog } from '../shared/from-base-log.js'
+import { BaseLog } from '../shared/types.js'
+
+export type SettlementLog = BaseLog & {
   eventName: 'Settlement'
   args: {
     orderHash: Hash
@@ -13,14 +16,16 @@ export type SettlementLog = {
     currency: Address
     price: bigint
   }
-  blockNumber: bigint
-  blockTimestamp: bigint
-  transactionHash: Hash
-  logIndex: bigint
+}
+
+export function isSettlementLog(log: any): log is SettlementLog {
+  return log?.eventName === 'Settlement'
 }
 
 export function settlementFromLog(log: SettlementLog, chainId: number): Settlement {
   const { args } = log
+
+  const chainEvent = chainEventFromBaseLog(log)
 
   return {
     chainId: chainId,
@@ -36,13 +41,7 @@ export function settlementFromLog(log: SettlementLog, chainId: number): Settleme
     price: args.price.toString(),
 
     execution: {
-      logIndex: Number(log.logIndex),
-      txHash: log.transactionHash,
-
-      block: {
-        number: Number(log.blockNumber),
-        timestamp: Number(log.blockTimestamp),
-      },
+      ...chainEvent,
 
       callReconstruction: {
         status: Status.PENDING,

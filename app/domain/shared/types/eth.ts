@@ -7,6 +7,12 @@ export type BlockRef = {
   timestamp: number
 }
 
+export type ChainEvent = {
+  block: BlockRef
+  txHash: Hash
+  logIndex: number
+}
+
 export type TxContext = {
   index: number
   gasUsed: string

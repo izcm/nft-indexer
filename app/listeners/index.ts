@@ -1,22 +1,22 @@
-import type { AppClient } from '#app/clients.js'
+import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
+
 import { parseAbi } from 'viem'
+
+import type { AppClient } from '#app/clients.js'
 import { SETTLEMENT_EVENT_EMITTER } from '#app/domain/constants/app.js'
+
 import { handleSettlement } from './settlements/handler.js'
-export type ListenerItem = {
-  log: any // decoded viem log
-  chainId: number
-}
+import { handleOrderCancelled } from './order-cancelled/handler.js'
+import { ListenerItem } from './shared/types.js'
 
 // ------------------
 // LISTENERS
 // ------------------
 
 export const start = (client: AppClient) => {
-  client.watchEvent({
-    address: SETTLEMENT_EVENT_EMITTER, // todo: address per chain / client
-    events: parseAbi([
-      'event Settlement(bytes32 indexed orderHash, address indexed collection, uint256 indexed tokenId, address seller, address buyer, address currency, uint256 price)',
-    ]),
+  client.watchContractEvent({
+    address: SETTLEMENT_EVENT_EMITTER,
+    abi: json.abi,
     onLogs: logs => {
       logs.forEach(log =>
         routeLog({
@@ -27,13 +27,11 @@ export const start = (client: AppClient) => {
     },
     onError: error => console.log(error),
   })
-  console.log(`Listening for events on chain: ${client.chain!.id}`)
-  console.log(`Watching contract: ${SETTLEMENT_EVENT_EMITTER}`)
 }
 
 const routers: Record<string, (item: ListenerItem) => Promise<void>> = {
   Settlement: handleSettlement,
-  // OrderCancelled: handleOrderCancelled,
+  OrderCancelled: handleOrderCancelled,
 }
 
 const routeLog = async (envelope: ListenerItem) => {
