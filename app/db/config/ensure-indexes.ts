@@ -12,4 +12,8 @@ export const ensureIndexes = async () => {
   // supports meta worker
   await settlements().createIndex({ chainId: 1, metaStatus: 1 })
   await orders().createIndex({ chainId: 1, 'order.collection': 1, status: 1 })
+
+  // supports order cancellations by nonce
+  await orders().createIndex({ chainId: 1, 'order.actor': 1, 'order.nonce': 1 })
+  await orders().createIndex({ chainId: 1, status: 1 })
 }

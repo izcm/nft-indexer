@@ -46,7 +46,16 @@ export const makeOrderActions = ({ orders, nftCollections, realtime }: Deps) => 
     nonce: string
     cancellation: ChainEvent
   }) {
-    await orders.cancelOrdersByChainIdNonce({ chainId, user, nonce, cancellation })
+    const cancelled = await orders.cancelOrdersByChainIdNonce({
+      chainId,
+      user,
+      nonce,
+      cancellation,
+    })
+
+    cancelled.forEach(({ orderHash }) =>
+      realtime?.broadcast('order.cancelled', { chainId, orderHash })
+    )
   }
 
   // --- secondary actions ---

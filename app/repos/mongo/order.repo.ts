@@ -70,17 +70,21 @@ export const orderRepo: OrderPort = {
     user: Address
     nonce: string
     cancellation: ChainEvent
-  }): Promise<void> {
-    await write.updateMany(
-      { chainId, 'order.actor': user, 'order.nonce': nonce },
-      {
-        $set: {
-          status: 'cancelled',
-          cancellation,
-        },
+  }): Promise<{ orderHash: Hash }[]> {
+    const filter = { chainId, 'order.actor': user, 'order.nonce': nonce }
+
+    const docs = await orders().find(filter).project({ orderHash: 1 }).toArray()
+
+    await write.updateMany(filter, {
+      $set: {
+        status: 'cancelled',
+        cancellation,
       },
-      { upsert: false }
-    )
+    })
+
+    return docs.map(d => ({
+      orderHash: d.orderHash,
+    }))
   },
 
   async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
@@ -90,8 +94,7 @@ export const orderRepo: OrderPort = {
         $set: {
           status,
         },
-      },
-      { upsert: false }
+      }
     )
   },
 }

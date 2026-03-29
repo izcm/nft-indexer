@@ -33,5 +33,5 @@ export interface OrderPort extends ByKey<OrderRecord, OrderKey>, Pageable<OrderR
     user: Address
     nonce: string
     cancellation: ChainEvent
-  }): Promise<void>
+  }): Promise<{ orderHash: Hash }[]>
 }
