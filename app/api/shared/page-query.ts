@@ -5,16 +5,13 @@ import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
  *
  * @param q       Incoming query object (e.g. Fastify request.query)
  * @param fields  Allowed filter keys (usually schema/queryable fields)
- * @param nestedKeys Keys that belong to a nested object (will be prefixed)
- * @param nestedPath  Path to prepend for nested keys (e.g. "order")
  *
  * @returns A flat object suitable for MongoDB filtering
  */
 export function buildFilters(
   q: Record<string, unknown>,
   fields: Record<string, unknown>,
-  nestedKeys?: Set<string>,
-  nestedPath?: string
+  nested?: Record<string, string> // key => path
 ): Record<string, unknown> {
   const filters: Record<string, unknown> = {}
 
@@ -23,7 +20,7 @@ export function buildFilters(
     if (v === undefined) continue
 
     // set correct path for nested fields
-    const path = nestedKeys?.has(key) ? `${nestedPath}.${key}` : key
+    const path = nested?.[key] ?? key
 
     filters[path] = v
   }
@@ -58,8 +55,8 @@ export const basePageQuery = (q: any) => {
     cursor: q.cursor,
     from: q.from,
     to: q.to,
-    rangeField: q.rangeField ?? 'createdAt', // todo: dont hardcode this
-    sortField: q.sortField ?? 'createdAt',
+    rangeField: q.rangeField ?? 'updatedAt', // todo: dont hardcode this
+    sortField: q.sortField ?? 'updatedAt',
     sortDir: q.sortDir ?? 'desc',
   }
 }

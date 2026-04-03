@@ -1,4 +1,5 @@
 import { Order, OrderRecord } from '#app/domain/order/model.js'
+import { Address, Hash } from '#app/domain/shared/types/eth.js'
 import { secondsToUnixMs } from '#app/lib/utils/time.js'
 
 // todo: start and end must handle bigints
@@ -9,18 +10,18 @@ export type OrderDTO = {
   id: string
 
   chainId: number
-  orderHash: string
+  orderHash: Hash
 
-  type: 'ask' | 'bid'
+  side: 'ask' | 'bid'
   isCollectionBid: boolean
 
-  collection: string
+  collection: Address
   tokenId: string
 
   price: string
-  currency: string
+  currency: Address
 
-  actor: string
+  actor: Address
 
   start: number
   end: number
@@ -28,6 +29,8 @@ export type OrderDTO = {
   rawOrder: Order
 
   status: string
+
+  txHash?: Hash
 }
 
 export const orderDTO = {
@@ -40,7 +43,7 @@ export const orderDTO = {
       chainId: r.chainId,
       orderHash: r.orderHash,
 
-      type: order.side === 0 ? 'ask' : 'bid',
+      side: order.side === 0 ? 'ask' : 'bid',
       isCollectionBid: order.isCollectionBid,
 
       collection: order.collection,
@@ -57,6 +60,7 @@ export const orderDTO = {
       rawOrder: order,
 
       status: r.status,
+      txHash: r.chainEvent?.txHash,
     }
   },
 }

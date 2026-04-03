@@ -78,13 +78,28 @@ export const orderRepo: OrderPort = {
     await write.updateMany(filter, {
       $set: {
         status: 'cancelled',
-        cancellation,
+        chainEvent: cancellation,
       },
     })
 
     return docs.map(d => ({
       orderHash: d.orderHash,
     }))
+  },
+
+  async markOrderFilled({
+    chainId,
+    orderHash,
+    chainEvent,
+  }: {
+    chainId: number
+    orderHash: Hash
+    chainEvent: ChainEvent
+  }): Promise<void> {
+    await write.updateOne(
+      { chainId, orderHash },
+      { $set: { status: 'filled', chainEvent: chainEvent } }
+    )
   },
 
   async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
@@ -100,7 +115,7 @@ export const orderRepo: OrderPort = {
 }
 
 /**
- * WRAPPER
+ * OPTIONAL WRAPPER
  * - Prettifies multichain code
  */
 export const orderRepoFor = (chainId: number) => ({

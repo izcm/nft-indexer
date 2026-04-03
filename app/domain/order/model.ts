@@ -28,7 +28,7 @@ export type OrderRecord = OrderKey &
     status: OrderStatus
 
     // 'OrderCancelled' chain event
-    cancellation?: ChainEvent
+    chainEvent?: ChainEvent
   }
 
 // todo: remove this and store raw

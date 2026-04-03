@@ -11,7 +11,7 @@ const fakeDeps = () => ({
   },
   orders: {
     findByKey: vi.fn().mockResolvedValue(null),
-    updateStatus: vi.fn(),
+    markOrderFilled: vi.fn(),
   },
   nftCollections: {
     noteNFTCollection: vi.fn(),
@@ -59,7 +59,10 @@ describe('domain actions - settlements', () => {
       const orderKey = { chainId: settlement.chainId, orderHash: settlement.orderHash }
 
       expect(orders.findByKey).toHaveBeenCalledWith(orderKey)
-      expect(orders.updateStatus).toHaveBeenCalledWith({ ...orderKey, status: 'filled' })
+      expect(orders.markOrderFilled).toHaveBeenCalledWith({
+        ...orderKey,
+        chainEvent: settlement.execution,
+      })
     })
 
     it('does nothing if order not found', async () => {
@@ -75,12 +78,12 @@ describe('domain actions - settlements', () => {
         chainId: settlement.chainId,
         orderHash: settlement.orderHash,
       })
-      expect(orders.updateStatus).not.toHaveBeenCalled()
+      expect(orders.markOrderFilled).not.toHaveBeenCalled()
     })
 
     it('logs if failed to mark order', async () => {
       deps.orders.findByKey.mockResolvedValueOnce(fakeOrderRecord())
-      deps.orders.updateStatus.mockRejectedValueOnce(genericError)
+      deps.orders.markOrderFilled.mockRejectedValueOnce(genericError)
 
       actions.ingestSettlement(fakeSettlement())
 

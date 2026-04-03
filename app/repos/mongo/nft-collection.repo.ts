@@ -7,7 +7,6 @@ import type {
 } from '#app/domain/nft-collection/model.js'
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 
-import type { Address } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './shared/_read.js'

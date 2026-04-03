@@ -8,11 +8,11 @@ import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
-import { byIdParams } from '#app/api/shared/schemas.js'
+import { byIdParams, chainEventQueryableFields } from '#app/api/shared/schemas.js'
 import { basePageQuery, buildAttributeFilters, buildFilters } from '#app/api/shared/page-query.js'
 import { getOr404 } from '#app/api/shared/get-or-404.js'
 
-import { settlementPageQuery, settlementQueryableFields } from './schemas.js'
+import { settlementNestedMap, settlementPageQuery, settlementQueryableFields } from './schemas.js'
 
 // --- DI ---
 import { readByKey, readPage } from '#app/di/read.js'
@@ -36,7 +36,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
       const query = req.query
 
       const filters = {
-        ...buildFilters(query, settlementQueryableFields),
+        ...buildFilters(query, settlementQueryableFields, settlementNestedMap),
         ...buildAttributeFilters(query),
       }
 

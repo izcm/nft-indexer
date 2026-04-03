@@ -10,7 +10,12 @@ import { byIdParams } from '#app/api/shared/schemas.js'
 import { getOr404 } from '#app/api/shared/get-or-404.js'
 import { basePageQuery, buildAttributeFilters, buildFilters } from '#app/api/shared/page-query.js'
 
-import { orderCoreQueryableFields, orderPageSchema, orderRecordQueryableFields } from './schemas.js'
+import {
+  orderCoreQueryableFields,
+  orderPageSchema,
+  orderRecordNestedMap,
+  orderRecordQueryableFields,
+} from './schemas.js'
 
 // -- DI ---
 import { readByKey, readPage } from '#app/di/read.js'
@@ -36,15 +41,11 @@ export const ordersQuery = (fastify: FastifyInstance) => {
       const query = req.query
 
       const filters = {
-        ...buildFilters(
-          query,
-          orderRecordQueryableFields,
-          new Set(Object.keys(orderCoreQueryableFields)),
-          'order'
-        ),
+        ...buildFilters(query, orderRecordQueryableFields, orderRecordNestedMap),
         ...buildAttributeFilters(query),
       }
 
+      console.log(filters)
       const domainPageQuery: DomainPageQuery<OrderRecord> = {
         ...basePageQuery(query),
         filters,

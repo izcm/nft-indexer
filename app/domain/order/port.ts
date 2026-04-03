@@ -16,12 +16,12 @@ export interface OrderPort extends ByKey<OrderRecord, OrderKey>, Pageable<OrderR
   ): Promise<{ chainId: number; orderHash: Hash; didUpsert: boolean }>
 
   /**
-   * Update order status (active/filled/cancelled/expired).
+   * Update order status
    */
   updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }): Promise<void>
 
   /**
-   * Cancel order on listener picking up on 'OrderCancelled' event
+   * Cancel order when listener picks up `OrderCancelled` event
    */
   cancelOrdersByChainIdNonce({
     chainId,
@@ -34,4 +34,18 @@ export interface OrderPort extends ByKey<OrderRecord, OrderKey>, Pageable<OrderR
     nonce: string
     cancellation: ChainEvent
   }): Promise<{ orderHash: Hash }[]>
+
+  /**
+   * An order is only filled on-chain
+   * When listener picks up `Settlement` event => pass orderHash + chainEvent to mark as filled
+   */
+  markOrderFilled({
+    chainId,
+    orderHash,
+    chainEvent,
+  }: {
+    chainId: number
+    orderHash: Hash
+    chainEvent: ChainEvent
+  }): Promise<void>
 }

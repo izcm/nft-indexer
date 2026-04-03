@@ -11,6 +11,8 @@ export const makeTsWrite = <TDoc extends MongoDoc & WithTimestamps>(
 ) => {
   return {
     updateOne(filter: Filter<TDoc>, update: UpdateFilter<TDoc>, options?: UpdateOptions) {
+      const now = Date.now()
+
       const col = getCol()
 
       return col.updateOne(
@@ -19,11 +21,11 @@ export const makeTsWrite = <TDoc extends MongoDoc & WithTimestamps>(
           ...update,
           $set: {
             ...(update.$set ?? {}),
-            updatedAt: Date.now(),
+            updatedAt: now,
           } as Partial<TDoc>,
           $setOnInsert: {
             ...(update.$setOnInsert ?? {}),
-            createdAt: Date.now(),
+            createdAt: now,
           } as Partial<TDoc>,
         },
         options
@@ -33,7 +35,7 @@ export const makeTsWrite = <TDoc extends MongoDoc & WithTimestamps>(
     updateMany(filter: Filter<TDoc>, update: UpdateFilter<TDoc>, options?: UpdateOptions) {
       const col = getCol()
 
-      return col.updateOne(
+      return col.updateMany(
         filter,
         {
           ...update,

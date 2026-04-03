@@ -4,14 +4,14 @@ import type { SettlementPort } from './port.js'
 import type { OrderPort } from '../order/port.js'
 import type { NFTCollectionPort } from '../nft-collection/port.js'
 
-import type { Address } from '../shared/types/eth.js'
+import type { Address, ChainEvent, Hash } from '../shared/types/eth.js'
 import type { RealtimePort } from '../shared/interfaces/realtime-port.js'
 
 const TAG = 'settlement'
 
 type Deps = {
   settlements: Pick<SettlementPort, 'save' | 'finalizeCallReconstruction'>
-  orders: Pick<OrderPort, 'findByKey' | 'updateStatus'>
+  orders: Pick<OrderPort, 'findByKey' | 'markOrderFilled'>
   nftCollections: Pick<NFTCollectionPort, 'noteNFTCollection'>
   realtime?: RealtimePort
 }
@@ -22,17 +22,19 @@ export const makeSettlementActions = ({ settlements, orders, nftCollections, rea
   async function ingestSettlement(settlement: Settlement) {
     await settlements.save(settlement)
 
-    const { chainId, orderHash, collection } = settlement
-    void onSettlementCreated({ chainId, orderHash, collection })
+    const { chainId, orderHash, collection, execution } = settlement
+    void onSettlementCreated({ chainId, orderHash, collection, chainEvent: execution })
   }
 
-  async function ingestSettlementMeta({
+  async function ingestReconstructedCall({
     chainId,
     orderHash,
-    meta,
-  }: SettlementKey & { meta: SettlementCall }) {
+    call,
+  }: SettlementKey & { call: SettlementCall }) {
     try {
-      await settlements.finalizeCallReconstruction({ chainId, orderHash, meta })
+      // finalize and broadcast
+      await settlements.finalizeCallReconstruction({ chainId, orderHash, meta: call })
+      realtime?.broadcast('settlement.callReconstructed', { chainId, orderHash })
     } catch (err) {
       throw new Error(`[${TAG}:meta] failed to finalize settlement metadata`, { cause: err })
     }
@@ -44,7 +46,8 @@ export const makeSettlementActions = ({ settlements, orders, nftCollections, rea
     chainId,
     orderHash,
     collection,
-  }: SettlementKey & { collection: Address }) {
+    chainEvent,
+  }: SettlementKey & { collection: Address; chainEvent: ChainEvent }) {
     const tag = `${TAG}:created`
 
     // note collection
@@ -59,13 +62,13 @@ export const makeSettlementActions = ({ settlements, orders, nftCollections, rea
       .findByKey(orderKey)
       .then(order => {
         if (!order) return
-        return orders.updateStatus({ ...orderKey, status: 'filled' })
+        return orders.markOrderFilled({ ...orderKey, chainEvent })
       })
       .catch(err => console.error(`[${tag}] failed to mark order as filled`, err))
 
-    // realtime (eg. websocket)
+    // websocket
     realtime?.broadcast('settlement.created', { chainId, orderHash })
   }
 
-  return { ingestSettlement, ingestSettlementMeta }
+  return { ingestSettlement, ingestReconstructedCall }
 }
