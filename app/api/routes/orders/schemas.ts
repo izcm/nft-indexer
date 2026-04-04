@@ -2,10 +2,14 @@ import { chainEventQueryableFields, paginationQueryParams } from '#app/api/share
 
 import { UNIX_SECONDS_MAX } from '#app/domain/constants/limits.js'
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
-import { ORDER_SORT_FIELDS } from '#app/domain/order/model.js'
 import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
 
-// === query ===
+// --- query model ---
+
+export const ORDER_SORT_FIELDS = ['createdAt', 'updatedAt'] as const
+export type OrderSortField = (typeof ORDER_SORT_FIELDS)[number]
+
+// === field defs ===
 
 export const orderCoreFieldSchema = {
   actor: { type: 'string', pattern: ADDR_REGEX },
@@ -32,7 +36,7 @@ export const orderRecordNestedMap = {
   ...Object.fromEntries(Object.keys(orderCoreFieldSchema).map(k => [k, `order.${k}`])),
 }
 
-// === ingest ===
+// === create body ===
 
 export const orderCreateBody = {
   $id: 'order-create',

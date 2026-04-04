@@ -8,6 +8,8 @@ export const toOrderType = (side: number, isCollectionBid: boolean): OrderType =
   return direction === 'BID' && isCollectionBid ? 'COLLECTION_BID' : direction
 }
 
+const MAX_DIGITS = 34 // Decimal128 safe limit
+
 export const isValidOrder = (o: Order): boolean => {
   return (
     BigInt(o.price) > 0 &&
@@ -17,6 +19,7 @@ export const isValidOrder = (o: Order): boolean => {
     isUintString(o.price) &&
     isUnixSeconds(Number(o.start)) &&
     isUnixSeconds(Number(o.end)) &&
+    o.price.length <= MAX_DIGITS &&
     o.actor !== '0x0000000000000000000000000000000000000000'
   )
 }

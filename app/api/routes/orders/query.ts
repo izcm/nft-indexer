@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 
 import { ORDER_ID_REGEX } from '#app/domain/constants/regex.js'
-import type { OrderKey, OrderQueryModel, OrderRecord } from '#app/domain/order/model.js'
+import type { OrderKey, OrderRecord } from '#app/domain/order/model.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
@@ -31,7 +31,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
   )
 
   fastify.get<{
-    Querystring: HttpPageRequest<OrderQueryModel, 'order'> & Record<string, unknown>
+    Querystring: HttpPageRequest<OrderRecord, 'order'> & Record<string, unknown>
   }>(
     '/',
     {

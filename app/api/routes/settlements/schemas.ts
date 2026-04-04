@@ -1,8 +1,11 @@
 import { chainEventQueryableFields, paginationQueryParams } from '#app/api/shared/schemas.js'
 
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
-import { SETTLEMENT_SORT_FIELDS } from '#app/domain/settlement/model.js'
 import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'
+
+// --- query layer ---
+
+export const SETTLEMENT_SORT_FIELDS = ['ingestedAt'] as const
 
 export const settlementQueryableFields = {
   chainId: { type: 'number' },

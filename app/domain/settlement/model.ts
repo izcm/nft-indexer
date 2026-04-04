@@ -50,8 +50,3 @@ export type SettlementCall = {
     signer: Address
   }
 }
-
-// --- query layer ---
-
-export const SETTLEMENT_SORT_FIELDS = ['ingestedAt'] as const
-export type SettlementSortField = (typeof SETTLEMENT_SORT_FIELDS)[number]

@@ -27,7 +27,7 @@ export type OrderRecord = OrderKey &
     order: Order
     status: OrderStatus
 
-    // 'OrderCancelled' chain event
+    // cancelled / filled tx
     chainEvent?: ChainEvent
   }
 
@@ -56,10 +56,3 @@ export type Order = {
 }
 
 export type OrderCore = Omit<Order, 'signature'>
-
-// --- query layer ---
-
-export type OrderQueryModel = OrderCore & { status: OrderStatus }
-
-export const ORDER_SORT_FIELDS = ['createdAt', 'updatedAt'] as const
-export type OrderSortField = (typeof ORDER_SORT_FIELDS)[number]

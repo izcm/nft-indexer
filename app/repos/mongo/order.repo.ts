@@ -1,3 +1,5 @@
+import { Decimal128 } from 'mongodb'
+
 import { nfts, orders } from '#app/db/collections.js'
 
 import type { Order, OrderKey, OrderStatus } from '#app/domain/order/model.js'
@@ -5,10 +7,11 @@ import type { OrderPort } from '#app/domain/order/port.js'
 import type { Address, ChainEvent, Hash } from '#app/domain/shared/types/eth.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import { OrderDoc } from './docs.js'
 
 import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
+
+import type { OrderDoc } from './docs.js'
 
 const baseRead = makeReadRepo<OrderDoc, OrderKey>(orders, k => ({
   chainId: k.chainId,
@@ -26,7 +29,7 @@ export const orderRepo: OrderPort = {
     const { signature, ...orderCore } = order
     const orderHash = hashOrderStruct(orderCore) // todo: move this out of repo
 
-    const { collection, tokenId } = orderCore
+    const { collection, tokenId, price, nonce, start, end } = orderCore
 
     const nft = await nfts().findOne({
       chainId,
@@ -50,6 +53,14 @@ export const orderRepo: OrderPort = {
 
           // nft attributes for pagination filters
           attributes: nft?.attributes ?? null,
+          db: {
+            price: Decimal128.fromString(price),
+            nonce: Decimal128.fromString(nonce),
+
+            // cast for sorting only, domain stays uint64 string
+            start: Number(start),
+            end: Number(end),
+          },
         },
       },
       { upsert: true }

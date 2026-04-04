@@ -1,7 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 
 import type { NFTCollection, NFTCollectionKey } from '#app/domain/nft-collection/model.js'
-import { OrderSortField } from '#app/domain/order/model.js'
 
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
@@ -36,9 +35,9 @@ export const nftCollectionsQuery = (fastify: FastifyInstance) => {
     async req => {
       const q = req.query
 
-      const domainPageQuery: DomainPageQuery<NFTCollection> = {
+      const domainPageQuery = {
         limit: q.limit ?? DEFAULT_PAGE_LIMIT,
-        sortField: (q.sortField as OrderSortField) ?? 'createdAt',
+        sortField: 'createdAt',
         sortDir: q.sortDir,
       }
 

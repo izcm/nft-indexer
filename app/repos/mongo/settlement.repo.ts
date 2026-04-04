@@ -1,3 +1,5 @@
+import { Decimal128 } from 'mongodb'
+
 import { nfts, settlements } from '#app/db/collections.js'
 
 import type { Settlement, SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
@@ -52,12 +54,15 @@ export const settlementRepo: SettlementPort = {
     return settlements().insertOne({
       ...s,
 
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+
       // nft attributes for pagination filters
       attributes: nft?.attributes,
 
-      // todo: make 'write' implement insertOne
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      db: {
+        price: Decimal128.fromString(s.price),
+      },
     })
   },
 

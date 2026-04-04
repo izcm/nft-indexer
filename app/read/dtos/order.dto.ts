@@ -31,6 +31,8 @@ export type OrderDTO = {
   status: string
 
   txHash?: Hash
+
+  createdAt: number
 }
 
 export const orderDTO = {
@@ -61,6 +63,8 @@ export const orderDTO = {
 
       status: r.status,
       txHash: r.chainEvent?.txHash,
+
+      createdAt: r.createdAt,
     }
   },
 }
