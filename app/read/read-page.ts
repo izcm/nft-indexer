@@ -14,7 +14,7 @@ export const makeReadPage = (readers: Readers) =>
   async function readPage<R extends ResourceName>(
     // nftcollections 1:M relationship => don't do includes per today
     resource: R,
-    query: HttpPageRequest<ResourceType<R>, R>
+    query: HttpPageRequest<R>
   ) {
     // non 1:1 relationships only support simple pagination
     // todo: would be nice to have include working for more relationship types

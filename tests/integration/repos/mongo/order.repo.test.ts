@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { Decimal128, ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { orders } from '#app/db/collections.js'
@@ -6,10 +6,12 @@ import { OrderRecord } from '#app/domain/order/model.js'
 import { orderRepo } from '#app/repos/mongo/order.repo.js'
 
 // test helpers
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-import { seedOrders } from '#tests/helpers/seed/seed-orders.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo/mongo-memory.js'
 import { fakeOrderRecord } from '#tests/helpers/fixtures.js'
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
+import { OrderDoc } from '#app/repos/mongo/docs.js'
+import { fakeOrderDoc } from '#tests/helpers/mongo/to-doc.js'
+import { seedOrders } from '#tests/helpers/mongo/seed-mongo.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -27,13 +29,16 @@ describe('orderRepo', () => {
   const repo = orderRepo
 
   // === defaults ===
-  const fakeOrderDoc = () => ({ ...fakeOrderRecord(), _id: new ObjectId() })
 
   async function givenOrderDocExists(overrides: Partial<OrderRecord> = {}) {
-    const orderRecord = fakeOrderRecord(overrides)
-    const { insertedId } = await orders().insertOne({ ...orderRecord, _id: new ObjectId() })
+    const orderDoc = fakeOrderDoc()
 
-    return { insertedId, orderRecord }
+    const { insertedId } = await orders().insertOne({
+      ...orderDoc,
+      _id: new ObjectId(),
+    })
+
+    return { insertedId, orderDoc }
   }
 
   /* ======================================
@@ -42,13 +47,13 @@ describe('orderRepo', () => {
 
   describe('findByOrderKey', () => {
     it('findByOrderKey returns expected doc for chainId + orderHash', async () => {
-      const { orderRecord } = await givenOrderDocExists()
-      const { chainId, orderHash } = orderRecord
+      const { orderDoc } = await givenOrderDocExists()
+      const { chainId, orderHash } = orderDoc
 
       const row = await repo.findByKey({ chainId, orderHash })
       if (!row) throw new Error('row missing')
 
-      expect(row).toMatchObject(orderRecord)
+      expect(row).toMatchObject(orderDoc)
     })
 
     it('findByOrderKey returns null when not found', async () => {
@@ -105,16 +110,16 @@ describe('orderRepo', () => {
     })
 
     it('rejects manual duplicate insertion', async () => {
-      const { orderRecord } = await givenOrderDocExists()
+      const { orderDoc } = await givenOrderDocExists()
 
       await expect(orders().insertOne(fakeOrderDoc())).rejects.toThrow()
     })
 
     describe('ensure', () => {
       it('inserts order doc for new chainId + orderHash pair', async () => {
-        const orderRecord = fakeOrderRecord()
+        const orderDoc = fakeOrderRecord()
 
-        const { chainId, order } = orderRecord
+        const { chainId, order } = orderDoc
         const result = await repo.ensure(chainId, order)
 
         // expectations on repo return values
@@ -128,7 +133,7 @@ describe('orderRepo', () => {
         expect(rows.length).toBe(1)
 
         const inserted = rows[0]
-        expect(inserted).toMatchObject(orderRecord)
+        expect(inserted).toMatchObject(orderDoc)
 
         // compare return values to inserted
         expect(result.chainId).toEqual(inserted.chainId)
@@ -137,21 +142,21 @@ describe('orderRepo', () => {
     })
 
     it('does not overwrite an existing order', async () => {
-      const { orderRecord } = await givenOrderDocExists()
+      const { orderDoc } = await givenOrderDocExists()
 
       const original = await orders().findOne({
-        chainId: orderRecord.chainId,
-        orderHash: orderRecord.orderHash,
+        chainId: orderDoc.chainId,
+        orderHash: orderDoc.orderHash,
       })
       if (!original) throw Error('missing')
 
       // try ensure again
-      const { chainId, order } = orderRecord
+      const { chainId, order } = orderDoc
       await repo.ensure(chainId, order)
 
       const after = await orders().findOne({
-        chainId: orderRecord.chainId,
-        orderHash: orderRecord.orderHash,
+        chainId: orderDoc.chainId,
+        orderHash: orderDoc.orderHash,
       })
       if (!after) throw Error('missing')
 
@@ -165,7 +170,7 @@ describe('orderRepo', () => {
 
       const { chainId, orderHash } = (
         await givenOrderDocExists({ status: 'active', updatedAt: startTime })
-      ).orderRecord
+      ).orderDoc
 
       const rowBefore = await orders().findOne({ chainId, orderHash })
       if (!rowBefore) throw Error('row missing')

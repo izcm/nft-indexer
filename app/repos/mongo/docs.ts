@@ -17,7 +17,6 @@ export type OrderDoc = OrderRecord & {
   attributes?: NFTAttribute[] | null
   db: {
     price: Decimal128
-    nonce: Decimal128
     start: number
     end: number
   }

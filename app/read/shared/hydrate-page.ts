@@ -10,7 +10,7 @@ import { Readers } from '#app/domain/shared/types/readers.js'
 export async function hydratePage<R extends PagedWithIncludesResource>(
   readers: Readers,
   resource: R,
-  args: DomainPageQuery<ResourceType<R>>,
+  args: DomainPageQuery,
   opts: { include?: includeFor<R>[] } = {}
 ) {
   // --- read page of base resource ---

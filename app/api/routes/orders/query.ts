@@ -31,7 +31,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
   )
 
   fastify.get<{
-    Querystring: HttpPageRequest<OrderRecord, 'order'> & Record<string, unknown>
+    Querystring: HttpPageRequest<'order'> & Record<string, unknown>
   }>(
     '/',
     {
@@ -46,7 +46,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
       }
 
       console.log(filters)
-      const domainPageQuery: DomainPageQuery<OrderRecord> = {
+      const domainPageQuery: DomainPageQuery = {
         ...basePageQuery(query),
         filters,
       }

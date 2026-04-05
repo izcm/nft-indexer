@@ -29,7 +29,7 @@ export const orderRepo: OrderPort = {
     const { signature, ...orderCore } = order
     const orderHash = hashOrderStruct(orderCore) // todo: move this out of repo
 
-    const { collection, tokenId, price, nonce, start, end } = orderCore
+    const { collection, tokenId, price, start, end } = orderCore
 
     const nft = await nfts().findOne({
       chainId,
@@ -55,7 +55,6 @@ export const orderRepo: OrderPort = {
           attributes: nft?.attributes ?? null,
           db: {
             price: Decimal128.fromString(price),
-            nonce: Decimal128.fromString(nonce),
 
             // cast for sorting only, domain stays uint64 string
             start: Number(start),

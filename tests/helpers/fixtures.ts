@@ -81,7 +81,7 @@ export const fakeOrderCore = (): OrderCore => ({
   collection: addrOf('order:collection'),
   tokenId: s(bytes32n('order:tokenId')),
   currency: addrOf('order:currency') as Address,
-  price: s(bytes32n('order:price')),
+  price: s(priceWei('order:price')),
   actor: addrOf('order:actor') as Address,
   start: s(bytesOfn('order:start', 8)),
   end: s(bytesOfn('order:end', 8)),
@@ -96,7 +96,7 @@ export const fakeSettlement = (overrides: Partial<Settlement> = {}): Settlement 
   seller: addrOf('settlement:seller') as Address,
   buyer: addrOf('settlement:buyer') as Address,
   currency: addrOf('settlement:currency') as Address,
-  price: s(bytes32n('settlement:price')),
+  price: s(priceWei('order:price')),
   execution: {
     logIndex: 0,
     txHash: bytes32('settlement:txHash') as Hash,

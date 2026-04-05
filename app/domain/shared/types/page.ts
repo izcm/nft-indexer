@@ -5,7 +5,7 @@ export type Page<T> = {
 
 export type SortDir = 'asc' | 'desc'
 
-export type DomainPageQuery<TEntity extends object> = {
+export type DomainPageQuery = {
   limit: number
   cursor?: string
 
@@ -15,8 +15,6 @@ export type DomainPageQuery<TEntity extends object> = {
   rangeField?: string
   sortField: string
 
-  // rangeField?: keyof TEntity
-  // sortField: keyof TEntity
   sortDir: SortDir
 
   filters?: Record<string, unknown>

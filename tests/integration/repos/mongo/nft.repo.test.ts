@@ -8,7 +8,7 @@ import { Status } from '#app/domain/shared/status.js'
 import { nftRepo } from '#app/repos/mongo/nft.repo.js'
 
 // test helpers
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo/mongo-memory.js'
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
 
 beforeAll(async () => {

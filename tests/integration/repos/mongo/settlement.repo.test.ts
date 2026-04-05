@@ -3,7 +3,6 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { settlements } from '#app/db/collections.js'
 
-import type { Settlement } from '#app/domain/settlement/model.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
@@ -11,10 +10,11 @@ import type { DeepPartial } from '#app/lib/utils/deep-partial.js'
 import { settlementRepo } from '#app/repos/mongo/settlement.repo.js'
 
 import { bytes32 } from '#tests/helpers/evm-fixtures.js'
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-import { seedSettlements } from '#tests/helpers/seed/seed-settlements.js'
-import { fakeSettlement, fakeSettlementCall } from '#tests/helpers/fixtures.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo/mongo-memory.js'
+import { fakeSettlementCall } from '#tests/helpers/fixtures.js'
 import { SettlementDoc } from '#app/repos/mongo/docs.js'
+import { seedSettlements } from '#tests/helpers/mongo/seed-mongo.js'
+import { fakeSettlementDoc } from '#tests/helpers/mongo/to-doc.js'
 
 beforeAll(async () => {
   await startTestMongo()
@@ -33,7 +33,7 @@ describe('settlementRepo', () => {
 
   const CHAIN_ID = 1
 
-  const fakeSettlementDocForChain = (chainId: number = CHAIN_ID) => fakeSettlement({ chainId })
+  const fakeSettlementDocForChain = (chainId: number = CHAIN_ID) => fakeSettlementDoc({ chainId })
 
   async function givenSettlementDocDocExists(overrides: DeepPartial<SettlementDoc> = {}) {
     const seed = `given:${Math.random().toString(36).slice(2)}`

@@ -1,14 +1,14 @@
-import { orders } from '#app/db/collections.js'
-import type { Order, OrderRecord, Signature } from '#app/domain/order/model.js'
-import { OrderSide } from '#app/domain/order/model.js'
+import type { Order, OrderRecord, Signature, OrderSide } from '#app/domain/order/model.js'
 import type { Address, Hash } from '#app/domain/shared/types/eth.js'
+
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
-import { addrOf, bytes32, bytes32n, priceWei } from '#tests/helpers/evm-fixtures.js'
+
+import { addrOf, bytes32, bytes32n, bytesOfn, priceWei } from '#tests/helpers/evm-fixtures.js'
 
 const s = (x: number | bigint) => x.toString()
 
 // super fake orders
-export async function seedOrders(
+export async function buildFakeOrders(
   chainId: number,
   collections: Address[],
   countPerCollection: number,
@@ -33,7 +33,7 @@ export async function seedOrders(
 
   const allOrders = Object.values(byCollection).flat()
 
-  const orderRecords: OrderRecord[] = allOrders.map(o => ({
+  const orderDocs: OrderRecord[] = allOrders.map(o => ({
     chainId,
     orderHash: hashOrderStruct(o),
 
@@ -46,7 +46,7 @@ export async function seedOrders(
     ...overrides,
   }))
 
-  return orders().insertMany(orderRecords)
+  return orderDocs
 }
 
 function buildFakeOrder(
@@ -79,7 +79,7 @@ function buildFakeOrder(
     actor: addrOf(orderSeed),
     start: s(startTs),
     end: s(endTs),
-    nonce: s(bytes32n(orderSeed)), // don't use seedNum (bigint => number => bigint creates issues when hashing order)
+    nonce: s(bytesOfn(orderSeed, 8)), // 64-bit max (~18 digits) to stay within Decimal128's 34-digit limit
     signature: dummySignature(orderSeed),
   }
 }

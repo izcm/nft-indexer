@@ -11,8 +11,8 @@ import {
 } from '#app/repos/mongo/nft-collection.repo.js'
 
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
-import { seedCollections } from '#tests/helpers/seed/seed-nft-collections.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo/mongo-memory.js'
+import { seedNFTCollections as seedCollections } from '#tests/helpers/mongo/seed-mongo.js'
 
 beforeAll(async () => {
   await startTestMongo()

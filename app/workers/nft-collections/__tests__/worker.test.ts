@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { runNFTBackfillWorker } from '../backfill-worker.js'
+import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
 
 describe('runNFTBackfillWorker', () => {
   const getBlockNumber = vi.fn()
@@ -29,7 +30,7 @@ describe('runNFTBackfillWorker', () => {
 
     await runNFTBackfillWorker(client, port)
 
-    expect(port.findBackfillNotDone).toHaveBeenCalledExactlyOnceWith(1, 25)
+    expect(port.findBackfillNotDone).toHaveBeenCalledExactlyOnceWith(1, DEFAULT_WORKER_LIMIT)
     expect(getBlockNumber).toHaveBeenCalledExactlyOnceWith()
     expect(getLogs).not.toHaveBeenCalled()
     expect(port.ensureNFT).not.toHaveBeenCalled()

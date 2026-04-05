@@ -17,7 +17,7 @@ export const orderCoreFieldSchema = {
   tokenId: { type: 'array', items: { type: 'string' } }, // eg. list of owned tokenIds
   currency: { type: 'string', pattern: ADDR_REGEX },
   price: { type: 'string' },
-  side: { type: 'integer', minimum: 0 },
+  side: { type: 'integer', minimum: 0, maximum: 1 },
   isCollectionBid: { type: 'boolean' },
   start: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
   end: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
@@ -31,6 +31,8 @@ export const orderRecordQueryableFields = {
   status: { type: 'string', enum: ['active', 'filled', 'cancelled', 'expired'] },
 } as const
 
+// these mappings ar domain specific
+// other mappings (eg. for denormalized mongo docs) happen in repo layer
 export const orderRecordNestedMap = {
   ...Object.fromEntries(Object.keys(chainEventQueryableFields).map(k => [k, `chainEvent.${k}`])),
   ...Object.fromEntries(Object.keys(orderCoreFieldSchema).map(k => [k, `order.${k}`])),

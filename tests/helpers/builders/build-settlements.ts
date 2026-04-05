@@ -1,4 +1,3 @@
-import { settlements } from '#app/db/collections.js'
 import { Settlement } from '#app/domain/settlement/model.js'
 import { applyDeepPartial, type DeepPartial } from '#app/lib/utils/deep-partial.js'
 
@@ -6,14 +5,14 @@ import { addrOf, bytes32, priceWei } from '#tests/helpers/evm-fixtures.js'
 
 const s = (x: number | bigint) => x.toString()
 
-export async function seedSettlements(
+export function buildFakeSettlements(
   chainId: number,
   seed: string,
   count: number,
   now: number = 0,
   overrides: DeepPartial<Settlement> = {}
-) {
-  const allSettlements: Settlement[] = Array.from({ length: count }).map((_, i) => {
+): Settlement[] {
+  return Array.from({ length: count }).map((_, i) => {
     const base = {
       chainId,
       orderHash: bytes32(`order:${i}:${seed}`),
@@ -47,6 +46,4 @@ export async function seedSettlements(
 
     return applyDeepPartial(base, overrides)
   })
-
-  return settlements().insertMany(allSettlements)
 }

@@ -7,7 +7,7 @@ import { findPageGeneric } from '#app/repos/mongo/shared/pagination/find-page-ge
 import type { GenericPageArgs } from '#app/repos/mongo/shared/pagination/types.js'
 import type { Page } from '#app/domain/shared/types/page.js'
 
-import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo-memory.js'
+import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo/mongo-memory.js'
 import { bytes32n } from '#tests/helpers/evm-fixtures.js'
 
 type TestDoc = {

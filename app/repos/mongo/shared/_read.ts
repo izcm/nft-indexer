@@ -4,7 +4,7 @@ import { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import { ByKey, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 
 import { findPageGeneric } from './pagination/find-page-generic.js'
-import { mapDomainToRepoQuery } from './pagination/page-mapper.js'
+import { mapDomainToRepoQuery } from './pagination/to-repo-query.js'
 
 export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
   getCol: () => Collection<TDoc>,
@@ -23,8 +23,8 @@ export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
         .toArray()
     },
 
-    findPage(domainPageQuery: DomainPageQuery<TDoc>) {
-      const repoQuery = mapDomainToRepoQuery<TDoc>(domainPageQuery as any, getCol())
+    findPage(domainPageQuery: DomainPageQuery) {
+      const repoQuery = mapDomainToRepoQuery<TDoc>(domainPageQuery, getCol())
 
       return findPageGeneric<TDoc>({
         ...repoQuery,

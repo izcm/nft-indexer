@@ -1,14 +1,14 @@
-import { nftCollections } from '#app/db/collections.js'
 import { NFTCollection } from '#app/domain/nft-collection/model.js'
+
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
 
-export const seedCollections = async (
+export function buildFakeNFTCollections(
   chainId: number,
   count: number,
   seed: string,
   overrides: Partial<NFTCollection> = {}
-) => {
-  const collections: NFTCollection[] = Array.from({ length: count }).map((_, i) => ({
+): NFTCollection[] {
+  return Array.from({ length: count }).map((_, i) => ({
     chainId,
     address: addrOf(`collection:${i}:${seed}`),
     metaStatuss: 'PENDING',
@@ -18,6 +18,4 @@ export const seedCollections = async (
     createdAt: i,
     ...overrides,
   }))
-
-  return nftCollections().insertMany(collections)
 }
