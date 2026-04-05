@@ -28,6 +28,7 @@ export function buildFilters(
   return filters
 }
 
+// todo: make params.attributes accept fmt trait=color:red,size:L
 export function buildAttributeFilters(q: Record<string, unknown>) {
   const rawTraits = q.trait
   const rawValues = q.value
@@ -41,10 +42,16 @@ export function buildAttributeFilters(q: Record<string, unknown>) {
     throw new Error('trait/value length mismatch')
   }
 
+  const grouped: Record<string, string[]> = {}
+
+  for (const [i, t] of traits.entries()) {
+    ;(grouped[t] ??= []).push(values[i])
+  }
+
   return {
-    attributes: traits.map((trait, i) => ({
+    attributes: Object.entries(grouped).map(([trait, value]) => ({
       trait,
-      value: values[i],
+      value,
     })),
   }
 }

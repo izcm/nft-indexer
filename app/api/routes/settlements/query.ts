@@ -27,7 +27,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
     }
   )
 
-  fastify.get<{ Querystring: HttpPageRequest<Settlement, 'settlement'> & Record<string, unknown> }>(
+  fastify.get<{ Querystring: HttpPageRequest<'settlement'> & Record<string, unknown> }>(
     '/',
     {
       schema: settlementPageQuery,
@@ -40,7 +40,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
         ...buildAttributeFilters(query),
       }
 
-      const domainPageQuery: DomainPageQuery<Settlement> = {
+      const domainPageQuery: DomainPageQuery = {
         ...basePageQuery(query),
         filters,
       }

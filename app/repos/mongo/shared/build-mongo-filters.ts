@@ -44,18 +44,23 @@ export function buildMongoFilters(
 }
 
 function handleAttributes(filters: Record<string, unknown>) {
+  // valuer per trait
   const groups: Record<string, string[]> = {}
 
-  // custom handle for nft attributes
+  // push pairs from filters to groups
   if (Array.isArray(filters.attributes)) {
     const pairs = filters.attributes
 
     for (const { trait, value } of pairs) {
       if (!groups[trait]) groups[trait] = []
-      groups[trait].push(value)
+
+      const values = Array.isArray(value) ? value : [value]
+
+      groups[trait].push(...values)
     }
   }
 
+  // make an attribute for each group with $in operator if multiple values
   return Object.entries(groups).map(([trait, vals]) => ({
     attributes: {
       $elemMatch: {
