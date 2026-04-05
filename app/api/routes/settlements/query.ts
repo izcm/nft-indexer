@@ -9,7 +9,11 @@ import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
 import { byIdParams, chainEventQueryableFields } from '#app/api/shared/schemas.js'
-import { basePageQuery, buildAttributeFilters, buildFilters } from '#app/api/shared/page-query.js'
+import {
+  basePageQuery,
+  buildAttributeFilters,
+  buildFilters,
+} from '#app/api/shared/build-page-query.js'
 import { getOr404 } from '#app/api/shared/get-or-404.js'
 
 import { settlementNestedMap, settlementPageQuery, settlementQueryableFields } from './schemas.js'

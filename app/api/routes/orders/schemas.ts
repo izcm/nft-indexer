@@ -6,7 +6,7 @@ import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
 
 // --- query model ---
 
-export const ORDER_SORT_FIELDS = ['createdAt', 'updatedAt'] as const
+export const ORDER_SORT_FIELDS = ['createdAt', 'updatedAt', 'price', 'start', 'end'] as const
 export type OrderSortField = (typeof ORDER_SORT_FIELDS)[number]
 
 // === field defs ===

@@ -62,8 +62,8 @@ export const basePageQuery = (q: any) => {
     cursor: q.cursor,
     from: q.from,
     to: q.to,
-    rangeField: q.rangeField ?? 'updatedAt', // todo: dont hardcode this
-    sortField: q.sortField ?? 'updatedAt',
+    rangeField: q.rangeField,
+    sortField: q.sortField ?? 'order.price',
     sortDir: q.sortDir ?? 'desc',
   }
 }

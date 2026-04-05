@@ -8,7 +8,11 @@ import { parseDomainId } from '#app/domain/shared/ids.js'
 
 import { byIdParams } from '#app/api/shared/schemas.js'
 import { getOr404 } from '#app/api/shared/get-or-404.js'
-import { basePageQuery, buildAttributeFilters, buildFilters } from '#app/api/shared/page-query.js'
+import {
+  basePageQuery,
+  buildAttributeFilters,
+  buildFilters,
+} from '#app/api/shared/build-page-query.js'
 
 import {
   orderCoreQueryableFields,
@@ -45,7 +49,6 @@ export const ordersQuery = (fastify: FastifyInstance) => {
         ...buildAttributeFilters(query),
       }
 
-      console.log(filters)
       const domainPageQuery: DomainPageQuery = {
         ...basePageQuery(query),
         filters,

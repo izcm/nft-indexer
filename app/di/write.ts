@@ -11,6 +11,11 @@ import { RealtimePort } from '#app/domain/shared/interfaces/realtime-port.js'
 
 const wss = new WebSocketServer({ port: 5001 })
 
+wss.on('error', err => {
+  console.error('WebSocket server error:', err)
+  process.exit(1)
+})
+
 wss.on('connection', function connection(ws) {
   ws.on('error', function (error) {
     this.close()

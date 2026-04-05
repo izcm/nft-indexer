@@ -7,12 +7,9 @@ import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
-import { buildFilters } from '#app/api/shared/page-query.js'
-
 // --- DI ---
 import { readByKey, readPage } from '#app/di/read.js'
 import { getOr404 } from '#app/api/shared/get-or-404.js'
-import { queryObjects } from 'node:v8'
 
 export const nftCollectionsQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>('/:id', async (req, res) => {

@@ -12,11 +12,16 @@ import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
 
 import type { OrderDoc } from './docs.js'
+import { ORDER_SPECIAL_FIELDS } from './field-config.js'
 
-const baseRead = makeReadRepo<OrderDoc, OrderKey>(orders, k => ({
-  chainId: k.chainId,
-  orderHash: k.orderHash,
-}))
+const baseRead = makeReadRepo<OrderDoc, OrderKey>(
+  orders,
+  k => ({
+    chainId: k.chainId,
+    orderHash: k.orderHash,
+  }),
+  ORDER_SPECIAL_FIELDS
+)
 
 const write = makeTsWrite(orders)
 

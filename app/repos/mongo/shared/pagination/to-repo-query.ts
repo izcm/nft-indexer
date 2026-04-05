@@ -18,9 +18,12 @@ export function mapDomainToRepoQuery<TDoc extends MongoDoc>(
     fieldConfig,
   })
 
+  // does the field have mapping ? map : use as is
+  const sortField = fieldConfig?.[domainPageQuery.sortField]?.dbField ?? domainPageQuery.sortField
+
   return {
     dbCollection,
-    sortField: String(domainPageQuery.sortField),
+    sortField: String(sortField),
     sortDir: domainPageQuery.sortDir === 'asc' ? 1 : -1,
     cursor: domainPageQuery.cursor,
     limit: domainPageQuery.limit,

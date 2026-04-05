@@ -6,5 +6,5 @@ export interface ByKey<TEntity, TKey> {
 }
 
 export interface Pageable<TEntity extends object> {
-  findPage(args: DomainPageQuery<TEntity>): Promise<Page<TEntity>>
+  findPage(args: DomainPageQuery): Promise<Page<TEntity>>
 }

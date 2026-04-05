@@ -5,10 +5,12 @@ import { ByKey, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 
 import { findPageGeneric } from './pagination/find-page-generic.js'
 import { mapDomainToRepoQuery } from './pagination/to-repo-query.js'
+import { FieldConfig } from '../field-config.js'
 
 export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
   getCol: () => Collection<TDoc>,
-  keyToFilter: (k: TKey) => Filter<TDoc>
+  keyToFilter: (k: TKey) => Filter<TDoc>,
+  fieldConfig?: FieldConfig
 ) => {
   return {
     findByKey(key: TKey) {
@@ -24,7 +26,7 @@ export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
     },
 
     findPage(domainPageQuery: DomainPageQuery) {
-      const repoQuery = mapDomainToRepoQuery<TDoc>(domainPageQuery, getCol())
+      const repoQuery = mapDomainToRepoQuery<TDoc>(domainPageQuery, getCol(), fieldConfig)
 
       return findPageGeneric<TDoc>({
         ...repoQuery,
