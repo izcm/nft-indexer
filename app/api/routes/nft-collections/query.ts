@@ -21,7 +21,7 @@ export const nftCollectionsQuery = (fastify: FastifyInstance) => {
   })
 
   fastify.get<{
-    Querystring: HttpPageRequest<NFTCollection, 'nftCollection'> & Record<string, unknown>
+    Querystring: HttpPageRequest<'nftCollection'> & Record<string, unknown>
   }>(
     '/',
     {
