@@ -6,7 +6,25 @@ import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
 
 // --- query model ---
 
-export const ORDER_SORT_FIELDS = ['createdAt', 'updatedAt', 'price', 'start', 'end'] as const
+export const ORDER_SORT_FIELDS = [
+  'createdAt',
+  'updatedAt',
+  'price',
+  'start',
+  'expires',
+  'end',
+  'actor',
+] as const
+
+// all sort on fields of type string are transformed to ints in repo layer
+export const ORDER_SORT_FIELDS_MAP = {
+  price: 'order.price',
+  actor: 'order.actor',
+  start: 'order.start',
+  expires: 'order.end',
+  end: 'order.end',
+}
+
 export type OrderSortField = (typeof ORDER_SORT_FIELDS)[number]
 
 // === field defs ===

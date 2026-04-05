@@ -10,6 +10,7 @@ import { Status } from '#app/domain/shared/status.js'
 import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
 import { SettlementDoc } from './docs.js'
+import { SETTLEMENT_FIELD_TRANSFORMS } from './field-config.js'
 
 // === helpers ===
 
@@ -22,10 +23,14 @@ const crPaths = {
   txContext: cr + '.data.txContext',
 }
 
-const baseRead = makeReadRepo<SettlementDoc, SettlementKey>(settlements, k => ({
-  chainId: k.chainId,
-  orderHash: k.orderHash,
-}))
+const baseRead = makeReadRepo<SettlementDoc, SettlementKey>(
+  settlements,
+  k => ({
+    chainId: k.chainId,
+    orderHash: k.orderHash,
+  }),
+  SETTLEMENT_FIELD_TRANSFORMS
+)
 
 const write = makeTsWrite(settlements)
 

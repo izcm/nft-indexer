@@ -3,9 +3,20 @@ import { chainEventQueryableFields, paginationQueryParams } from '#app/api/share
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'
 
-// --- query layer ---
+// --- sort whitelist + domain-shape field mapping ---
 
-export const SETTLEMENT_SORT_FIELDS = ['ingestedAt'] as const
+export const SETTLEMENT_SORT_FIELDS = [
+  'createdAt',
+  'updatedAt',
+  'price',
+  'buyer',
+  'seller',
+  'timestamp',
+] as const
+
+export const SETTLEMENT_SORT_FIELDS_MAP = {
+  timestamp: 'execution.block.timestamp',
+}
 
 export const settlementQueryableFields = {
   chainId: { type: 'number' },

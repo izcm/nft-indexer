@@ -4,10 +4,10 @@ import { MongoSortDir as CursorDir, CursorPageCore } from './types.js'
 export const toMongo = (dir: 'asc' | 'desc'): 1 | -1 => (dir === 'asc' ? 1 : -1)
 
 export const walkPath = (obj: any, path: string) => {
-  if (Object.keys(obj).length === 0) return undefined
+  if (!obj || Object.keys(obj).length === 0) return undefined
 
   return path.split('.').reduce((curr, k) => {
-    if (curr === null) return undefined
+    if (curr == null) return undefined
     return curr[k]
   }, obj)
 }

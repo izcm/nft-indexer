@@ -56,14 +56,15 @@ export function buildAttributeFilters(q: Record<string, unknown>) {
   }
 }
 
-export const basePageQuery = (q: any) => {
+export const basePageQuery = (q: any, sortFieldMap?: Record<string, string>) => {
+  const sortField = q.sortField ?? 'updatedAt'
   return {
     limit: q.limit ?? DEFAULT_PAGE_LIMIT,
     cursor: q.cursor,
     from: q.from,
     to: q.to,
     rangeField: q.rangeField,
-    sortField: q.sortField ?? 'order.price',
+    sortField: sortFieldMap?.[sortField] ?? sortField,
     sortDir: q.sortDir ?? 'desc',
   }
 }

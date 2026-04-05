@@ -8,14 +8,14 @@ export type FieldConfig = Record<
   }
 >
 
-export const SETTLEMENT_FIELDS_CFG: FieldConfig = {
+export const SETTLEMENT_FIELD_TRANSFORMS: FieldConfig = {
   price: {
     dbField: 'db.price',
     toDb: (v: string) => Decimal128.fromString(v),
   },
 }
 
-export const ORDER_SPECIAL_FIELDS: FieldConfig = {
+export const ORDER_FIELD_TRANSFORMS: FieldConfig = {
   'order.price': {
     dbField: 'db.price',
     toDb: (v: string) => Decimal128.fromString(v),

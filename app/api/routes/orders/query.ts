@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 
 import { ORDER_ID_REGEX } from '#app/domain/constants/regex.js'
-import type { OrderKey, OrderRecord } from '#app/domain/order/model.js'
+import type { OrderKey } from '#app/domain/order/model.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
@@ -15,6 +15,7 @@ import {
 } from '#app/api/shared/build-page-query.js'
 
 import {
+  ORDER_SORT_FIELDS_MAP,
   orderCoreQueryableFields,
   orderPageSchema,
   orderRecordNestedMap,
@@ -50,7 +51,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
       }
 
       const domainPageQuery: DomainPageQuery = {
-        ...basePageQuery(query),
+        ...basePageQuery(query, ORDER_SORT_FIELDS_MAP),
         filters,
       }
 

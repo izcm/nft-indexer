@@ -23,7 +23,7 @@ export function mapDomainToRepoQuery<TDoc extends MongoDoc>(
 
   return {
     dbCollection,
-    sortField: String(sortField),
+    sortField: sortField,
     sortDir: domainPageQuery.sortDir === 'asc' ? 1 : -1,
     cursor: domainPageQuery.cursor,
     limit: domainPageQuery.limit,

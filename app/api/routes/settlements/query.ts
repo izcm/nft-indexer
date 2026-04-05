@@ -16,7 +16,12 @@ import {
 } from '#app/api/shared/build-page-query.js'
 import { getOr404 } from '#app/api/shared/get-or-404.js'
 
-import { settlementNestedMap, settlementPageQuery, settlementQueryableFields } from './schemas.js'
+import {
+  SETTLEMENT_SORT_FIELDS_MAP,
+  settlementNestedMap,
+  settlementPageQuery,
+  settlementQueryableFields,
+} from './schemas.js'
 
 // --- DI ---
 import { readByKey, readPage } from '#app/di/read.js'
@@ -45,7 +50,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
       }
 
       const domainPageQuery: DomainPageQuery = {
-        ...basePageQuery(query),
+        ...basePageQuery(query, SETTLEMENT_SORT_FIELDS_MAP),
         filters,
       }
 
