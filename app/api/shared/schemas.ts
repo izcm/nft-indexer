@@ -3,7 +3,7 @@ import { BYTES32_REGEX } from '#app/domain/constants/regex.js'
 // range + sort fields are set separately in each query route
 export const paginationQueryParams = {
   limit: { type: 'integer', minimum: 1, maximum: 100 },
-  cursor: { type: 'string', pattern: '^[0-9]+_[a-fA-F0-9]{24}$' },
+  cursor: { type: 'string', pattern: '^[^_]+_[a-fA-F0-9]{24}$' },
   sortDir: { enum: ['asc', 'desc'] },
 } as const
 

@@ -11,7 +11,7 @@ export const ORDER_SORT_FIELDS = [
   'updatedAt',
   'price',
   'start',
-  'expires',
+  'expires', // same as end
   'end',
   'actor',
 ] as const
