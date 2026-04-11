@@ -3,8 +3,9 @@ import { chainEventQueryableFields, paginationQueryParams } from '#app/api/share
 import { UNIX_SECONDS_MAX } from '#app/domain/constants/limits.js'
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
+import { attributesQueryFields } from '../nfts/schema.js'
 
-// --- query model ---
+// --- sorting ---
 
 export const ORDER_SORT_FIELDS = [
   'createdAt',
@@ -23,7 +24,7 @@ export const ORDER_SORT_FIELDS_MAP = {
   start: 'order.start',
   expires: 'order.end',
   end: 'order.end',
-}
+} as const
 
 export type OrderSortField = (typeof ORDER_SORT_FIELDS)[number]
 
@@ -44,6 +45,7 @@ export const orderCoreFieldSchema = {
 export const orderCoreQueryableFields = orderCoreFieldSchema
 export const orderRecordQueryableFields = {
   ...orderCoreQueryableFields,
+  ...chainEventQueryableFields,
   chainId: { type: 'number' },
   orderHash: { type: 'string', pattern: BYTES32_REGEX },
   status: { type: 'string', enum: ['active', 'filled', 'cancelled', 'expired'] },
@@ -93,13 +95,16 @@ export const orderCreateBody = {
 } as const
 
 // === page schema ===
+
 export const orderPageSchema = {
   querystring: {
     type: 'object',
-    additionalProperties: true, // todo: make false (nft attributes need true rn)
+    additionalProperties: false,
+
     properties: {
       ...orderRecordQueryableFields,
       ...paginationQueryParams,
+      ...attributesQueryFields,
       sortField: {
         type: 'string',
         enum: [...ORDER_SORT_FIELDS],
@@ -110,5 +115,21 @@ export const orderPageSchema = {
         items: { type: 'string', enum: ORDER_INCLUDES },
       },
     },
+
+    patternProperties: {
+      '^or\\.(side|tokenId)$': {
+        anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+      },
+    },
   },
+}
+
+// our domain model mostly consist of fields with type 'string'
+// since patternProperties treats values as string / string[]
+// fields of other types need transformation
+export const orTransform = (k: string, v: unknown) => {
+  if (k === 'side') {
+    return Array.isArray(v) ? v.map(Number) : Number(v)
+  }
+  return v
 }

@@ -1,8 +1,4 @@
-import type {
-  PagedWithIncludesResource,
-  ResourceName,
-  ResourceType,
-} from '#app/domain/shared/types/resource.js'
+import type { PagedWithIncludesResource, ResourceName } from '#app/domain/shared/types/resource.js'
 import type { Readers } from '#app/domain/shared/types/readers.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import type { includeFor } from '../domain/shared/relations.js'

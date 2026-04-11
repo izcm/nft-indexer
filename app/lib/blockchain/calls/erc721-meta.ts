@@ -9,6 +9,7 @@ type ChainMeta = {
   tokenType: string
   totalSupply?: string
 }
+
 export const readERC721Meta = async (client: PublicClient, address: Hex) => {
   const erc721 = erc721For(client)
 

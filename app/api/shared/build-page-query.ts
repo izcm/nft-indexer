@@ -1,4 +1,5 @@
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
+import { orTransform } from '../routes/orders/schemas.js'
 
 /**
  * Builds a Mongo-compatible filter object from a Fastify query.
@@ -13,19 +14,44 @@ export function buildFilters(
   fields: Record<string, unknown>,
   nested?: Record<string, string> // key => path
 ): Record<string, unknown> {
-  const filters: Record<string, unknown> = {}
+  const filters: { [key: string]: unknown; or?: Record<string, unknown>[] } = {}
+  const approved = new Set(Object.keys(fields))
 
-  for (const key of Object.keys(fields)) {
-    const v = q[key]
-    if (v === undefined) continue
+  for (const [rawKey, rawValue] of Object.entries(q)) {
+    const isOr = rawKey.startsWith('or.')
+    const key = isOr ? rawKey.slice(3) : rawKey
+
+    if (!approved.has(key)) continue
+
+    const v = clean(rawValue)
+    if (!v) continue
 
     // set correct path for nested fields
     const path = nested?.[key] ?? key
 
-    filters[path] = v
+    if (isOr) {
+      ;(filters.or ??= []).push({ [path]: orTransform(key, v) })
+    } else {
+      filters[path] = v
+    }
   }
 
   return filters
+}
+
+function clean(v: unknown) {
+  if (Array.isArray(v)) {
+    const arr = v.map(x => (typeof x === 'string' ? x.trim() : x)).filter(x => x !== '')
+
+    return arr.length ? arr : undefined
+  }
+
+  if (typeof v === 'string') {
+    const s = v.trim()
+    return s === '' ? undefined : s
+  }
+
+  return v
 }
 
 // todo: make params.attributes accept fmt trait=color:red,size:L
@@ -56,8 +82,14 @@ export function buildAttributeFilters(q: Record<string, unknown>) {
   }
 }
 
-export const basePageQuery = (q: any, sortFieldMap?: Record<string, string>) => {
-  const sortField = q.sortField ?? 'updatedAt'
+export const basePageQuery = (
+  q: any,
+  sortFieldMap?: Record<string, string>,
+  opts?: { defaultSortField: string; defaultSortDir: 'asc' | 'desc' }
+) => {
+  const sortField = q.sortField ?? opts?.defaultSortField ?? 'updatedAt'
+  const sortDir = q.sortField ?? opts?.defaultSortDir ?? 'desc'
+
   return {
     limit: q.limit ?? DEFAULT_PAGE_LIMIT,
     cursor: q.cursor,
@@ -65,6 +97,6 @@ export const basePageQuery = (q: any, sortFieldMap?: Record<string, string>) => 
     to: q.to,
     rangeField: q.rangeField,
     sortField: sortFieldMap?.[sortField] ?? sortField,
-    sortDir: q.sortDir ?? 'desc',
+    sortDir,
   }
 }

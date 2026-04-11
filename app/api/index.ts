@@ -1,5 +1,4 @@
 import Fastify from 'fastify'
-// @ts-ignore
 import cors from '@fastify/cors'
 
 // api routes - SETTLEMENTS
@@ -8,6 +7,9 @@ import { settlementsQuery } from './routes/settlements/query.js'
 // api routes - ORDERS
 import { ordersIngest } from './routes/orders/ingest.js'
 import { ordersQuery } from './routes/orders/query.js'
+
+// api routes - HEALTHCHECK
+import { healthcheck } from './routes/healthcheck.js'
 
 // schemas
 import { nftCollectionsQuery } from './routes/nft-collections/query.js'
@@ -42,6 +44,9 @@ export const start = async () => {
   // routes - nft-collections & nfts
   app.register(nftCollectionsQuery, { prefix: '/api/nft-collections' })
   app.register(nftsQuery, { prefix: '/api/nfts' })
+
+  // routes - healthcheck
+  app.register(healthcheck, { prefix: '/api/healthcheck' })
 
   app.listen({ port: 5000, host: '0.0.0.0' }, function (err, address) {
     if (err) {

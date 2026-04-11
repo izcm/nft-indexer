@@ -16,7 +16,6 @@ import {
 
 import {
   ORDER_SORT_FIELDS_MAP,
-  orderCoreQueryableFields,
   orderPageSchema,
   orderRecordNestedMap,
   orderRecordQueryableFields,

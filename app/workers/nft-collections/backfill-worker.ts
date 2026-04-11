@@ -5,9 +5,11 @@ import { AppClient } from '#app/clients.js'
 import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 import type { NFTPort } from '#app/domain/nft/port.js'
+import { FORK_START_BLOCK } from '#app/domain/constants/app.js'
+import { isFullyMinted } from '#app/lib/blockchain/calls/dnft-fully-minted.js'
 
-const STEP = 9n // rpc free tier restriction
-const MAX_STEPS = 5000
+const STEP = 5n // rpc free tier restriction
+const MAX_STEPS = 500
 
 const TRANSFER_EVENT = parseAbiItem(
   'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'
@@ -26,12 +28,13 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
   const latest = await client.getBlockNumber()
 
   for (const c of collections) {
-    // let from = BigInt(c.lastScannedBlock ?? 24480751)
-    let from = BigInt(c.lastScannedBlock ?? 24555038)
+    // line below is for demo purposes only
+    if (!(await isFullyMinted(client, c.address))) return
 
-    // logs in span from => to
-    // action categorized as`mint:
-    //  - event = TRANSFER_EVENT (filters on hash of TRANSFER_EVENT signature)
+    let from = BigInt(c.lastScannedBlock ?? FORK_START_BLOCK ?? 0)
+
+    // categorized as`mint`:
+    //  - event = TRANSFER_EVENT
     //  - topic 'from' = ZeroAddress
 
     let step = 0

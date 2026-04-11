@@ -2,9 +2,8 @@ import { Decimal128 } from 'mongodb'
 
 import { nfts, orders } from '#app/db/collections.js'
 
-import type { Order, OrderKey, OrderStatus } from '#app/domain/order/model.js'
 import type { OrderPort } from '#app/domain/order/port.js'
-import type { Address, ChainEvent, Hash } from '#app/domain/shared/types/eth.js'
+import type { Hash } from '#app/domain/shared/types/eth.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 
@@ -13,6 +12,7 @@ import { makeTsWrite } from './shared/_write.js'
 
 import type { OrderDoc } from './docs.js'
 import { ORDER_FIELD_TRANSFORMS } from './field-config.js'
+import { OrderKey } from '#app/domain/order/model.js'
 
 const baseRead = makeReadRepo<OrderDoc, OrderKey>(
   orders,
@@ -30,7 +30,7 @@ export const orderRepo: OrderPort = {
   ...baseRead,
 
   // === write ===
-  async ensure(chainId: number, order: Order) {
+  async ensure(chainId, order) {
     const { signature, ...orderCore } = order
     const orderHash = hashOrderStruct(orderCore) // todo: move this out of repo
 
@@ -75,17 +75,7 @@ export const orderRepo: OrderPort = {
     return { chainId, orderHash, didUpsert }
   },
 
-  async cancelOrdersByChainIdNonce({
-    chainId,
-    user,
-    nonce,
-    cancellation,
-  }: {
-    chainId: number
-    user: Address
-    nonce: string
-    cancellation: ChainEvent
-  }): Promise<{ orderHash: Hash }[]> {
+  async cancelOrdersByChainIdNonce({ chainId, user, nonce, cancellation }) {
     const filter = { chainId, 'order.actor': user, 'order.nonce': nonce }
 
     const docs = await orders().find(filter).project({ orderHash: 1 }).toArray()
@@ -102,22 +92,14 @@ export const orderRepo: OrderPort = {
     }))
   },
 
-  async markOrderFilled({
-    chainId,
-    orderHash,
-    chainEvent,
-  }: {
-    chainId: number
-    orderHash: Hash
-    chainEvent: ChainEvent
-  }): Promise<void> {
+  async markOrderFilled({ chainId, orderHash, chainEvent }) {
     await write.updateOne(
       { chainId, orderHash },
       { $set: { status: 'filled', chainEvent: chainEvent } }
     )
   },
 
-  async updateStatus({ chainId, orderHash, status }: OrderKey & { status: OrderStatus }) {
+  async updateStatus({ chainId, orderHash, status }) {
     await write.updateOne(
       { chainId, orderHash },
       {

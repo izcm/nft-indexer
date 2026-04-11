@@ -7,6 +7,7 @@ export function buildMongoFilters(
     to?: number
     rangeField?: string
     fieldConfig?: FieldConfig
+    acceptedOrFields?: Set<string>
   }
 ) {
   const { from, to, rangeField, fieldConfig } = opts ?? {}

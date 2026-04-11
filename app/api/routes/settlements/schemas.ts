@@ -2,6 +2,7 @@ import { chainEventQueryableFields, paginationQueryParams } from '#app/api/share
 
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'
+import { attributesQueryFields } from '../nfts/schema.js'
 
 // --- sort whitelist + domain-shape field mapping ---
 
@@ -16,7 +17,7 @@ export const SETTLEMENT_SORT_FIELDS = [
 
 export const SETTLEMENT_SORT_FIELDS_MAP = {
   timestamp: 'execution.block.timestamp',
-}
+} as const
 
 export const settlementQueryableFields = {
   chainId: { type: 'number' },
@@ -35,10 +36,11 @@ export const settlementNestedMap = Object.fromEntries(
 export const settlementPageQuery = {
   querystring: {
     type: 'object',
-    additionalProperties: true, // todo: make false (nft attributes need true rn)
+    additionalProperties: false,
     properties: {
       ...settlementQueryableFields,
       ...paginationQueryParams,
+      ...attributesQueryFields,
       sortField: {
         type: 'string',
         enum: [...SETTLEMENT_SORT_FIELDS],
@@ -47,6 +49,12 @@ export const settlementPageQuery = {
         type: 'array',
         maxItems: SETTLEMENT_INCLUDES.length,
         items: { type: 'string', enum: SETTLEMENT_INCLUDES },
+      },
+    },
+
+    patternProperties: {
+      '^or\\.(buyer|seller)$': {
+        anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
       },
     },
   },

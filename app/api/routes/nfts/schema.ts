@@ -7,14 +7,6 @@ export const nftQueryableFields = {
 }
 
 export const attributesQueryFields = {
-  // trait: {
-  //   oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'string' }],
-  // },
-  // value: {
-  //   oneOf: [{ type: 'array', items: { type: 'string' } }, { type: 'string' }],
-  // },
-
-  // nft attributes of order.tokenId (string can be array separated by ',')
   trait: { type: 'string' },
   value: { type: 'string' },
 }
@@ -22,7 +14,7 @@ export const attributesQueryFields = {
 export const nftPageSchema = {
   querystring: {
     type: 'object',
-    additionalProperties: true,
+    additionalProperties: false,
     properties: {
       ...nftQueryableFields,
       ...attributesQueryFields,

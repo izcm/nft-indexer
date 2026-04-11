@@ -1,10 +1,6 @@
 import { nftCollections } from '#app/db/collections.js'
 
-import type {
-  NFTCollection,
-  NFTCollectionMeta,
-  NFTCollectionKey,
-} from '#app/domain/nft-collection/model.js'
+import type { NFTCollection, NFTCollectionKey } from '#app/domain/nft-collection/model.js'
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 
 import { Status } from '#app/domain/shared/status.js'
@@ -40,17 +36,17 @@ export const nftCollectionRepo: NFTCollectionPort = {
 
   ...baseRead,
 
-  findPendingMeta(chainId: number, limit: number) {
+  findPendingMeta(chainId, limit) {
     return nftCollections().find({ chainId, metaStatus: Status.PENDING }).limit(limit).toArray()
   },
 
-  findBackfillNotDone(chainId: number, limit: number): Promise<NFTCollection[]> {
+  findBackfillNotDone(chainId, limit) {
     return nftCollections().find({ chainId, backfillDone: false }).limit(limit).toArray()
   },
 
   // === write ===
 
-  async noteNFTCollection(key: NFTCollectionKey) {
+  async noteNFTCollection(key) {
     const { chainId, address } = key
 
     const cacheKey = stringifyKey(key)
@@ -73,11 +69,7 @@ export const nftCollectionRepo: NFTCollectionPort = {
     )
   },
 
-  async finalizeMeta({
-    chainId,
-    address,
-    meta,
-  }: NFTCollectionKey & { meta: Partial<NFTCollectionMeta> }) {
+  async finalizeMeta({ chainId, address, meta }) {
     await write.updateOne(
       { chainId, address },
       {
@@ -89,7 +81,7 @@ export const nftCollectionRepo: NFTCollectionPort = {
     )
   },
 
-  async markMetaFailed({ chainId, address, error }: NFTCollectionKey & { error: string }) {
+  async markMetaFailed({ chainId, address, error }) {
     await write.updateOne(
       { chainId, address },
       {
@@ -101,7 +93,7 @@ export const nftCollectionRepo: NFTCollectionPort = {
     )
   },
 
-  async updateLastScannedBlock({ chainId, address, block }: NFTCollectionKey & { block: number }) {
+  async updateLastScannedBlock({ chainId, address, block }) {
     await nftCollections().updateOne({ chainId, address }, { $set: { lastScannedBlock: block } })
   },
 }

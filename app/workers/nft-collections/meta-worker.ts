@@ -3,7 +3,7 @@ import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
 import type { AppClient } from '#app/clients.js'
 
 import { readERC721Meta } from '#app/lib/blockchain/calls/erc721-meta.js'
-import { isErc721 } from '#app/lib/blockchain/interfaces/erc165.js'
+import { isDNFT } from '#app/lib/blockchain/interfaces/erc165.js'
 
 import { NFTCollectionPort, nftCollectionPortForChain } from '#app/domain/nft-collection/port.js'
 
@@ -15,7 +15,7 @@ export async function runNFTCollectionChainMetaWorker(client: AppClient, port: N
   for (const collection of pending) {
     const { address } = collection
 
-    const isSupported = await isErc721(client, address)
+    const isSupported = await isDNFT(client, address)
 
     if (!isSupported) {
       await collections.markMetaFailed(address, 'unsupported nft standard')

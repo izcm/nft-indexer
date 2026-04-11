@@ -2,9 +2,9 @@ import { Decimal128 } from 'mongodb'
 
 import { nfts, settlements } from '#app/db/collections.js'
 
-import type { Settlement, SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
+import type { SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
 import type { SettlementPort } from '#app/domain/settlement/port.js'
-import type { Hash } from '#app/domain/shared/types/eth.js'
+import type { Address, Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './shared/_read.js'
@@ -32,6 +32,14 @@ const baseRead = makeReadRepo<SettlementDoc, SettlementKey>(
   SETTLEMENT_FIELD_TRANSFORMS
 )
 
+// === healthchecks ===
+
+export const countSettlements = (chainId: Number, collection: Address) =>
+  settlements().countDocuments({ chainId, collection })
+
+export const countHasCallReconstructed = () =>
+  settlements().countDocuments({ [crPaths.status]: Status.DONE })
+
 const write = makeTsWrite(settlements)
 
 export const settlementRepo: SettlementPort = {
@@ -39,7 +47,7 @@ export const settlementRepo: SettlementPort = {
 
   ...baseRead,
 
-  findPendingCallReconstruction(chainId: number, limit: number) {
+  findPendingCallReconstruction(chainId, limit) {
     return settlements()
       .find({ chainId, 'execution.callReconstruction.status': 'PENDING' })
       .limit(limit)
@@ -48,16 +56,16 @@ export const settlementRepo: SettlementPort = {
 
   // === write ===
 
-  async save(s: Settlement) {
+  async save(settlement) {
     const nft = await nfts().findOne({
-      chainId: s.chainId,
-      collection: s.collection,
-      tokenId: s.tokenId,
+      chainId: settlement.chainId,
+      collection: settlement.collection,
+      tokenId: settlement.tokenId,
     })
 
     // fetch nft
     return settlements().insertOne({
-      ...s,
+      ...settlement,
 
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -66,16 +74,12 @@ export const settlementRepo: SettlementPort = {
       attributes: nft?.attributes,
 
       db: {
-        price: Decimal128.fromString(s.price),
+        price: Decimal128.fromString(settlement.price),
       },
     })
   },
 
-  async finalizeCallReconstruction({
-    chainId,
-    orderHash,
-    meta,
-  }: SettlementKey & { meta: SettlementCall }) {
+  async finalizeCallReconstruction({ chainId, orderHash, meta }) {
     await write.updateOne(
       { chainId, orderHash },
       {
@@ -87,11 +91,7 @@ export const settlementRepo: SettlementPort = {
     )
   },
 
-  async markCallReconstructionFailed({
-    chainId,
-    orderHash,
-    error,
-  }: SettlementKey & { error: string }) {
+  async markCallReconstructionFailed({ chainId, orderHash, error }) {
     await write.updateOne(
       { chainId, orderHash },
       {

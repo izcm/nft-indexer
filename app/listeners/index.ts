@@ -3,7 +3,7 @@ import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json
 import { parseAbi } from 'viem'
 
 import type { AppClient } from '#app/clients.js'
-import { SETTLEMENT_EVENT_EMITTER } from '#app/domain/constants/app.js'
+import { MARKETPLACE_CONTRACT } from '#app/domain/constants/app.js'
 
 import { handleSettlement } from './settlements/handler.js'
 import { handleOrderCancelled } from './order-cancelled/handler.js'
@@ -15,7 +15,7 @@ import { ListenerItem } from './shared/types.js'
 
 export const start = (client: AppClient) => {
   client.watchContractEvent({
-    address: SETTLEMENT_EVENT_EMITTER,
+    address: MARKETPLACE_CONTRACT,
     abi: json.abi,
     onLogs: logs => {
       logs.forEach(log =>

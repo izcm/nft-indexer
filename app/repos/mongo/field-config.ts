@@ -29,3 +29,5 @@ export const ORDER_FIELD_TRANSFORMS: FieldConfig = {
     toDb: (v: string) => Number(v),
   },
 }
+
+export const ORDER_OR_FIELDS = new Set(['order.tokenId', 'order.side'])

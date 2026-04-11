@@ -1,10 +1,11 @@
+import { WebSocketServer } from 'ws'
+
 import { orderRepo } from '#app/repos/mongo/order.repo.js'
 import { nftCollectionRepo } from '#app/repos/mongo/nft-collection.repo.js'
 import { settlementRepo } from '#app/repos/mongo/settlement.repo.js'
 
 import { makeOrderActions } from '#app/domain/order/actions.js'
 import { makeSettlementActions } from '#app/domain/settlement/actions.js'
-import { WebSocketServer } from 'ws'
 import { RealtimePort } from '#app/domain/shared/interfaces/realtime-port.js'
 
 // --- web socket ---

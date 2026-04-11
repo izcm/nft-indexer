@@ -50,7 +50,10 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
       }
 
       const domainPageQuery: DomainPageQuery = {
-        ...basePageQuery(query, SETTLEMENT_SORT_FIELDS_MAP),
+        ...basePageQuery(query, SETTLEMENT_SORT_FIELDS_MAP, {
+          defaultSortField: SETTLEMENT_SORT_FIELDS_MAP.timestamp,
+          defaultSortDir: 'desc',
+        }),
         filters,
       }
 

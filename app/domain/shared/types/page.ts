@@ -17,5 +17,5 @@ export type DomainPageQuery = {
 
   sortDir: SortDir
 
-  filters?: Record<string, unknown>
+  filters?: { [key: string]: unknown; or?: Record<string, unknown>[] }
 }

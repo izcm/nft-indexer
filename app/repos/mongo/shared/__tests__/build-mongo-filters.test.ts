@@ -129,6 +129,10 @@ describe('buildMongoFilters', () => {
     })
   })
 
+  describe('or filters', () => {
+    it('maps accepted fields to $or expression', () => {})
+  })
+
   describe('range', () => {
     const opts = { from: 0, to: 10, rangeField: 'start' }
 
