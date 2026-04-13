@@ -1,18 +1,20 @@
 import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
-import { orTransform } from '../routes/orders/schemas.js'
 
 /**
  * Builds a Mongo-compatible filter object from a Fastify query.
  *
  * @param q       Incoming query object (e.g. Fastify request.query)
  * @param fields  Allowed filter keys (usually schema/queryable fields)
+ * @param nested  Maps query fields to their domain paths
+ * @param orTransform Transform .or fields from string to domain type
  *
- * @returns A flat object suitable for MongoDB filtering
+ * @returns An object ready to be transformed to repo query.
  */
 export function buildFilters(
   q: Record<string, unknown>,
   fields: Record<string, unknown>,
-  nested?: Record<string, string> // key => path
+  nested?: Record<string, string>, // key => path
+  orTransform?: (k: string, v: unknown) => unknown
 ): Record<string, unknown> {
   const filters: { [key: string]: unknown; or?: Record<string, unknown>[] } = {}
   const approved = new Set(Object.keys(fields))
@@ -24,13 +26,13 @@ export function buildFilters(
     if (!approved.has(key)) continue
 
     const v = clean(rawValue)
-    if (!v) continue
+    if (v == null) continue
 
     // set correct path for nested fields
     const path = nested?.[key] ?? key
 
     if (isOr) {
-      ;(filters.or ??= []).push({ [path]: orTransform(key, v) })
+      ;(filters.or ??= []).push({ [path]: orTransform ? orTransform(key, v) : v })
     } else {
       filters[path] = v
     }
@@ -88,7 +90,7 @@ export const basePageQuery = (
   opts?: { defaultSortField: string; defaultSortDir: 'asc' | 'desc' }
 ) => {
   const sortField = q.sortField ?? opts?.defaultSortField ?? 'updatedAt'
-  const sortDir = q.sortField ?? opts?.defaultSortDir ?? 'desc'
+  const sortDir = q.sortDir ?? opts?.defaultSortDir ?? 'desc'
 
   return {
     limit: q.limit ?? DEFAULT_PAGE_LIMIT,

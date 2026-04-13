@@ -19,6 +19,7 @@ import {
   orderPageSchema,
   orderRecordNestedMap,
   orderRecordQueryableFields,
+  orTransform,
 } from './schemas.js'
 
 // -- DI ---
@@ -45,7 +46,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
       const query = req.query
 
       const filters = {
-        ...buildFilters(query, orderRecordQueryableFields, orderRecordNestedMap),
+        ...buildFilters(query, orderRecordQueryableFields, orderRecordNestedMap, orTransform),
         ...buildAttributeFilters(query),
       }
 
