@@ -35,6 +35,8 @@ export type SettlementDTO = {
     gasUsed: number
     gasPrice: number
   }
+
+  createdAt: number
 }
 
 export const settlementDTO = {
@@ -75,6 +77,7 @@ export const settlementDTO = {
               gasPrice: Number(call.txContext.effectiveGasPrice),
             }
           : undefined,
+      createdAt: s.createdAt,
     }
   },
 }

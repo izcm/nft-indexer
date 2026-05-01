@@ -17,6 +17,7 @@ export type NFTDTO = {
   }[]
 
   createdAtBlock: number
+  createdAt: number
 }
 
 export const nftDTO = {
@@ -35,6 +36,7 @@ export const nftDTO = {
       attributes: n.attributes,
 
       createdAtBlock: n.createdAtBlock,
+      createdAt: n.createdAt,
     }
   },
 }

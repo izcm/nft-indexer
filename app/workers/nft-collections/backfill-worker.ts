@@ -29,7 +29,11 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
 
   for (const c of collections) {
     // line below is for demo purposes only
-    if (!(await isFullyMinted(client, c.address))) return
+    const fullyMinted = await isFullyMinted(client, c.address)
+    if (!fullyMinted) {
+      console.log(`[backfill] skipping ${c.address} — not fully minted yet`)
+      return
+    }
 
     let from = BigInt(c.lastScannedBlock ?? FORK_START_BLOCK ?? 0)
 

@@ -1,14 +1,13 @@
 import { FastifyInstance } from 'fastify'
 
-import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
 import { SETTLEMENT_REGEX_ID } from '#app/domain/constants/regex.js'
 
-import type { Settlement, SettlementKey } from '#app/domain/settlement/model.js'
+import type { SettlementKey } from '#app/domain/settlement/model.js'
 import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
 import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
-import { byIdParams, chainEventQueryableFields } from '#app/api/shared/schemas.js'
+import { byIdParams } from '#app/api/shared/schemas.js'
 import {
   basePageQuery,
   buildAttributeFilters,
