@@ -3,9 +3,11 @@ import { parseAbiItem, zeroAddress } from 'viem'
 import { AppClient } from '#app/clients.js'
 
 import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
+import { FORK_START_BLOCK } from '#app/domain/constants/app.js'
+
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 import type { NFTPort } from '#app/domain/nft/port.js'
-import { FORK_START_BLOCK } from '#app/domain/constants/app.js'
+
 import { isFullyMinted } from '#app/lib/blockchain/calls/dnft-fully-minted.js'
 
 const STEP = 5n // rpc free tier restriction
@@ -64,6 +66,8 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
         if (tokenId === undefined) continue
 
         const block = Number(log.blockNumber)
+
+        console.log(`[backfill] nft=${tokenId} block=${block}`)
 
         await port.ensureNFT({ chainId, collection: c.address, tokenId: tokenId.toString() }, block)
       }

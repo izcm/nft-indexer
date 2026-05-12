@@ -14,19 +14,18 @@ import { ListenerItem } from './shared/types.js'
 // ------------------
 
 export const start = (client: AppClient) => {
-  client.watchContractEvent({
-    address: MARKETPLACE_CONTRACT,
-    abi: json.abi,
-    onLogs: logs => {
-      logs.forEach(log =>
-        routeLog({
-          log,
-          chainId: client.chain.id,
-        })
-      )
-    },
-    onError: error => console.log(error),
-  })
+  const watch = () =>
+    client.watchContractEvent({
+      address: MARKETPLACE_CONTRACT,
+      abi: json.abi,
+      onLogs: logs => logs.forEach(log => routeLog({ log, chainId: client.chain.id })),
+      onError: error => {
+        console.error('[indexer] watcher error, restarting', error)
+        setTimeout(watch, 2_000)
+      },
+    })
+
+  watch()
 }
 
 const routers: Record<string, (item: ListenerItem) => Promise<void>> = {
