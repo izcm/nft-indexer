@@ -1,4 +1,4 @@
-import { APP_CHAINS, APP_NAME, APP_VERSION, VERIFYING_CONTRACT } from '#app/domain/constants/app.js'
+import { APP_CHAINS, APP_NAME, APP_VERSION, MARKETPLACE_ADDR } from '#app/domain/constants/app.js'
 import { OrderCore } from '#app/domain/order/model.js'
 import { encodeAbiParameters, Hex, keccak256, toBytes } from 'viem'
 
@@ -10,7 +10,7 @@ export const dmrktDomain = {
   name: APP_NAME,
   version: APP_VERSION,
   chainId: APP_CHAINS[0], // per now only one chain
-  verifyingContract: VERIFYING_CONTRACT,
+  verifyingContract: MARKETPLACE_ADDR,
 }
 
 export const dmrktTypes = {
