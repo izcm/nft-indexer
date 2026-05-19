@@ -9,7 +9,7 @@ import './di/write.js'
 import { initDb } from './db/mongo.js'
 
 // clients
-import { chainClients, AppClient } from './clients.js'
+import { initChainClients } from './clients.js'
 
 // listsners
 import { start as startListeners } from './listeners/index.js'
@@ -46,8 +46,6 @@ async function main() {
   console.log('starting API server...')
   await startServer()
 
-  // background workers + listeners
-
   // di
 
   const ports = {
@@ -56,15 +54,24 @@ async function main() {
     settlements: settlementRepo,
   }
 
+  // initialize clients from config
+
+  const chainClients = await initChainClients()
+
+  // background workers + listeners
+
   chainClients.forEach(chainClient => {
+    const { id, name } = chainClient.client.chain
     logSection('Listeners')
-    console.log('starting listeners...')
+    console.log(`starting listeners for chain ${name} (${id})...`)
     startListeners(chainClient)
 
     logSection('Workers')
-    console.log('starting background workers...')
+    console.log(`starting background workers for chain ${name} (${id})...`)
     startWorkers(chainClient, ports)
   })
+
+  logSection('d | mrkt indexer is up')
 }
 
 main().catch(err => {

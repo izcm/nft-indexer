@@ -14,9 +14,7 @@ It's an indexer that:
 
 ## Overview
 
-This indexer is at version v.0, ready for demo purposes. It's built around a specific marketplace contract, whose code is available on [Github](https://github.com/izcm/dmrkt-contracts). While it only supports local Anvil as is, the architecture is built to handle multichain.
-
-Next comes a quick overview of the system. For more specific explanations, see [References](#reference).
+This indexer is at version v.0, ready for demo purposes. It's built around a specific marketplace contract, whose code is available on [Github](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol). The architecture is built to handle multiple chains.
 
 **Ingestion**
 
@@ -62,7 +60,7 @@ There is per v.0 zero auth mechanisms, anyone can read data and post orders, tho
 
 ## Prerequisites
 
-An `OrderEngine` contract must be deployed per chain. RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
+An [OrderEngine](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol) contract must be deployed per chain. RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
 
 ### Dependencies
 
@@ -73,12 +71,12 @@ An `OrderEngine` contract must be deployed per chain. RPC URLs and contract addr
 
 ### Environment variables
 
-| VAR                | Description                              | Required | Example                     |
-| ------------------ | ---------------------------------------- | -------- | --------------------------- |
-| `MONGODB_URI`      | MongoDB connection string                | Yes      | `mongodb://localhost:27017` |
-| `DB_NAME`          | MongoDB database name                    | Yes      | `dmrkt`                     |
-| `CHAINS_CONFIG`    | Path to chains.json                      | No       | `./chains.json`             |
-| `FORK_START_BLOCK` | Block used as starting point for polling | No       | `21000000`                  |
+| VAR                | Description                                                                                | Required | Example                     |
+| ------------------ | ------------------------------------------------------------------------------------------ | -------- | --------------------------- |
+| `MONGODB_URI`      | MongoDB connection string                                                                  | Yes      | `mongodb://localhost:27017` |
+| `DB_NAME`          | MongoDB database name                                                                      | Yes      | `dmrkt`                     |
+| `CHAINS_CONFIG`    | Path to chains.json                                                                        | No       | `./chains.json`             |
+| `FORK_START_BLOCK` | Block used as starting point for polling. If its not set, polling starts at genesis block. | No       | `21000000`                  |
 
 ---
 
@@ -106,9 +104,9 @@ Chain configuration lives in `chains.json` — an array of `{ rpcUrl, marketplac
 
 ### Token standards
 
-NFT collections are noted when related orders / settlements are ingested. Only the address is noted, with no checks on what standard, so it can literally be any address. Some checks on standard pre-persist might be added later.
+NFT collections get noted as orders / settlements are ingested. So if an order is on token #5 in collection `0xabc`, that address is noted, with no checks on standard, it can literally be any address.
 
-Enrichment / NFT backfill workers only support ERC-721, addresses that don't support it won't be enriched.
+Enrichment / NFT backfill workers only support ERC-721, addresses that don't support it ends up stale.
 
 ### EIP-712
 
@@ -154,7 +152,7 @@ The API is injected with a read layer rather than calling repos directly. Read f
 
 #### Resource
 
-files: [ resource.ts ]
+file: [ resource.ts ]
 
 “Resource” in this codebase refers to the complete representation of a model — not just its shape, but also its key type, ports, relations, DTO transforms, and read behavior.
 
@@ -162,9 +160,9 @@ The read layer is built around a central `ResourceMap` type that registers every
 
 A route calls `readByKey(resource, key)` — the read layer looks up the right repo reader, fetches the record, runs it through the resource's DTO transform, and returns the shaped response. Response shaping never leaks into routes or repos.
 
-**Relations between resources**
+#### Relations between resources
 
-files: [ relations.ts ]
+file: [ relations.ts ]
 
 `ResourceMap` is also the backbone of the relation and include system:
 
