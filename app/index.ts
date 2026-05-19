@@ -1,8 +1,6 @@
 import 'dotenv/config'
 
-const missing = ['MARKETPLACE_ADDR', 'MONGODB_URI', 'DB_NAME', 'RPC_URL'].filter(
-  k => !process.env[k]
-)
+const missing = ['MONGODB_URI', 'DB_NAME'].filter(k => !process.env[k])
 if (missing.length) throw new Error(`Missing env vars: ${missing.join(', ')}`)
 
 import './di/write.js'
@@ -11,7 +9,7 @@ import './di/write.js'
 import { initDb } from './db/mongo.js'
 
 // clients
-import { anvilClient, AppClient } from './clients.js'
+import { chainClients, AppClient } from './clients.js'
 
 // listsners
 import { start as startListeners } from './listeners/index.js'
@@ -50,23 +48,22 @@ async function main() {
 
   // background workers + listeners
 
-  const clients: AppClient[] = [anvilClient]
-
   // di
+
   const ports = {
     nftCollections: nftCollectionRepo,
     nfts: nftRepo,
     settlements: settlementRepo,
   }
 
-  clients.forEach(client => {
+  chainClients.forEach(chainClient => {
     logSection('Listeners')
     console.log('starting listeners...')
-    startListeners(client)
+    startListeners(chainClient)
 
     logSection('Workers')
     console.log('starting background workers...')
-    startWorkers(client, ports)
+    startWorkers(chainClient, ports)
   })
 }
 

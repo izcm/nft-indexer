@@ -1,7 +1,7 @@
 import type { AppClient } from '#app/clients.js'
 import { erc721For } from '#app/lib/blockchain/interfaces/erc721.js'
 
-import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
+import { DEFAULT_WORKER_LIMIT } from '#app/config/workers.js'
 import type { NFTPort } from '#app/domain/nft/port.js'
 
 import { parseTokenUri } from './logic.js'

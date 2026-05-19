@@ -34,7 +34,7 @@ describe('parseTxInputs', () => {
 
     const signerAcount = privateKeyToAccount(fakePrivateKeys.signer)
     const sig = await signerAcount.signTypedData({
-      domain: dmrktDomain,
+      domain: dmrktDomain(31337n, '0x0000000000000000000000000000000000000000'),
       types: dmrktTypes,
       primaryType: 'Order',
       message: toOrder712(order),
@@ -50,7 +50,13 @@ describe('parseTxInputs', () => {
     const receipt = fakeReceipt
 
     // act
-    const meta = await decodeSettlementCall(tx, receipt, abi)
+    const meta = await decodeSettlementCall(
+      tx,
+      receipt,
+      abi,
+      31337n,
+      '0x0000000000000000000000000000000000000000'
+    )
 
     // assert
     expect(meta.txInput.order).toEqual(order)

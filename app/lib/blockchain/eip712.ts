@@ -1,17 +1,16 @@
-import { APP_CHAINS, APP_NAME, APP_VERSION, MARKETPLACE_ADDR } from '#app/domain/constants/app.js'
-import { OrderCore } from '#app/domain/order/model.js'
 import { encodeAbiParameters, Hex, keccak256, toBytes } from 'viem'
 
-// ! NB:
-// this should be in some shared package a2z/packages
-// todo: do the packages thing and import it as protocol/
+import { APP_NAME, APP_VERSION } from '#app/domain/constants/app.js'
+import { OrderCore } from '#app/domain/order/model.js'
 
-export const dmrktDomain = {
+// todo: this should be in some shared package a2z/packages
+
+export const dmrktDomain = (chainId: bigint, marketplaceAddr: `0x${string}`) => ({
   name: APP_NAME,
   version: APP_VERSION,
-  chainId: APP_CHAINS[0], // per now only one chain
-  verifyingContract: MARKETPLACE_ADDR,
-}
+  chainId,
+  verifyingContract: marketplaceAddr,
+})
 
 export const dmrktTypes = {
   Order: [

@@ -1,4 +1,4 @@
-import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
+import { DEFAULT_WORKER_LIMIT } from '#app/config/workers.js'
 
 import type { AppClient } from '#app/clients.js'
 
@@ -7,7 +7,7 @@ import { isDNFT } from '#app/lib/blockchain/interfaces/erc165.js'
 
 import { NFTCollectionPort, nftCollectionPortForChain } from '#app/domain/nft-collection/port.js'
 
-export async function runNFTCollectionChainMetaWorker(client: AppClient, port: NFTCollectionPort) {
+export async function runNFTCollectionMetaWorker(client: AppClient, port: NFTCollectionPort) {
   const collections = nftCollectionPortForChain(port, client.chain.id)
 
   const pending = await collections.findMissingMeta(DEFAULT_WORKER_LIMIT)

@@ -2,8 +2,8 @@ import { parseAbiItem, zeroAddress } from 'viem'
 
 import { AppClient } from '#app/clients.js'
 
-import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
-import { FORK_START_BLOCK } from '#app/domain/constants/app.js'
+import { DEFAULT_WORKER_LIMIT } from '#app/config/workers.js'
+import { FORK_START_BLOCK } from '#app/config/app.js'
 
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 import type { NFTPort } from '#app/domain/nft/port.js'

@@ -2,9 +2,9 @@ import type { FastifyInstance } from 'fastify'
 
 import type { NFTCollection, NFTCollectionKey } from '#app/domain/nft-collection/model.js'
 
-import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
-import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
-import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
+import { DEFAULT_PAGE_LIMIT } from '#app/config/api.js'
+import type { PageQuery } from '#app/domain/shared/types/page.js'
+import type { PageRequest } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
 // --- DI ---
@@ -18,7 +18,7 @@ export const nftCollectionsQuery = (fastify: FastifyInstance) => {
   })
 
   fastify.get<{
-    Querystring: HttpPageRequest<'nftCollection'> & Record<string, unknown>
+    Querystring: PageRequest<'nftCollection'> & Record<string, unknown>
   }>(
     '/',
     {

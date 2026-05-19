@@ -2,13 +2,13 @@ import { FastifyInstance } from 'fastify'
 
 import type { NFTKey } from '#app/domain/nft/model.js'
 
-import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
-import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
+import type { PageRequest } from '#app/domain/shared/types/page.js'
+import type { PageQuery } from '#app/domain/shared/types/page.js'
 import { parseTripleDomainId } from '#app/domain/shared/ids.js'
 
 import { getOr404 } from '#app/api/shared/get-or-404.js'
 import {
-  basePageQuery,
+  buildPageQuery,
   buildAttributeFilters,
   buildFilters,
 } from '#app/api/shared/build-page-query.js'
@@ -26,7 +26,7 @@ export const nftsQuery = (fastify: FastifyInstance) => {
   })
 
   fastify.get<{
-    Querystring: HttpPageRequest<'nft'> & Record<string, unknown>
+    Querystring: PageRequest<'nft'> & Record<string, unknown>
   }>(
     '/',
     {
@@ -40,8 +40,8 @@ export const nftsQuery = (fastify: FastifyInstance) => {
         ...buildAttributeFilters(query),
       }
 
-      const domainPageQuery: DomainPageQuery = {
-        ...basePageQuery(query),
+      const domainPageQuery: PageQuery = {
+        ...buildPageQuery(query),
         filters,
       }
 

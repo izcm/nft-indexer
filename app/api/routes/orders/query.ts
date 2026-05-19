@@ -2,14 +2,14 @@ import type { FastifyInstance } from 'fastify'
 
 import { ORDER_ID_REGEX } from '#app/domain/constants/regex.js'
 import type { OrderKey } from '#app/domain/order/model.js'
-import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
-import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
+import type { PageQuery } from '#app/domain/shared/types/page.js'
+import type { PageRequest } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
 import { byIdParams } from '#app/api/shared/schemas.js'
 import { getOr404 } from '#app/api/shared/get-or-404.js'
 import {
-  basePageQuery,
+  buildPageQuery,
   buildAttributeFilters,
   buildFilters,
 } from '#app/api/shared/build-page-query.js'
@@ -36,7 +36,7 @@ export const ordersQuery = (fastify: FastifyInstance) => {
   )
 
   fastify.get<{
-    Querystring: HttpPageRequest<'order'> & Record<string, unknown>
+    Querystring: PageRequest<'order'> & Record<string, unknown>
   }>(
     '/',
     {
@@ -50,8 +50,8 @@ export const ordersQuery = (fastify: FastifyInstance) => {
         ...buildAttributeFilters(query),
       }
 
-      const domainPageQuery: DomainPageQuery = {
-        ...basePageQuery(query, ORDER_SORT_FIELDS_MAP),
+      const domainPageQuery: PageQuery = {
+        ...buildPageQuery(query, ORDER_SORT_FIELDS_MAP),
         filters,
       }
 

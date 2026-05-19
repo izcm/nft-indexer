@@ -1,17 +1,17 @@
 import type { Collection, Filter, Document as MongoDoc } from 'mongodb'
 
-import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
+import type { PageQuery } from '#app/domain/shared/types/page.js'
 
 import type { GenericPageArgs } from './types.js'
 import type { FieldConfig } from '../../field-config.js'
 import { buildMongoFilters } from '../build-mongo-filters.js'
 
-export function mapDomainToRepoQuery<TDoc extends MongoDoc>(
-  domainPageQuery: DomainPageQuery,
+export function mapToRepoQuery<TDoc extends MongoDoc>(
+  pageQuery: PageQuery,
   dbCollection: Collection<TDoc>,
   fieldConfig?: FieldConfig
 ): GenericPageArgs<TDoc> {
-  const { from, to, rangeField, filters } = domainPageQuery
+  const { from, to, rangeField, filters } = pageQuery
   const { or, ...and } = filters ?? {}
 
   const baseQuery = buildMongoFilters(and, {
@@ -31,14 +31,14 @@ export function mapDomainToRepoQuery<TDoc extends MongoDoc>(
     finalQuery.$or = or.map(cond => buildMongoFilters(cond, { fieldConfig }))
   }
 
-  const sortField = fieldConfig?.[domainPageQuery.sortField]?.dbField ?? domainPageQuery.sortField
+  const sortField = fieldConfig?.[pageQuery.sortField]?.dbField ?? pageQuery.sortField
 
   return {
     dbCollection,
     sortField,
-    sortDir: domainPageQuery.sortDir === 'asc' ? 1 : -1,
-    cursor: domainPageQuery.cursor,
-    limit: domainPageQuery.limit,
+    sortDir: pageQuery.sortDir === 'asc' ? 1 : -1,
+    cursor: pageQuery.cursor,
+    limit: pageQuery.limit,
     baseQuery: finalQuery as Filter<TDoc>,
   }
 }

@@ -3,13 +3,13 @@ import { FastifyInstance } from 'fastify'
 import { SETTLEMENT_REGEX_ID } from '#app/domain/constants/regex.js'
 
 import type { SettlementKey } from '#app/domain/settlement/model.js'
-import type { HttpPageRequest } from '#app/domain/shared/types/request.js'
-import type { DomainPageQuery } from '#app/domain/shared/types/page.js'
+import type { PageRequest } from '#app/domain/shared/types/page.js'
+import type { PageQuery } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
 import { byIdParams } from '#app/api/shared/schemas.js'
 import {
-  basePageQuery,
+  buildPageQuery,
   buildAttributeFilters,
   buildFilters,
 } from '#app/api/shared/build-page-query.js'
@@ -35,7 +35,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
     }
   )
 
-  fastify.get<{ Querystring: HttpPageRequest<'settlement'> & Record<string, unknown> }>(
+  fastify.get<{ Querystring: PageRequest<'settlement'> & Record<string, unknown> }>(
     '/',
     {
       schema: settlementPageQuery,
@@ -48,8 +48,8 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
         ...buildAttributeFilters(query),
       }
 
-      const domainPageQuery: DomainPageQuery = {
-        ...basePageQuery(query, SETTLEMENT_SORT_FIELDS_MAP, {
+      const domainPageQuery: PageQuery = {
+        ...buildPageQuery(query, SETTLEMENT_SORT_FIELDS_MAP, {
           defaultSortField: SETTLEMENT_SORT_FIELDS_MAP.timestamp,
           defaultSortDir: 'desc',
         }),

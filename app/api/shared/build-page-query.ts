@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE_LIMIT } from '#app/domain/constants/limits.js'
+import { DEFAULT_PAGE_LIMIT } from '#app/config/api.js'
 
 /**
  * Builds a Mongo-compatible filter object from a Fastify query.
@@ -84,7 +84,7 @@ export function buildAttributeFilters(q: Record<string, unknown>) {
   }
 }
 
-export const basePageQuery = (
+export const buildPageQuery = (
   q: any,
   sortFieldMap?: Record<string, string>,
   opts?: { defaultSortField: string; defaultSortDir: 'asc' | 'desc' }

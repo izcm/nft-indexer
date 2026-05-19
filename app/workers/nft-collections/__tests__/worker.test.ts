@@ -1,16 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { runNFTBackfillWorker } from '../backfill-worker.js'
-import { DEFAULT_WORKER_LIMIT } from '#app/domain/constants/limits.js'
+import { runNFTBackfillWorker } from '../backfill.worker.js'
+import { DEFAULT_WORKER_LIMIT } from '#app/config/workers.js'
 
 describe('runNFTBackfillWorker', () => {
   const getBlockNumber = vi.fn()
   const getLogs = vi.fn()
 
+  const readContract = vi.fn()
+
   const client = {
     chain: { id: 1 },
     getBlockNumber,
     getLogs,
+    readContract,
   } as any
 
   const makePort = () => ({
@@ -21,6 +24,7 @@ describe('runNFTBackfillWorker', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    readContract.mockResolvedValue(false)
   })
 
   it('reads pending collections and exits when there is nothing to backfill', async () => {

@@ -1,9 +1,6 @@
 import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
 
-import { parseAbi } from 'viem'
-
-import type { AppClient } from '#app/clients.js'
-import { MARKETPLACE_ADDR } from '#app/domain/constants/app.js'
+import type { ChainClient } from '#app/clients.js'
 
 import { handleSettlement } from './settlements/handler.js'
 import { handleOrderCancelled } from './order-cancelled/handler.js'
@@ -13,10 +10,10 @@ import { ListenerItem } from './shared/types.js'
 // LISTENERS
 // ------------------
 
-export const start = (client: AppClient) => {
+export const start = ({ client, marketplaceAddr }: ChainClient) => {
   const watch = () =>
     client.watchContractEvent({
-      address: MARKETPLACE_ADDR,
+      address: marketplaceAddr,
       abi: json.abi,
       onLogs: logs => logs.forEach(log => routeLog({ log, chainId: client.chain.id })),
       onError: error => {

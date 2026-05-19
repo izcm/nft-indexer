@@ -1,4 +1,4 @@
-import type { Page, DomainPageQuery } from '../types/page.js'
+import type { Page, PageQuery } from '../types/page.js'
 
 export interface ByKey<TEntity, TKey> {
   findByKey(key: TKey): Promise<TEntity | null>
@@ -6,5 +6,5 @@ export interface ByKey<TEntity, TKey> {
 }
 
 export interface Pageable<TEntity extends object> {
-  findPage(args: DomainPageQuery): Promise<Page<TEntity>>
+  findPage(args: PageQuery): Promise<Page<TEntity>>
 }

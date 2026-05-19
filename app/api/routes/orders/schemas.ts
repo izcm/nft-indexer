@@ -1,6 +1,5 @@
 import { chainEventQueryableFields, paginationQueryParams } from '#app/api/shared/schemas.js'
 
-import { UNIX_SECONDS_MAX } from '#app/domain/constants/limits.js'
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { ORDER_INCLUDES } from '#app/domain/shared/relations.js'
 import { attributesQueryFields } from '../nfts/schema.js'
@@ -38,8 +37,8 @@ export const orderCoreFieldSchema = {
   price: { type: 'string' },
   side: { type: 'integer', minimum: 0, maximum: 1 },
   isCollectionBid: { type: 'boolean' },
-  start: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
-  end: { type: 'integer', minimum: 0, maximum: UNIX_SECONDS_MAX },
+  start: { type: 'integer', minimum: 0, maximum: 1e11 },
+  end: { type: 'integer', minimum: 0, maximum: 1e11 },
 } as const
 
 export const orderCoreQueryableFields = orderCoreFieldSchema

@@ -1,12 +1,18 @@
 import type { Collection, Document as MongoDoc } from 'mongodb'
 
-import { COLLECTIONS } from '#app/domain/constants/db.js'
-
 import type { NFTCollection } from '#app/domain/nft-collection/model.js'
 import type { NFT } from '#app/domain/nft/model.js'
 import type { OrderDoc, SettlementDoc } from '#app/repos/mongo/docs.js'
 
 import { getDb } from './mongo.js'
+
+const COLLECTIONS = {
+  ORDER_STATES: 'order-states',
+  ORDERS: 'orders',
+  SETTLEMENTS: 'settlements',
+  NFT_COLLECTIONS: 'nft-collections',
+  NFTS: 'nfts',
+} as const
 
 export const orders = () => col<OrderDoc>(COLLECTIONS.ORDERS)
 export const settlements = () => col<SettlementDoc>(COLLECTIONS.SETTLEMENTS)

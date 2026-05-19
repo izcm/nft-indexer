@@ -10,7 +10,9 @@ import { OrderCore } from '#app/domain/order/model.js'
 export async function decodeSettlementCall(
   tx: any,
   receipt: any,
-  abi: Abi
+  abi: Abi,
+  chainId: bigint,
+  marketplaceAddr: `0x${string}`
 ): Promise<SettlementCall> {
   if (!tx.to) {
     throw new Error('[tx-parser] unexpected contract creation tx')
@@ -49,7 +51,7 @@ export async function decodeSettlementCall(
   const sigHex = serializeSignature({ r: sig.r, s: sig.s, v: BigInt(sig.v) })
 
   const signer = await recoverTypedDataAddress({
-    domain: dmrktDomain,
+    domain: dmrktDomain(chainId, marketplaceAddr),
     types: dmrktTypes,
     primaryType: 'Order',
     message: order712,

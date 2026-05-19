@@ -1,6 +1,8 @@
-import { settlementKeyOf, type Settlement, type SettlementKey } from '../settlement/model.js'
+import type { Settlement, SettlementKey } from '../settlement/model.js'
+import { settlementKeyOf } from '../settlement/model.js'
 
-import { orderKeyOf, type OrderRecord, type OrderKey } from '../order/model.js'
+import type { OrderRecord, OrderKey } from '../order/model.js'
+import { orderKeyOf } from '../order/model.js'
 
 import {
   nftCollectionKeyOf,

@@ -10,9 +10,10 @@ import type { SettlementPort } from '#app/domain/settlement/port.js'
 
 import { decodeSettlementCall } from './logic.js'
 
-export async function runSettlementCalReconstructionWorker(
+export async function runSettlementCallReconstructionWorker(
   client: AppClient,
-  port: SettlementPort
+  port: SettlementPort,
+  marketplaceAddr: `0x${string}`
 ) {
   const chainId = client.chain.id
 
@@ -27,7 +28,13 @@ export async function runSettlementCalReconstructionWorker(
       const { txHash } = settlement.execution
 
       const { receipt, tx } = await readTxMeta(client, txHash)
-      const call = await decodeSettlementCall(tx, receipt, json.abi as Abi)
+      const call = await decodeSettlementCall(
+        tx,
+        receipt,
+        json.abi as Abi,
+        BigInt(chainId),
+        marketplaceAddr
+      )
 
       await settlementActions.ingestReconstructedCall({
         chainId,
