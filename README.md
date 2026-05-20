@@ -8,7 +8,7 @@ It's an indexer that:
 - Stores normalized marketplace state in MongoDB
 - Exposes REST + realtime feeds for consumers
 
-> ⚠️ **NB:** Not production-ready
+> ⚠️ Not production-ready
 
 ---
 
@@ -41,7 +41,7 @@ When an order or settlement is ingested the address in its collection field is n
 
 **Workers**
 
-Background jobs run after ingestion, each worker fits into one of the two groups:
+Background jobs run periodically. Each worker fits into one of two groups:
 
 | Type      | Description                                                             | Example                                                                    |
 | --------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
@@ -54,13 +54,17 @@ A record that hasn't been enriched yet is still queryable through the API.
 
 The API is simple, with a query route for every domain model and an ingestion route for signed orders. Query routes each expose a by-key and a pagination endpoint.
 
-There is per v.0 zero auth mechanisms, anyone can read data and post orders, though order fields needs to pass certain validation criteria. Query parameters and POST bodies are validated / whitelisted through JSON schemas.
+There is per v.0 zero auth mechanisms, anyone can read data and post orders. Query parameters and POST bodies are validated / whitelisted through JSON schemas.
 
 ---
 
 ## Prerequisites
 
-An [OrderEngine](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol) contract must be deployed per chain. RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
+An `OrderEngine` contract must be deployed per chain,. Deployment is straightforward, [repo](https://github.com/izcm/dmrkt-contracts) `README` explains how.
+
+RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
+
+> If marketplaceAddr doesn't point to a deployed OrderEngine, the indexer will run fine but never pick up any events.
 
 ### Dependencies
 
@@ -71,24 +75,33 @@ An [OrderEngine](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/ord
 
 ### Environment variables
 
-| VAR                | Description                                                                                | Required | Example                     |
-| ------------------ | ------------------------------------------------------------------------------------------ | -------- | --------------------------- |
-| `MONGODB_URI`      | MongoDB connection string                                                                  | Yes      | `mongodb://localhost:27017` |
-| `DB_NAME`          | MongoDB database name                                                                      | Yes      | `dmrkt`                     |
-| `CHAINS_CONFIG`    | Path to chains.json                                                                        | No       | `./chains.json`             |
-| `FORK_START_BLOCK` | Block used as starting point for polling. If its not set, polling starts at genesis block. | No       | `21000000`                  |
+| VAR                | Description                                                                         | Required | Example                     |
+| ------------------ | ----------------------------------------------------------------------------------- | -------- | --------------------------- |
+| `MONGODB_URI`      | MongoDB connection string                                                           | Yes      | `mongodb://localhost:27017` |
+| `DB_NAME`          | MongoDB database name                                                               | Yes      | `dmrkt`                     |
+| `CHAINS_CONFIG`    | Path to chains.json                                                                 | No       | `./chains.json`             |
+| `FORK_START_BLOCK` | Block used as starting point for polling. If not set, poll starts at genesis block. | No       | `21000000`                  |
 
 ---
 
 ## Run
 
-todo: add anvil container to docker-compose
+The [docker-compose](./docker-compose.yml) in repo root builds two containers:
+
+1. Anvil: local Ethereum node
+2. Mongo: local MongoDB instance
+
+> This command does not deploy the [OrderEngine](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol) contract.
+
+Spin up the containers by running:
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
-Local dev (requires MongoDB and a running Anvil fork):
+> Omit the `--build` flag if you want to keep the state of previous builds. (how the fuck do I say this?)
+
+When containers are up, run the indexer:
 
 ```bash
 npm run dev
@@ -100,13 +113,21 @@ npm run dev
 
 ### Multichain
 
-Chain configuration lives in `chains.json` — an array of `{ rpcUrl, marketplaceAddr }` objects, one per chain. On boot, the indexer creates one viem client per entry and fans out listeners and workers across all of them. `chainId` is derived from the RPC, so no chain-specific env vars are needed. All domain data is scoped by `chainId` in MongoDB, so multiple chains share the same database without collision.
+Chain configuration lives in `chains.json` — an array of `{ rpcUrl, marketplaceAddr }` objects, one per chain. On boot, the indexer creates one viem client per entry and starts listeners and workers across all of them.
+
+Each rpc is queried for its chain-id, throws if the URL does not point to a valid RPC or if the response chain-id is not found in `viem/chains`.
+
+All domain models are scoped by `chainId`, so multiple chains share the same database without collision.
 
 ### Token standards
 
-NFT collections get noted as orders / settlements are ingested. So if an order is on token #5 in collection `0xabc`, that address is noted, with no checks on standard, it can literally be any address.
+NFT collections get noted as orders and settlements are ingested. For example, when ingesting an order for token #5 in collection `0xabc`, that collection address gets noted.
 
-Enrichment / NFT backfill workers only support ERC-721, addresses that don't support it ends up stale.
+> “Noted” means the address is ensured to exist in the database.
+
+Collection addresses are persisted without token-standard validation, so any address can be stored.
+
+Since enrichment and NFT backfill currently only support ERC-721, non-ERC-721 collections will end up stale.
 
 ### EIP-712
 
@@ -124,8 +145,6 @@ read       -> frontend query shaping
 ```
 
 The design choices made are DDD-inspired. The focus was being _framework as a detail_ more than ensuring perfect DDD architecture.
-
-**_Empty appartment complex_**
 
 ### Domain
 
@@ -210,15 +229,23 @@ file: [ relations.ts ]
 | `GET`  | `/api/nft-collections` | Query collections                           |
 | `GET`  | `/healthcheck`         | Liveness check                              |
 
-POST body must embed the order's signature, the posted order must also pass certain validity checks.
+POST body must embed the order's signature.
 
-On-chain events — `Settlement` and `OrderCancelled` — are picked up by log listeners subscribed to the RPC and used to update order status.
+_insert post body example? maybe nice since we only have one post route_
 
-> The `Order` struct, EIP-712 domain, and the events mentioned above are defined by the `OrderEngine` contract <REPO_LINK>. The EIP-712 domain (including the domain separator) is defined in [eip712.ts](app/lib/blockchain/eip712.ts) and is used when verifying inbound orders and interpreting on-chain events.
+### WebSocket events
+
+| Event                          | Payload                  |
+| ------------------------------ | ------------------------ |
+| `order.created`                | `{ chainId, orderHash }` |
+| `order.cancelled`              | `{ chainId, orderHash }` |
+| `settlement.created`           | `{ chainId, orderHash }` |
+| `settlement.callReconstructed` | `{ chainId, orderHash }` |
+
+`settlement.callReconstructed`: execution context from the originating transaction has been attached to the settlement record, eg. gas used.
 
 ### Fill in later
 
-- websocket events
 - filter examples
 - pagination shape
 - sample response
@@ -227,7 +254,7 @@ On-chain events — `Settlement` and `OrderCancelled` — are picked up by log l
 
 ## Future improvements
 
-For v.1, the plan is to patch bugs / inconsistencies and make it ready to index for live Sepolia testnet.
+For v.1, the plan is to patch bugs / inconsistencies so it's production ready to index live events from Sepolia testnet and accept off chain orders from a`d | mrkt` browser client.
 
 ### Fill in later
 

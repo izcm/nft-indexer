@@ -54,7 +54,7 @@ async function main() {
     settlements: settlementRepo,
   }
 
-  // initialize clients from config
+  // read and initialize clients
 
   const chainClients = await initChainClients()
 
