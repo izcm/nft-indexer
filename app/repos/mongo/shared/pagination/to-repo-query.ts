@@ -3,7 +3,7 @@ import type { Collection, Filter, Document as MongoDoc } from 'mongodb'
 import type { PageQuery } from '#app/domain/shared/types/page.js'
 
 import type { GenericPageArgs } from './types.js'
-import type { FieldConfig } from '../../field-config.js'
+import type { FieldConfig } from '../field-config.js'
 import { buildMongoFilters } from '../build-mongo-filters.js'
 
 export function mapToRepoQuery<TDoc extends MongoDoc>(

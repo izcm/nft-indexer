@@ -1,8 +1,8 @@
-import type { PagedWithIncludesResource, ResourceName } from '#app/domain/shared/types/resource.js'
+import type { ResourceName } from '#app/domain/shared/types/resource.js'
 import type { Readers } from '#app/domain/shared/types/readers.js'
 import type { PageRequest } from '#app/domain/shared/types/page.js'
-import type { includeFor } from '../domain/shared/relations.js'
 
+import type { includeFor, PagedWithIncludesResource } from './shared/relations.js'
 import { applyDTOs } from './shared/apply-dtos.js'
 import { hydratePage } from './shared/hydrate-page.js'
 

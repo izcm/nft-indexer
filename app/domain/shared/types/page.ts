@@ -1,5 +1,6 @@
-import { AllExcept } from '../relations.js'
 import { ResourceName } from './resource.js'
+
+export type AllExcept<R extends ResourceName> = Exclude<ResourceName, R>
 
 export type PageRequest<R extends ResourceName> = Omit<PageQuery, 'filters'> & {
   include?: AllExcept<R>[]

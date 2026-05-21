@@ -1,23 +1,24 @@
-import type { Settlement, SettlementKey } from '../settlement/model.js'
-import { settlementKeyOf } from '../settlement/model.js'
+import type { Settlement, SettlementKey } from '#app/domain/settlement/model.js'
+import { settlementKeyOf } from '#app/domain/settlement/model.js'
 
-import type { OrderRecord, OrderKey } from '../order/model.js'
-import { orderKeyOf } from '../order/model.js'
+import type { OrderRecord, OrderKey } from '#app/domain/order/model.js'
+import { orderKeyOf } from '#app/domain/order/model.js'
 
 import {
   nftCollectionKeyOf,
   type NFTCollection,
   type NFTCollectionKey,
-} from '../nft-collection/model.js'
+} from '#app/domain/nft-collection/model.js'
 
 import {
   RESOURCE_NAMES,
-  type PagedWithIncludesResource,
   type ResourceName,
   type ResourceType,
-} from '../shared/types/resource.js'
+} from '#app/domain/shared/types/resource.js'
 
-import { nftKeyOf, type NFT, type NFTKey } from '../nft/model.js'
+export type PagedWithIncludesResource = Exclude<ResourceName, 'nftCollection' | 'nft'>
+
+import { nftKeyOf, type NFT, type NFTKey } from '#app/domain/nft/model.js'
 
 export const pkOf = {
   settlement: (s: Settlement): SettlementKey => settlementKeyOf(s),
@@ -48,8 +49,6 @@ export const relations = {
     }),
   },
 } as const
-
-export type AllExcept<R extends ResourceName> = Exclude<ResourceName, R>
 
 export type WithIncludes<R extends ResourceName> = ResourceType<R> & {
   [K in Exclude<ResourceName, R>]?: ResourceType<K>

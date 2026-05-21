@@ -1,7 +1,14 @@
 import type { PageQuery } from '#app/domain/shared/types/page.js'
-import { pkOf, relations, WithIncludes, type includeFor } from '#app/domain/shared/relations.js'
-import type { PagedWithIncludesResource, ResourceName } from '#app/domain/shared/types/resource.js'
+import type { ResourceName } from '#app/domain/shared/types/resource.js'
 import { Readers } from '#app/domain/shared/types/readers.js'
+
+import {
+  pkOf,
+  relations,
+  WithIncludes,
+  type includeFor,
+  type PagedWithIncludesResource,
+} from './relations.js'
 
 export async function hydratePage<R extends PagedWithIncludesResource>(
   readers: Readers,

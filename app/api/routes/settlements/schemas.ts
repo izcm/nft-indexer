@@ -1,7 +1,7 @@
 import { chainEventQueryableFields, paginationQueryParams } from '#app/api/shared/schemas.js'
 
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
-import { SETTLEMENT_INCLUDES } from '#app/domain/shared/relations.js'
+import { SETTLEMENT_INCLUDES } from '#app/read/shared/relations.js'
 import { attributesQueryFields } from '../nfts/schema.js'
 
 // --- sort whitelist + domain-shape field mapping ---

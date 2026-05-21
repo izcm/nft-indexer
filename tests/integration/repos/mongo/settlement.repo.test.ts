@@ -12,7 +12,7 @@ import { settlementRepo } from '#app/repos/mongo/settlement.repo.js'
 import { bytes32 } from '#tests/helpers/evm-fixtures.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo/mongo-memory.js'
 import { fakeSettlementCall } from '#tests/helpers/fixtures.js'
-import { SettlementDoc } from '#app/repos/mongo/docs.js'
+import { SettlementDoc } from '#app/repos/mongo/shared/docs.js'
 import { seedSettlements } from '#tests/helpers/mongo/seed-mongo.js'
 import { fakeSettlementDoc } from '#tests/helpers/mongo/to-doc.js'
 

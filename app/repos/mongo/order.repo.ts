@@ -10,8 +10,8 @@ import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
 
-import type { OrderDoc } from './docs.js'
-import { ORDER_FIELD_TRANSFORMS } from './field-config.js'
+import type { OrderDoc } from './shared/docs.js'
+import { ORDER_FIELD_TRANSFORMS } from './shared/field-config.js'
 import { OrderKey } from '#app/domain/order/model.js'
 
 const baseRead = makeReadRepo<OrderDoc, OrderKey>(

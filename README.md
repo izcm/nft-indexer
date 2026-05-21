@@ -8,7 +8,10 @@ It's an indexer that:
 - Stores normalized marketplace state in MongoDB
 - Exposes REST + realtime feeds for consumers
 
-> ⚠️ Not production-ready
+> [!WARNING]
+> Not production ready.
+
+**Contents** — [Overview](#overview) · [Prerequisites](#prerequisites) · [Run](#run) · [Web3 layer](#web3-layer) · [Architecture](#architecture) · [Reference](#reference) · [Future improvements](#future-improvements)
 
 ---
 
@@ -18,22 +21,7 @@ This indexer is at version v.0, ready for demo purposes. It's built around a spe
 
 **Ingestion**
 
-Signed EIP-712 orders are ingested through POST requests, in the request body. Its structure must match the `Order` struct:
-
-```solidity
-struct Order {
-  Side side; // 0 = ask, 1 = bid
-  bool isCollectionBid;
-  address collection;
-  uint256 tokenId; // ignored if isCollectionBid = true
-  address currency;
-  uint256 price;
-  address actor;
-  uint64 start;
-  uint64 end;
-  uint256 nonce;
-}
-```
+Signed EIP-712 orders are ingested through POST requests to API.
 
 On-chain events — `Settlement` and `OrderCancelled` — are picked up by log listeners subscribed to the RPC and used to update order status.
 
@@ -64,7 +52,8 @@ An `OrderEngine` contract must be deployed per chain,. Deployment is straightfor
 
 RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
 
-> If marketplaceAddr doesn't point to a deployed OrderEngine, the indexer will run fine but never pick up any events.
+> [!IMPORTANT]
+> If `marketplaceAddr` doesn't point to a deployed `OrderEngine`, the indexer will run fine but never pick up any events.
 
 ### Dependencies
 
@@ -91,7 +80,7 @@ The [docker-compose](./docker-compose.yml) in repo root builds two containers:
 1. Anvil: local Ethereum node
 2. Mongo: local MongoDB instance
 
-> This command does not deploy the [OrderEngine](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol) contract.
+> This command does not deploy the `OrderEngine` contract.
 
 Spin up the containers by running:
 
@@ -99,7 +88,7 @@ Spin up the containers by running:
 docker compose up --build
 ```
 
-> Omit the `--build` flag if you want to keep the state of previous builds. (how the fuck do I say this?)
+> Omit the `--build` flag if you want to keep the state of previous builds. (how do I say this?)
 
 When containers are up, run the indexer:
 
@@ -115,7 +104,7 @@ npm run dev
 
 Chain configuration lives in `chains.json` — an array of `{ rpcUrl, marketplaceAddr }` objects, one per chain. On boot, the indexer creates one viem client per entry and starts listeners and workers across all of them.
 
-Each rpc is queried for its chain-id, throws if the URL does not point to a valid RPC or if the response chain-id is not found in `viem/chains`.
+Each RPC is queried for its chain-id, throws if the URL does not point to a valid RPC or if the response chain-id is not found in `viem/chains`.
 
 All domain models are scoped by `chainId`, so multiple chains share the same database without collision.
 
@@ -131,66 +120,152 @@ Since enrichment and NFT backfill currently only support ERC-721, non-ERC-721 co
 
 ### EIP-712
 
+Orders are submitted off-chain as EIP-712 typed-data signatures.
+
+The EIP-712 setup here mirrors `OrderEngine` contract — same typed-data fields, field order, and hashing logic.
+
+The typed payload maps directly to the on-chain `Order` struct:
+
+```solidity
+struct Order {
+  Side side; // 0 = ask, 1 = bid
+  bool isCollectionBid;
+  address collection;
+  uint256 tokenId; // ignored if isCollectionBid = true
+  address currency;
+  uint256 price;
+  address actor;
+  uint64 start;
+  uint64 end;
+  uint256 nonce;
+}
+```
+
 ---
 
 ## Architecture
 
 ```txt
 api        -> routes
-domain     -> business logic
+domain     -> resources definitions and shared types
+read       -> intermediate reading layer and DTO transforms
+repos      -> from / to db
 listeners  -> blockchain events
 workers    -> background jobs
-repos      -> MongoDB
-read       -> frontend query shaping
 ```
 
-The design choices made are DDD-inspired. The focus was being _framework as a detail_ more than ensuring perfect DDD architecture.
+The design choices made are DDD-inspired, focus being on _framework as a detail_ rather than ensuring perfect DDD architecture.
+
+### API
+
+API is kept very simple, each domain modal has a query route with
+Each domain model has a query route
 
 ### Domain
 
-The domain can be thought of as an empty appartment complex:
+This domain can be thought of as an empty apartment complex:
 
-- appartments: the domain models (`order`, `settlement`, `nft`, `nftCollection`)
+- apartments: the domain models (`order`, `settlement`, `nft`, `nftCollection`)
 - doors: how data enters, any rules on its form, and any effects of its entry
 - windows: how data is read
 
 But no furniture – its decoupled from all frameworks.
 
-“Resource” in this codebase refers to the complete representation of a model — not just its shape, but also its key type, ports, relations, DTO transforms, and read behavior.
+The project uses the term “Resource” when refering to the complete representation of a model — not just its shape, but also its key type, ports, relations, DTO transforms, and read behavior.
 
 Each resource in the domain follows the same structure:
 
-| File         | Description                                              |
-| ------------ | -------------------------------------------------------- |
-| `model.ts`   | types and shape of the resource                          |
-| `port.ts`    | interface for persistence — what the repo must implement |
-| `actions.ts` | what happens when something occurs — orchestrates ports  |
-| `rules.ts`   | pure validation logic, no side effects                   |
+| File         | Description                                                     |
+| ------------ | --------------------------------------------------------------- |
+| `model.ts`   | types and shape of the resource                                 |
+| `port.ts`    | interface for persistence — what the repo must implement        |
+| `actions.ts` | what happens when something occurs — orchestrates ports         |
+| `rules.ts`   | pure validation logic, eg. order timestamps are in unix seconds |
 
-The API is injected with a read layer rather than calling repos directly. Read functions each wrap a repo query and transform the result into a DTO before returning it to the route — keeping response shaping out of both the route and the repo.
+Though each resource doesn't have to implement all of the above.
 
 #### Resource
 
 file: [ resource.ts ]
 
-“Resource” in this codebase refers to the complete representation of a model — not just its shape, but also its key type, ports, relations, DTO transforms, and read behavior.
+The domain contains a sort of registry of the resources, so we can connect each resoruce to their respective keys (unique id), repo and DTO transforms.
 
-The read layer is built around a central `ResourceMap` type that registers every domain resource — its model type and key type — under a string name. `read-one` and `read-page` are generic over this map, so a single implementation handles all resources. Adding a new resource means adding one entry to the map; the rest follows automatically.
+```ts
+// maps resource names to their associated types
+// allows generic functions to resolve the correct key + model types
+type ResourceMap = {
+  order: {
+    type: OrderRecord
+    key: OrderKey
+  }
+  // ...
+}
 
-A route calls `readByKey(resource, key)` — the read layer looks up the right repo reader, fetches the record, runs it through the resource's DTO transform, and returns the shaped response. Response shaping never leaks into routes or repos.
+const dtos: { [R in ResourceName]: (x: ResourceType<R>) => any } = {
+  order: toOrderDTO,
+  // ...
+} as const
 
-#### Relations between resources
+// resource = "order" -> dtos['order']
+function toDTO<K extends ResourceName>(resource: K, value: ResourceType<K>) {
+  return dtos[key](value)
+}
+```
+
+Adding a new resource means adding one entry to the map; the rest follows automatically.
+
+### Read
+
+The layer sits between API and the repositories.
+
+```
+route
+  ↓
+read
+  ↓
+repo
+  ↓
+MongoDB
+```
+
+The read layer does not depend on full repos directly. Instead, it depends on a smaller `read-commons` interface containing only the read operations it needs, making it easier to test in isolation.
+
+Readers are injected at startup — see [Dependency injection](#dependency-injection).
+
+Before returning data to caller, the read layer transforms it to via the respective resource toDTO function.
+
+```js
+// injected at startup
+type ByIdReaders = {
+  [K in ResourceName]: ByKey<ResourceType<K>, any>
+}
+
+/*
+ look up correct reader / repo
+ -> get record -> transform toDTO -> return
+*/
+export const makeReadOne = (readers: ByIdReaders) =>
+  async function readByKey<R extends ResourceName>(
+    resource: R,
+    key: ResourceKey<R>
+  ): Promise<ResourceType<R> | null> {
+    const result = await readers[resource].findByKey(key)
+    if (!result) return null
+    return toDTO(resource, result)
+  }
+```
+
+Process is similar when reading a page of items, also using the resource registry to pick appropriate reader.
+
+**Includes**
+
+A page query can specify whether to include any related resources, though only for 1:1 relationships to resource queried after.
 
 file: [ relations.ts ]
 
-`ResourceMap` is also the backbone of the relation and include system:
+Kind of a rabbit hole in hindsight, the relations were made to enable including a related record when querying. Example: users query for `settlement`record and wants to attach the related `nft-collection`.
 
-- `Readers` — type-safe map of repo readers, one per resource, injected into the read layer
-- `relations` — defines how resources relate to each other (e.g. a settlement derives its `OrderKey`), used when resolving includes
-- `WithIncludes<R>` — generic type for a resource with optional related resources attached, used by `read-page` when `?include=` is in the request
-- `pkOf` — maps each resource to its key extractor function
-
-### Read
+Relations are defined at domain layer, but solely used in read layer, you'll see an example in the section after this. It might as well be moved to
 
 **Example flow: `GET /api/orders?include=settlement`**
 
@@ -203,7 +278,9 @@ file: [ relations.ts ]
 7. `read/shared/apply-dtos.ts` — runs each result through `applyDTOs('order', ...)` including included relations
 8. response back to route
 
-### Repositories
+### Repos
+
+### DI
 
 ---
 
@@ -229,9 +306,32 @@ file: [ relations.ts ]
 | `GET`  | `/api/nft-collections` | Query collections                           |
 | `GET`  | `/healthcheck`         | Liveness check                              |
 
-POST body must embed the order's signature.
+Example `api/orders` POST request:
 
-_insert post body example? maybe nice since we only have one post route_
+```http
+Content-Type: application/json
+
+X-Chain-Id: 31337
+
+{
+ "actor": "0x...",
+ "collection": "0x...",
+ "currency": "0x...",
+ "end": 1868226790,
+ "isCollectionBid": false,
+ "nonce": "1",
+ "price": "100000000000000000",
+ "side": 0,
+ "signature": {
+   "r": "0x...",
+   "s": "0x...",
+   "v": 28
+ },
+ "start": 0,
+ "tokenId": "67"
+}
+
+```
 
 ### WebSocket events
 
@@ -242,7 +342,7 @@ _insert post body example? maybe nice since we only have one post route_
 | `settlement.created`           | `{ chainId, orderHash }` |
 | `settlement.callReconstructed` | `{ chainId, orderHash }` |
 
-`settlement.callReconstructed`: execution context from the originating transaction has been attached to the settlement record, eg. gas used.
+`settlement.callReconstructed`: workers have collected and attached transaction context to a settlement record, eg. gas used, calldata, function name (derived from selector).
 
 ### Fill in later
 

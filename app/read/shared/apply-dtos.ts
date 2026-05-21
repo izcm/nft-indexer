@@ -1,5 +1,6 @@
 import type { ResourceName, ResourceType } from '#app/domain/shared/types/resource.js'
-import type { WithIncludes } from '#app/domain/shared/relations.js'
+
+import type { WithIncludes } from './relations.js'
 
 import { toOrderDTO } from '../dtos/order.dto.js'
 import { toSettlementDTO } from '../dtos/settlement.dto.js'
@@ -13,7 +14,7 @@ export const dtos: { [R in ResourceName]: (x: ResourceType<R>) => any } = {
   nft: toNFTDTO,
 } as const
 
-export function callDTO<K extends ResourceName>(key: K, value: ResourceType<K>) {
+export function toDTO<K extends ResourceName>(key: K, value: ResourceType<K>) {
   return dtos[key](value)
 }
 
@@ -29,7 +30,7 @@ export function applyDTOs<R extends ResourceName>(resource: R, page: WithInclude
       const rel = item[key as Exclude<ResourceName, R>] // skipped key === resource so this is safe
       if (!rel) continue
 
-      out[key] = callDTO(key, rel)
+      out[key] = toDTO(key, rel)
     }
 
     return out

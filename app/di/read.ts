@@ -14,7 +14,7 @@ const readers: Readers = {
   nft: nftRepo,
 }
 
-// --- inject views ---
+// --- inject read layer ---
 
 export const readByKey = makeReadOne(readers)
 export const readPage = makeReadPage(readers)

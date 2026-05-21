@@ -5,7 +5,7 @@ import { ByKey, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 
 import { findPageGeneric } from './pagination/find-page-generic.js'
 import { mapToRepoQuery } from './pagination/to-repo-query.js'
-import { FieldConfig } from '../field-config.js'
+import { FieldConfig } from './field-config.js'
 
 export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
   getCol: () => Collection<TDoc>,

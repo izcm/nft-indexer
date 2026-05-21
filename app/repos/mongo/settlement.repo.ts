@@ -9,8 +9,8 @@ import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
-import { SettlementDoc } from './docs.js'
-import { SETTLEMENT_FIELD_TRANSFORMS } from './field-config.js'
+import { SettlementDoc } from './shared/docs.js'
+import { SETTLEMENT_FIELD_TRANSFORMS } from './shared/field-config.js'
 
 // === helpers ===
 

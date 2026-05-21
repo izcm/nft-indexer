@@ -27,5 +27,3 @@ export type ResourceMap = {
 
 export type ResourceType<R extends ResourceName> = ResourceMap[R]['type']
 export type ResourceKey<R extends ResourceName> = ResourceMap[R]['key']
-
-export type PagedWithIncludesResource = Exclude<ResourceName, 'nftCollection' | 'nft'>
