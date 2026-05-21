@@ -2,7 +2,7 @@ import { ResourceName } from './resource.js'
 
 export type AllExcept<R extends ResourceName> = Exclude<ResourceName, R>
 
-export type PageRequest<R extends ResourceName> = Omit<PageQuery, 'filters'> & {
+export type PageRequest<R extends ResourceName> = PageQuery & {
   include?: AllExcept<R>[]
 }
 

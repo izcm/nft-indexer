@@ -11,7 +11,7 @@ export const makeReadPage = (readers: Readers) =>
     // todo: nft is skipped because of unfinished config
     // it should be able to specify includes
 
-    /// non 1:1 relationships – NFTCollection only has 1:M
+    /// only 1:1 M:1 relationships – NFTCollection only has 1:M
     if (resource === 'nftCollection' || resource === 'nft') {
       const page = await readers[resource].findPage(query)
 

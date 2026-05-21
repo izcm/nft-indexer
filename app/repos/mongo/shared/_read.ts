@@ -25,8 +25,8 @@ export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
         .toArray()
     },
 
-    findPage(domainPageQuery: PageQuery) {
-      const repoQuery = mapToRepoQuery<TDoc>(domainPageQuery, getCol(), fieldConfig)
+    findPage(pageQuery: PageQuery) {
+      const repoQuery = mapToRepoQuery<TDoc>(pageQuery, getCol(), fieldConfig)
 
       return findPageGeneric<TDoc>({
         ...repoQuery,
