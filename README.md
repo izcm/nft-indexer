@@ -290,9 +290,9 @@ export const makeReadOne = (readers: ByIdReaders) =>
   }
 ```
 
-Reading a page works similarly, with one extra step — hydrating results with any related records requested via `include.
+Reading a page works similarly, with one extra step — hydrating results with any related records requested via `include`.
 
-**Includes**
+**Include**
 
 A page query can specify whether to include any related resources, though only for 1:1 relationships to resource queried after.
 
@@ -332,7 +332,7 @@ Relations are defined at domain layer, but solely used in read layer, you'll see
 
 ### API
 
-#### Posting order
+#### Order ingestion
 
 | Method | Path          | Description           |
 | ------ | ------------- | --------------------- |

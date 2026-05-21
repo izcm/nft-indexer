@@ -12,13 +12,13 @@ import { initDb } from './db/mongo.js'
 import { initChainClients } from './clients.js'
 
 // listsners
-import { start as startListeners } from './listeners/index.js'
+import { start as startListeners } from './listeners/start.js'
 
 // api
-import { start as startServer } from './api/index.js'
+import { start as startServer } from './api/start.js'
 
 // workers
-import { start as startWorkers } from './workers/index.js'
+import { start as startWorkers } from './workers/start.js'
 
 // di repos
 import { nftCollectionRepo } from './repos/mongo/nft-collection.repo.js'
