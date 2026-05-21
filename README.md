@@ -11,7 +11,7 @@ It's an indexer that:
 > [!WARNING]
 > Not production ready.
 
-**Contents** — [Overview](#overview) · [Prerequisites](#prerequisites) · [Run](#run) · [Web3 layer](#web3-layer) · [Architecture](#architecture) · [Reference](#reference) · [Future improvements](#future-improvements)
+**Contents** — [Overview](#overview) · [Prerequisites](#prerequisites) · [Run](#run) · [Web3 layer](#web3-layer) · [Architecture](#architecture) · [Data Flow](#data-flow) · [Reference](#reference) · [Future improvements](#future-improvements)
 
 For routes, events, and query formats — see [Reference](#reference):
 
@@ -47,7 +47,7 @@ A record that hasn't been enriched yet is still queryable through the API.
 
 The API is simple, with a query route for every domain model and an ingestion route for signed orders. Query routes each expose a by-key and a pagination endpoint.
 
-There is per v.0 zero auth mechanisms, anyone can read data and post orders. Query parameters and POST bodies are validated / whitelisted through JSON schemas.
+There are currently no auth mechanisms, anyone can read data and post orders. Query parameters and POST bodies are validated / whitelisted through JSON schemas.
 
 ---
 
@@ -82,10 +82,10 @@ If `FORK_START_BLOCK` is not set, polling starts at the genesis block.
 
 ## Run
 
-`docker-compose` in repo root builds two containers:
+The `docker-compose` in repo root builds two containers:
 
-1. Anvil: local Ethereum node
-2. Mongo: local MongoDB instance
+1. `anvil`: local Ethereum node
+2. `mongo`: local MongoDB instance
 
 Spin up containers:
 
@@ -181,7 +181,7 @@ API is minimal, each data model has two query routes:
 The only domain model that is ingestable is `Order`.
 
 > [!NOTE]
-> Available query parameters, `id` formats and `Order` POST body example is given in the [API reference](#api-1)
+> Available query parameters, `id` formats, response shapes, and `Order` POST body example are given in the [API reference](#api-1)
 
 ```
 api/
@@ -210,7 +210,7 @@ This domain can be thought of as an empty apartment complex:
 
 But no furniture – its decoupled from all frameworks.
 
-The project uses the term “Resource” when refering to the complete representation of a model — not just its shape, but also its key type, ports, relations, DTO transforms, and read behavior.
+The project uses the term “Resource” when referring to the complete representation of a model — not just its shape, but also its key type, ports, relations, DTO transforms, and read behavior.
 
 Each resource in the domain follows the same structure:
 
@@ -223,13 +223,15 @@ Each resource in the domain follows the same structure:
 
 Though each resource doesn't have to implement all of the above.
 
+**Actions**
+
 **ResourceMap**
 
 `resource.ts` defines the resource registry, a mapping between a resource's string name to their respective type and key (unique id).
 
 The snippet below is a composed example showing a typical use of the resource registry.
 
-```ts
+```js
 const RESOURCE_NAMES = ['settlement', 'order', 'nftCollection', 'nft'] as const
 
 type ResourceName = (typeof RESOURCE_NAMES)[number]
@@ -257,15 +259,13 @@ function toDTO<K extends ResourceName>(resource: K, value: ResourceType<K>) {
 }
 ```
 
-### Read
+### Read layer
 
-This layer sits between API and the repositories.
+The read layer sits between API and the repos.
 
-The read layer depends on the `read-commons` interfaces rather than full repos — only the read operations it needs, making the layer easier to test in isolation.
+It depends on the `read-commons` interfaces rather than full repos — only the read operations it needs, making the layer easier to test in isolation.
 
 Readers are injected at startup — see [Dependency injection](#dependency-injection).
-
-Before returning data to API, the read layer transforms it to its DTO representation.
 
 ```js
 // read-one.ts
@@ -275,10 +275,9 @@ type ByIdReaders = {
   [K in ResourceName]: ByKey<ResourceType<K>, any>
 }
 
-/*
- look up correct reader / repo
- -> get record -> transform toDTO -> return
-*/
+
+// look up correct reader / repo
+// -> get record -> transform toDTO -> return
 export const makeReadOne = (readers: ByIdReaders) =>
   async function readByKey<R extends ResourceName>(
     resource: R,
@@ -290,36 +289,96 @@ export const makeReadOne = (readers: ByIdReaders) =>
   }
 ```
 
+Before returning data to API, the read layer transforms it to its DTO representation.
+
 Reading a page works similarly, with one extra step — hydrating results with any related records requested via `include`.
 
 **Include**
 
-A page query can specify whether to include any related resources, though only for 1:1 relationships to resource queried after.
+A page query can specify whether to include related records — but only for M:1 or 1:1 relationships.
 
-file: [ relations.ts ]
+For example, each order in a page can include its nft-collection, but an nft-collection page can't include its orders.
 
-Kind of a rabbit hole in hindsight, the relations were made to enable including a related record when querying. Example: users query for `settlement`record and wants to attach the related `nft-collection`.
+To use includes in queries — see [Available query parameters](#available-query-parameters).
+
+> [!IMPORTANT]
+> `NFT` is not yet available as an include target — its relations haven't been defined in `relations.ts`.
+
+**Relations**
 
 Relations are defined at domain layer, but solely used in read layer, you'll see an example in the section after this. It might as well be moved to
 
-**Example flow: `GET /api/orders?include=settlement`**
-
-1. `api/routes/orders/query.ts` — route builds a `PageQuery` via `buildPageQuery()` + `buildFilters()`, calls `readPage('order', { ...pageQuery, include })`
-2. `di/read.ts` — `readPage` is `makeReadPage(readers)` with repos injected
-3. `read/read-page.ts` — takes `PageRequest<'order'>`, passes query to repo's `findPage`, then hydrates includes
-4. `read/shared/hydrate-page.ts` — resolves includes by fetching related resources using `relations`
-5. `repos/mongo/shared/_read.ts` — calls `mapToRepoQuery` to convert `PageQuery` → mongo cursor args
-6. `repos/mongo/shared/pagination/to-repo-query.ts` — maps `PageQuery` → `GenericPageArgs`, builds mongo filters
-7. `read/shared/apply-dtos.ts` — runs each result through `applyDTOs('order', ...)` including included relations
-8. response back to route
-
 ### Repos
+
+Repos implement the domain port interfaces (`ByKey`, `Pageable`) — nothing more. The domain layer defines what a repo must do; the mongo implementation is a detail.
+
+Shared helpers in `repos/mongo/shared/`:
+
+- `_read.ts` / `_write.ts` — common read and write operations reused across repos
+- `docs.ts` — mapping between domain models and mongo documents
+- `field-config.ts` — declares which fields are sortable and filterable per repo
+- `pagination/to-repo-query.ts` — maps `PageQuery` to mongo cursor args
+- `pagination/find-page-generic.ts` — generic cursor-paginated `findPage` used by all repos
+
+### Listeners
+
+Each chain client subscribes to contract events from `OrderEngine` via viem's `watchContractEvent`. Incoming logs are routed by event name to a handler. Each handler parses the log and calls the appropriate domain action. See [Listeners](#listeners-1) in Reference.
+
+### Workers
+
+Workers run in a loop, sleeping 10 seconds between cycles. Each cycle runs all workers sequentially per chain. Workers are either enrichers (fetch missing data for incomplete records) or pollers (scan chain state to fill in context). See [Workers](#workers-1) in Reference.
 
 ### Dependency Injection
 
 ---
 
+## Data flow
+
+Each flow traces a request or event step-by-step through the codebase.
+
+### Read page
+
+Read a page of orders, include related NFTCollections.
+
+**Route:** `GET /api/orders?include=settlement`
+
+1. `di/read.ts` — `readPage` is `makeReadPage(readers)` with repos injected at startup
+2. `api/routes/orders/query.ts` — builds page query, calls `readPage`
+3. `read/read-page.ts` — fetches page from repo, hydrates includes // wrong this happens in hydrate-page read-page just do branching logic and reads page if not accepts includes, if accepts includes its sent to
+4. `read/shared/hydrate-page.ts` — fetches related records
+5. `repos/mongo/order.repo.ts` — runs query against MongoDB
+6. `read/shared/apply-dtos.ts` — transforms results before returning
+
+### Receive order
+
+**Route:** `POST /api/orders`
+
+1. `di/write.ts` — `orderActions` is `makeOrderActions(repos)` with repos injected at startup
+2. `api/routes/orders/ingest.ts` — validates body and headers, calls `ingestOrder`
+3. `domain/order/actions.ts` — validates order rules, persists via repo, notes NFT collection
+4. `repos/mongo/order.repo.ts` — upserts order to MongoDB
+5. `domain/order/actions.ts` — broadcasts `order.created` via realtime port
+
+### Observe event
+
+**Event:** `Settlement` log from `OrderEngine` contract
+
+1. `di/write.ts` — `settlementActions` is `makeSettlementActions(repos)` with repos injected at startup
+2. `listeners/start.ts` — receives log, routes to `handleSettlement`
+3. `listeners/settlements/from-log.ts` — parses log into settlement domain model
+4. `listeners/settlements/handler.ts` — calls `ingestSettlement`
+5. `domain/settlement/actions.ts` — persists settlement, notes NFT collection, broadcasts `settlement.created`
+
+---
+
 ## Reference
+
+### Listeners
+
+| Event            | Description                                           |
+| ---------------- | ----------------------------------------------------- |
+| `Settlement`     | parses log, persists settlement, notes NFT collection |
+| `OrderCancelled` | parses log, marks matching orders as cancelled        |
 
 ### Workers
 
@@ -332,7 +391,9 @@ Relations are defined at domain layer, but solely used in read layer, you'll see
 
 ### API
 
-#### Order ingestion
+#### Routes – POST
+
+**Order**
 
 | Method | Path          | Description           |
 | ------ | ------------- | --------------------- |
@@ -371,7 +432,9 @@ Order validation rules:
 - `side` `0` (ask) or `1` (bid)
 - `actor` not the zero address
 
-#### Page query
+#### Routes – Query
+
+**Page**
 
 | Method | Path                   | Description               |
 | ------ | ---------------------- | ------------------------- |
@@ -381,16 +444,7 @@ Order validation rules:
 | `GET`  | `/api/nft-collections` | Collections               |
 | `GET`  | `/healthcheck`         | Liveness check            |
 
-Page queries return:
-
-```json
-{
-  items: T[]
-  nextCursor: string | null
-}
-```
-
-#### Item query
+**Item by ID**
 
 | Method | Path                       | Id format                    |
 | ------ | -------------------------- | ---------------------------- |
@@ -398,6 +452,107 @@ Page queries return:
 | `GET`  | `/api/settlements/:id`     | `chainId:orderHash`          |
 | `GET`  | `/api/nfts/:id`            | `chainId:collection:tokenId` |
 | `GET`  | `/api/nft-collections/:id` | `chainId:address`            |
+
+#### Available query parameters
+
+**Filters**
+
+**Whitelisted sort fields**
+
+### Response shapes
+
+**Page**
+
+```js
+{
+  items: T[] // Order | Settlement | NFT | NFTCollection
+  nextCursor: string | null
+}
+```
+
+**Order**
+
+```js
+{
+  id: string                 // chainId:orderHash
+  chainId: number
+  orderHash: string
+  side: 'ask' | 'bid'
+  isCollectionBid: boolean
+  collection: string
+  tokenId: string
+  price: string
+  currency: string
+  actor: string
+  start: number              // unix ms
+  end: number                // unix ms
+  status: string
+  txHash?: string
+  rawOrder: Order
+  createdAt: number
+}
+```
+
+**Settlement**
+
+```js
+{
+  id: string                 // chainId:orderHash
+  chainId: number
+  orderHash: string
+  txHash: string
+  collection: string
+  tokenId: string
+  seller: string
+  buyer: string
+  currency: string
+  price: string
+  blockNumber: number
+  timestamp: number          // unix ms
+  logIndex: number
+  txContext?: {
+    txIndex: number
+    functionSelector: string
+    functionName: string
+    contractAddress: string
+    gasUsed: number
+    gasPrice: number
+  }
+  createdAt: number
+}
+```
+
+**NFT**
+
+```js
+{
+  id: string                 // chainId:collection:tokenId
+  chainId: number
+  collection: string
+  tokenId: string
+  tokenUri?: string
+  name?: string
+  description?: string
+  image?: string
+  attributes?: { trait_type: string; value: string }[]
+  createdAtBlock: number
+  createdAt: number
+}
+```
+
+**NFT Collection**
+
+```js
+{
+  id: string                 // chainId:address
+  chainId: number
+  address: string
+  name?: string
+  symbol?: string
+  tokenType?: string
+  totalSupply?: string
+}
+```
 
 ### WebSocket events
 
@@ -410,6 +565,10 @@ Page queries return:
 
 `settlement.callReconstructed`: workers have collected and attached transaction context to a settlement record, eg. gas used, calldata, function name (derived from selector).
 
+### Filter examples
+
+`http/` contains a range of
+
 ### Fill in later
 
 - filter examples
@@ -418,15 +577,11 @@ Page queries return:
 
 ---
 
-## Future improvements
+### Future improvements
 
-For v.1, the plan is to patch bugs / inconsistencies so it's production ready to index live events from Sepolia testnet and accept off chain orders from a`d | mrkt` browser client.
-
-### Fill in later
-
-- ERC1155
-- better caching
-- metrics
+ERC1155 support
+better caching
+metrics
 
 ---
 

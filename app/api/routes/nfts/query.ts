@@ -40,12 +40,12 @@ export const nftsQuery = (fastify: FastifyInstance) => {
         ...buildAttributeFilters(query),
       }
 
-      const domainPageQuery: PageQuery = {
+      const pageQuery: PageQuery = {
         ...buildPageQuery(query),
         filters,
       }
 
-      return readPage('nft', { ...domainPageQuery, include: [] })
+      return readPage('nft', { ...pageQuery, include: [] })
     }
   )
 }

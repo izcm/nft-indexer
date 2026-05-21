@@ -48,7 +48,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
         ...buildAttributeFilters(query),
       }
 
-      const domainPageQuery: PageQuery = {
+      const pageQuery: PageQuery = {
         ...buildPageQuery(query, SETTLEMENT_SORT_FIELDS_MAP, {
           defaultSortField: SETTLEMENT_SORT_FIELDS_MAP.timestamp,
           defaultSortDir: 'desc',
@@ -56,7 +56,7 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
         filters,
       }
 
-      return readPage('settlement', { ...domainPageQuery, include: query.include })
+      return readPage('settlement', { ...pageQuery, include: query.include })
     }
   )
 }

@@ -32,13 +32,13 @@ export const nftCollectionsQuery = (fastify: FastifyInstance) => {
     async req => {
       const q = req.query
 
-      const domainPageQuery = {
+      const pageQuery = {
         limit: q.limit ?? DEFAULT_PAGE_LIMIT,
         sortField: 'createdAt',
         sortDir: q.sortDir,
       }
 
-      return readPage('nftCollection', { ...domainPageQuery, include: [] })
+      return readPage('nftCollection', { ...pageQuery, include: [] })
     }
   )
 }

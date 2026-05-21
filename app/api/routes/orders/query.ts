@@ -50,12 +50,12 @@ export const ordersQuery = (fastify: FastifyInstance) => {
         ...buildAttributeFilters(query),
       }
 
-      const domainPageQuery: PageQuery = {
+      const pageQuery: PageQuery = {
         ...buildPageQuery(query, ORDER_SORT_FIELDS_MAP),
         filters,
       }
 
-      return readPage('order', { ...domainPageQuery, include: query.include })
+      return readPage('order', { ...pageQuery, include: query.include })
     }
   )
 }
