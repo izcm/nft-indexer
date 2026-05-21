@@ -1,12 +1,13 @@
-### Get settlement by ID
-GET http://localhost:5000/api/settlements?or.seller=0xe3745C151faB59B0740f4312b2B027F07D096639&or.buyer=0xe3745C151faB59B0740f4312b2B027F07D096639
+@baseUrl = http://localhost:5000
 
-###  List all 
-GET http://localhost:5000/api/settlements?limit=50
+### List settlements
+GET {{baseUrl}}/api/settlements?limit=25
 
-### By seller
-GET http://localhost:5000/api/settlements?seller=0x31F1a4B4f9f7CAD3f21bF9F2c3840C5CcF7B85b9&limit=10
+### By seller or buyer (any involvement)
+GET {{baseUrl}}/api/settlements?or.seller=<address>&or.buyer=<address>
 
-### By date range
-GET http://localhost:5000/api/healthcheck?chainId=31337&collection=0x5F752D5954C87Eb2E018715bD2d2eC199A0a9E93
+# GET {{baseUrl}}/api/settlements?seller=<address>&limit=25
 
+# GET {{baseUrl}}/api/settlements?buyer=<address>&limit=25
+
+# GET {{baseUrl}}/api/settlements/31337:<orderHash>

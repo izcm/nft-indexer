@@ -1,3 +1,14 @@
-GET http://localhost:5000/api/nfts
+@baseUrl = http://localhost:5000
 
-GET http://localhost:5000/api/nfts?trait=Rarity&value=Epic&trait=Color&value=Magenta
+### List NFTs
+GET {{baseUrl}}/api/nfts?limit=25
+
+### Filter by trait
+GET {{baseUrl}}/api/nfts?trait=Rarity&value=Epic&limit=25
+
+### Filter by multiple traits
+GET {{baseUrl}}/api/nfts?trait=Rarity&value=Epic&trait=Color&value=Magenta&limit=25
+
+# GET {{baseUrl}}/api/nfts?chainId=31337&collection=<address>&limit=25
+
+# GET {{baseUrl}}/api/nfts/31337:<address>:<tokenId>

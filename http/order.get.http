@@ -1,2 +1,17 @@
-### GET ORDER
-GET http://localhost:5000/api/orders?status=active&chainId=31337&collection=0xA5f104F8f78d5ba9AEC4a383c0927337Fd4E997B&cursor=1782682188_69dd0c1ac02ad2bc5565a1f0&include=nftCollection&isCollectionBid=false&sortField=end&sortDir=asc&limit=25
+@baseUrl = http://localhost:5000
+
+### List orders
+GET {{baseUrl}}/api/orders?limit=25
+
+### List orders – by chain
+GET {{baseUrl}}/api/orders?chainId=31337&limit=25
+
+### List orders – active asks, sorted by expiry, with nft-collection included
+GET {{baseUrl}}/api/orders?status=active&isCollectionBid=false&sortField=end&sortDir=asc&include=nftCollection&limit=25
+
+### List orders – paginated
+GET {{baseUrl}}/api/orders?limit=25&cursor=<nextCursor>
+
+# GET {{baseUrl}}/api/orders?chainId=31337&collection=<address>&limit=25
+
+# GET {{baseUrl}}/api/orders/31337:<orderHash>

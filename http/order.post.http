@@ -1,4 +1,7 @@
-POST http://localhost:5000/api/orders
+@baseUrl = http://localhost:5000
+
+### Ingest signed order
+POST {{baseUrl}}/api/orders
 Content-Type: application/json
 X-Chain-Id: 31337
 

@@ -1,1 +1,9 @@
-    GET http://localhost:5000/api/nft-collections
+@baseUrl = http://localhost:5000
+
+### List collections
+GET {{baseUrl}}/api/nft-collections?limit=25
+
+### By chain
+GET {{baseUrl}}/api/nft-collections?chainId=31337&limit=25
+
+# GET {{baseUrl}}/api/nft-collections/31337:<address>
