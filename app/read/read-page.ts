@@ -7,13 +7,11 @@ import { applyDTOs } from './shared/apply-dtos.js'
 import { hydratePage } from './shared/hydrate-page.js'
 
 export const makeReadPage = (readers: Readers) =>
-  async function readPage<R extends ResourceName>(
-    // nftcollections 1:M relationship => don't do includes per today
-    resource: R,
-    query: PageRequest<R>
-  ) {
-    // non 1:1 relationships only support simple pagination
-    // todo: would be nice to have include working for more relationship types
+  async function readPage<R extends ResourceName>(resource: R, query: PageRequest<R>) {
+    // todo: nft is skipped because of unfinished config
+    // it should be able to specify includes
+
+    /// non 1:1 relationships – NFTCollection only has 1:M
     if (resource === 'nftCollection' || resource === 'nft') {
       const page = await readers[resource].findPage(query)
 
@@ -23,7 +21,6 @@ export const makeReadPage = (readers: Readers) =>
       }
     }
 
-    // resource 1:1 includes todo: add order toNFT / settlement toNFT
     const pagedResource = resource as PagedWithIncludesResource
 
     const page = await hydratePage(readers, pagedResource, query as any, {

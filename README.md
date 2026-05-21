@@ -13,11 +13,16 @@ It's an indexer that:
 
 **Contents** — [Overview](#overview) · [Prerequisites](#prerequisites) · [Run](#run) · [Web3 layer](#web3-layer) · [Architecture](#architecture) · [Reference](#reference) · [Future improvements](#future-improvements)
 
+For routes, events, and query formats — see [Reference](#reference):
+
+- [API](#api-1)
+- [WebSocket events](#websocket-events)
+
 ---
 
 ## Overview
 
-This indexer is at version v.0, ready for demo purposes. It's built around a specific marketplace contract, whose code is available on [Github](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol). The architecture is built to handle multiple chains.
+This indexer is at version v.0, ready for demo purposes. It's built around a specific marketplace contract, available [here](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol). The architecture is designed to handle multiple chains.
 
 **Ingestion**
 
@@ -48,7 +53,7 @@ There is per v.0 zero auth mechanisms, anyone can read data and post orders. Que
 
 ## Prerequisites
 
-An `OrderEngine` contract must be deployed per chain,. Deployment is straightforward, [repo](https://github.com/izcm/dmrkt-contracts) `README` explains how.
+An `OrderEngine` contract must be deployed per chain. Deployment is straightforward, [repo](https://github.com/izcm/dmrkt-contracts) `README` explains how.
 
 RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
 
@@ -64,36 +69,42 @@ RPC URLs and contract addresses are configured in `chains.json` — see `chains.
 
 ### Environment variables
 
-| VAR                | Description                                                                         | Required | Example                     |
-| ------------------ | ----------------------------------------------------------------------------------- | -------- | --------------------------- |
-| `MONGODB_URI`      | MongoDB connection string                                                           | Yes      | `mongodb://localhost:27017` |
-| `DB_NAME`          | MongoDB database name                                                               | Yes      | `dmrkt`                     |
-| `CHAINS_CONFIG`    | Path to chains.json                                                                 | No       | `./chains.json`             |
-| `FORK_START_BLOCK` | Block used as starting point for polling. If not set, poll starts at genesis block. | No       | `21000000`                  |
+| VAR                | Description                              | Required | Example                     |
+| ------------------ | ---------------------------------------- | -------- | --------------------------- |
+| `MONGODB_URI`      | MongoDB connection string                | Yes      | `mongodb://localhost:27017` |
+| `DB_NAME`          | MongoDB database name                    | Yes      | `dmrkt`                     |
+| `CHAINS_CONFIG`    | Path to chains.json                      | No       | `./chains.json`             |
+| `FORK_START_BLOCK` | Block used as starting point for polling | No       | `21000000`                  |
+
+If `FORK_START_BLOCK` is not set, polling starts at the genesis block.
 
 ---
 
 ## Run
 
-The [docker-compose](./docker-compose.yml) in repo root builds two containers:
+`docker-compose` in repo root builds two containers:
 
 1. Anvil: local Ethereum node
 2. Mongo: local MongoDB instance
 
-> This command does not deploy the `OrderEngine` contract.
-
-Spin up the containers by running:
+Spin up containers:
 
 ```bash
 docker compose up --build
 ```
 
-> Omit the `--build` flag if you want to keep the state of previous builds. (how do I say this?)
+> Omit `--build` to reuse previously built images and speed up startup.
 
 When containers are up, run the indexer:
 
 ```bash
 npm run dev
+```
+
+To stop and remove containers:
+
+```bash
+docker compose down
 ```
 
 ---
@@ -104,7 +115,7 @@ npm run dev
 
 Chain configuration lives in `chains.json` — an array of `{ rpcUrl, marketplaceAddr }` objects, one per chain. On boot, the indexer creates one viem client per entry and starts listeners and workers across all of them.
 
-Each RPC is queried for its chain-id, throws if the URL does not point to a valid RPC or if the response chain-id is not found in `viem/chains`.
+Each RPC is queried for its chain-id, code throws if the URL doesn't point to a valid RPC or if the response chain-id is not found in `viem/chains`.
 
 All domain models are scoped by `chainId`, so multiple chains share the same database without collision.
 
@@ -158,8 +169,36 @@ The design choices made are DDD-inspired, focus being on _framework as a detail_
 
 ### API
 
-API is kept very simple, each domain modal has a query route with
-Each domain model has a query route
+Built with Fastify. Query params and POST bodies are validated through JSON schemas.
+
+API is minimal, each data model has two query routes:
+
+| Route  | Description                   |
+| ------ | ----------------------------- |
+| `/:id` | reads a single resource by id |
+| `/`    | read a page                   |
+
+The only domain model that is ingestable is `Order`.
+
+> [!NOTE]
+> Available query parameters, `id` formats and `Order` POST body example is given in the [API reference](#api-1)
+
+```
+api/
+├── routes/
+│   ├── orders/
+│   │   ├── ingest.ts        POST /api/orders
+│   │   ├── query.ts         GET  /api/orders, /api/orders/:id
+│   │   └── schemas.ts       model specific validation schemas
+│   ├── ...other models
+│   └── healthcheck.ts       liveness check
+└── shared/
+    ├── schemas.ts           shared validation schemas
+    ├── build-page-query.ts  maps query params → PageQuery
+    └── get-or-404.ts        fetches a record by key, returns 404 if not found
+```
+
+Routes import read functions from `di/read.ts`. Ingestion goes through domain `actions`, imported from `di/write.ts`. See [Dependency injection](#dependency-injection).
 
 ### Domain
 
@@ -184,13 +223,18 @@ Each resource in the domain follows the same structure:
 
 Though each resource doesn't have to implement all of the above.
 
-#### Resource
+**ResourceMap**
 
-file: [ resource.ts ]
+`resource.ts` defines the resource registry, a mapping between a resource's string name to their respective type and key (unique id).
 
-The domain contains a sort of registry of the resources, so we can connect each resoruce to their respective keys (unique id), repo and DTO transforms.
+The snippet below is a composed example showing a typical use of the resource registry.
 
 ```ts
+const RESOURCE_NAMES = ['settlement', 'order', 'nftCollection', 'nft'] as const
+
+type ResourceName = (typeof RESOURCE_NAMES)[number]
+type ResourceType<R extends ResourceName> = ResourceMap[R]['type']
+
 // maps resource names to their associated types
 // allows generic functions to resolve the correct key + model types
 type ResourceMap = {
@@ -201,6 +245,7 @@ type ResourceMap = {
   // ...
 }
 
+// dto transform at `read-layer`
 const dtos: { [R in ResourceName]: (x: ResourceType<R>) => any } = {
   order: toOrderDTO,
   // ...
@@ -212,30 +257,20 @@ function toDTO<K extends ResourceName>(resource: K, value: ResourceType<K>) {
 }
 ```
 
-Adding a new resource means adding one entry to the map; the rest follows automatically.
-
 ### Read
 
-The layer sits between API and the repositories.
+This layer sits between API and the repositories.
 
-```
-route
-  ↓
-read
-  ↓
-repo
-  ↓
-MongoDB
-```
-
-The read layer does not depend on full repos directly. Instead, it depends on a smaller `read-commons` interface containing only the read operations it needs, making it easier to test in isolation.
+The read layer depends on the `read-commons` interfaces rather than full repos — only the read operations it needs, making the layer easier to test in isolation.
 
 Readers are injected at startup — see [Dependency injection](#dependency-injection).
 
-Before returning data to caller, the read layer transforms it to via the respective resource toDTO function.
+Before returning data to API, the read layer transforms it to its DTO representation.
 
 ```js
-// injected at startup
+// read-one.ts
+
+// `ByKey` is a `read-commons` interface
 type ByIdReaders = {
   [K in ResourceName]: ByKey<ResourceType<K>, any>
 }
@@ -255,7 +290,7 @@ export const makeReadOne = (readers: ByIdReaders) =>
   }
 ```
 
-Process is similar when reading a page of items, also using the resource registry to pick appropriate reader.
+Reading a page works similarly, with one extra step — hydrating results with any related records requested via `include.
 
 **Includes**
 
@@ -280,7 +315,7 @@ Relations are defined at domain layer, but solely used in read layer, you'll see
 
 ### Repos
 
-### DI
+### Dependency Injection
 
 ---
 
@@ -297,20 +332,16 @@ Relations are defined at domain layer, but solely used in read layer, you'll see
 
 ### API
 
-| Method | Path                   | Description                                 |
-| ------ | ---------------------- | ------------------------------------------- |
-| `POST` | `/api/orders`          | Ingest a signed order                       |
-| `GET`  | `/api/orders`          | Query orders (cursor-paginated, filterable) |
-| `GET`  | `/api/settlements`     | Query settlements                           |
-| `GET`  | `/api/nfts`            | Query NFTs with trait filters               |
-| `GET`  | `/api/nft-collections` | Query collections                           |
-| `GET`  | `/healthcheck`         | Liveness check                              |
+#### Posting order
 
-Example `api/orders` POST request:
+| Method | Path          | Description           |
+| ------ | ------------- | --------------------- |
+| `POST` | `/api/orders` | Ingest a signed order |
+
+Example request:
 
 ```http
 Content-Type: application/json
-
 X-Chain-Id: 31337
 
 {
@@ -330,8 +361,43 @@ X-Chain-Id: 31337
  "start": 0,
  "tokenId": "67"
 }
-
 ```
+
+Order validation rules:
+
+- `price` > 0, valid uint string (max 34 digits)
+- `end` greater than `start`
+- `start` and `end` in unix seconds
+- `side` `0` (ask) or `1` (bid)
+- `actor` not the zero address
+
+#### Page query
+
+| Method | Path                   | Description               |
+| ------ | ---------------------- | ------------------------- |
+| `GET`  | `/api/orders`          | Orders (cursor-paginated) |
+| `GET`  | `/api/settlements`     | Settlements               |
+| `GET`  | `/api/nfts`            | NFTs with trait filters   |
+| `GET`  | `/api/nft-collections` | Collections               |
+| `GET`  | `/healthcheck`         | Liveness check            |
+
+Page queries return:
+
+```json
+{
+  items: T[]
+  nextCursor: string | null
+}
+```
+
+#### Item query
+
+| Method | Path                       | Id format                    |
+| ------ | -------------------------- | ---------------------------- |
+| `GET`  | `/api/orders/:id`          | `chainId:orderHash`          |
+| `GET`  | `/api/settlements/:id`     | `chainId:orderHash`          |
+| `GET`  | `/api/nfts/:id`            | `chainId:collection:tokenId` |
+| `GET`  | `/api/nft-collections/:id` | `chainId:address`            |
 
 ### WebSocket events
 
@@ -364,6 +430,6 @@ For v.1, the plan is to patch bugs / inconsistencies so it's production ready to
 
 ---
 
-If you encountered any problem running this repo, or just want to talk web3 infra, feel free to reach out on my [discord](https://discord.com/users/745594868826505227).
+If you have any questions, or just want to talk web3 infra, feel free to reach out on my [discord](https://discord.com/users/745594868826505227).
 
 **See ya 👾**
