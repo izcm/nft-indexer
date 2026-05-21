@@ -115,7 +115,7 @@ docker compose down
 
 Chain configuration lives in `chains.json` — an array of `{ rpcUrl, marketplaceAddr }` objects, one per chain. On boot, the indexer creates one viem client per entry and starts listeners and workers across all of them.
 
-Each RPC is queried for its chain-id, code throws if the URL doesn't point to a valid RPC or if the response chain-id is not found in `viem/chains`.
+Each RPC is queried for its chain-id. Code throws if the URL doesn't point to a valid RPC or if the response chain-id is not found in `viem/chains`.
 
 All domain models are scoped by `chainId`, so multiple chains share the same database without collision.
 
@@ -180,9 +180,6 @@ API is minimal, each data model has two query routes:
 
 The only domain model that is ingestable is `Order`.
 
-> [!NOTE]
-> Available query parameters, `id` formats, response shapes, and `Order` POST body example are given in the [API reference](#api-1)
-
 ```
 api/
 ├── routes/
@@ -198,7 +195,10 @@ api/
     └── get-or-404.ts        fetches a record by key, returns 404 if not found
 ```
 
-Routes import read functions from `di/read.ts`. Ingestion goes through domain `actions`, imported from `di/write.ts`. See [Dependency injection](#dependency-injection).
+Routes import read functions from `di/read.ts`. Ingestion goes through `actions`, imported from `di/write.ts`. See [Dependency injection](#dependency-injection).
+
+> [!NOTE]
+> Available query parameters, `id` formats, response shapes, and `Order` POST body example are given in the [API reference](#api-1)
 
 ### Domain
 
@@ -224,6 +224,12 @@ Each resource in the domain follows the same structure:
 Though each resource doesn't have to implement all of the above.
 
 **Actions**
+
+The resource `actions` contain the definitions for what to do when some part of the indexer, whether API or listener, wants to persist data to DB.
+
+It doesn't depend on any frameworks, nor any code outside domain – these are injected at startup.
+
+They simply explain the flow for doing some sort of write,
 
 **ResourceMap**
 
@@ -275,9 +281,8 @@ type ByIdReaders = {
   [K in ResourceName]: ByKey<ResourceType<K>, any>
 }
 
-
-// look up correct reader / repo
-// -> get record -> transform toDTO -> return
+// look up correct reader
+// -> get record -> transform toDTO -> return dto
 export const makeReadOne = (readers: ByIdReaders) =>
   async function readByKey<R extends ResourceName>(
     resource: R,
@@ -301,12 +306,12 @@ For example, each order in a page can include its nft-collection, but an nft-col
 
 To use includes in queries — see [Available query parameters](#available-query-parameters).
 
-> [!IMPORTANT]
-> `NFT` is not yet available as an include target — its relations haven't been defined in `relations.ts`.
-
 **Relations**
 
 Relations are defined at domain layer, but solely used in read layer, you'll see an example in the section after this. It might as well be moved to
+
+> [!IMPORTANT]
+> `NFT` is not yet available as an include target — its relations haven't been defined in `relations.ts`.
 
 ### Repos
 
@@ -391,7 +396,7 @@ Read a page of orders, include related NFTCollections.
 
 ### API
 
-#### Routes – POST
+#### Routes – Ingest
 
 **Order**
 
@@ -399,7 +404,7 @@ Read a page of orders, include related NFTCollections.
 | ------ | ------------- | --------------------- |
 | `POST` | `/api/orders` | Ingest a signed order |
 
-Example request:
+Example `Order` POST request:
 
 ```http
 Content-Type: application/json
@@ -453,11 +458,72 @@ Order validation rules:
 | `GET`  | `/api/nfts/:id`            | `chainId:collection:tokenId` |
 | `GET`  | `/api/nft-collections/:id` | `chainId:address`            |
 
-#### Available query parameters
+#### Query parameters
 
-**Filters**
+**Pagination**
 
-**Whitelisted sort fields**
+| Param     | Type            | Notes                              |
+| --------- | --------------- | ---------------------------------- |
+| `limit`   | number          | 1–100                              |
+| `cursor`  | string          | from `nextCursor` in previous page |
+| `sortDir` | `asc` \| `desc` | defaults to `desc`                 |
+
+**Orders**
+
+| Filter            | Type               | Notes                                      |
+| ----------------- | ------------------ | ------------------------------------------ |
+| `chainId`         | number             |                                            |
+| `orderHash`       | bytes32            |                                            |
+| `status`          | string             | `active`, `filled`, `cancelled`, `expired` |
+| `actor`           | address            |                                            |
+| `collection`      | address            |                                            |
+| `tokenId`         | string / string[]  |                                            |
+| `currency`        | address            |                                            |
+| `price`           | string             |                                            |
+| `side`            | `0` \| `1`         |                                            |
+| `isCollectionBid` | boolean            |                                            |
+| `start`           | number             | unix seconds                               |
+| `end`             | number             | unix seconds                               |
+| `txHash`          | bytes32            |                                            |
+| `or.side`         | string or string[] | OR filter                                  |
+| `or.tokenId`      | string or string[] | OR filter                                  |
+| `trait`           | string             | filter by related NFT trait name           |
+| `value`           | string             | filter by related NFT trait value          |
+| `include`         | string[]           | `nftCollection`                            |
+
+Sort fields: `createdAt`, `updatedAt`, `price`, `start`, `end`, `expires`, `actor`
+
+**Settlements**
+
+| Filter       | Type               | Notes                             |
+| ------------ | ------------------ | --------------------------------- |
+| `chainId`    | number             |                                   |
+| `orderHash`  | bytes32            |                                   |
+| `collection` | address            |                                   |
+| `tokenId`    | string / string[]  |                                   |
+| `seller`     | address            |                                   |
+| `buyer`      | address            |                                   |
+| `txHash`     | bytes32            |                                   |
+| `or.buyer`   | string or string[] | OR filter                         |
+| `or.seller`  | string or string[] | OR filter                         |
+| `trait`      | string             | filter by related NFT trait name  |
+| `value`      | string             | filter by related NFT trait value |
+| `include`    | string[]           | `order`, `nftCollection`          |
+
+Sort fields: `createdAt`, `updatedAt`, `price`, `buyer`, `seller`, `timestamp`
+
+**NFTs**
+
+| Filter       | Type              | Notes       |
+| ------------ | ----------------- | ----------- |
+| `collection` | address           |             |
+| `tokenId`    | string / string[] |             |
+| `trait`      | string            | trait name  |
+| `value`      | string            | trait value |
+
+**NFT Collections**
+
+No filters beyond pagination.
 
 ### Response shapes
 
@@ -564,16 +630,6 @@ Order validation rules:
 | `settlement.callReconstructed` | `{ chainId, orderHash }` |
 
 `settlement.callReconstructed`: workers have collected and attached transaction context to a settlement record, eg. gas used, calldata, function name (derived from selector).
-
-### Filter examples
-
-`http/` contains a range of
-
-### Fill in later
-
-- filter examples
-- pagination shape
-- sample response
 
 ---
 
