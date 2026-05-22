@@ -4,15 +4,15 @@ import { nfts, orders } from '#app/db/collections.js'
 
 import type { OrderPort } from '#app/domain/order/port.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
+import type { OrderKey } from '#app/domain/order/model.js'
 
 import { hashOrderStruct } from '#app/lib/blockchain/eip712.js'
 
 import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
 
-import type { OrderDoc } from './shared/docs.js'
-import { ORDER_FIELD_TRANSFORMS } from './shared/field-config.js'
-import { OrderKey } from '#app/domain/order/model.js'
+import type { OrderDoc } from './model/docs.js'
+import { ORDER_FIELD_TRANSFORMS } from './model/field-config.js'
 
 const baseRead = makeReadRepo<OrderDoc, OrderKey>(
   orders,

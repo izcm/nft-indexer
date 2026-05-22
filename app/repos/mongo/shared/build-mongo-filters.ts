@@ -1,4 +1,4 @@
-import { FieldConfig } from './field-config.js'
+import { FieldConfig } from '../model/field-config.js'
 
 export function buildMongoFilters(
   filters: Record<string, unknown>,
