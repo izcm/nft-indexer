@@ -32,10 +32,7 @@ const routers: Record<string, (item: ListenerItem) => Promise<void>> = {
 
 const routeLog = async (envelope: ListenerItem) => {
   const handler = routers[envelope.log.eventName]
-  if (!handler) {
-    console.warn(`[indexer] unhandled event: ${envelope.log.eventName}`)
-    return
-  }
+  if (!handler) return
 
   try {
     await handler(envelope)
