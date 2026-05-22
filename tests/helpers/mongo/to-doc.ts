@@ -3,7 +3,7 @@ import { Decimal128 } from 'mongodb'
 import { NFTCollection } from '#app/domain/nft-collection/model.js'
 import { OrderRecord } from '#app/domain/order/model.js'
 import { Settlement } from '#app/domain/settlement/model.js'
-import { OrderDoc, SettlementDoc } from '#app/repos/mongo/shared/docs.js'
+import { OrderDoc, SettlementDoc } from '#app/repos/mongo/model/docs.js'
 
 import { fakeOrderRecord, fakeSettlement } from '../fixtures.js'
 

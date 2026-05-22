@@ -9,7 +9,7 @@ import { orderRepo } from '#app/repos/mongo/order.repo.js'
 import { startTestMongo, stopTestMongo } from '#tests/helpers/mongo/mongo-memory.js'
 import { fakeOrderRecord } from '#tests/helpers/fixtures.js'
 import { addrOf } from '#tests/helpers/evm-fixtures.js'
-import { OrderDoc } from '#app/repos/mongo/shared/docs.js'
+import { OrderDoc } from '#app/repos/mongo/model/docs.js'
 import { fakeOrderDoc } from '#tests/helpers/mongo/to-doc.js'
 import { seedOrders } from '#tests/helpers/mongo/seed-mongo.js'
 
