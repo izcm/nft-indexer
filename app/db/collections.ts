@@ -2,7 +2,7 @@ import type { Collection, Document as MongoDoc } from 'mongodb'
 
 import type { NFTCollection } from '#app/domain/nft-collection/model.js'
 import type { NFT } from '#app/domain/nft/model.js'
-import type { OrderDoc, SettlementDoc } from '#app/repos/mongo/shared/docs.js'
+import type { OrderDoc, SettlementDoc } from '#app/repos/mongo/model/docs.js'
 
 import { getDb } from './mongo.js'
 
