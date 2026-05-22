@@ -26,43 +26,50 @@ type Worker = {
 
 const workers = ({ client, marketplaceAddr }: ChainClient, ports: Ports): Worker[] => [
   {
-    name: 'settlements',
+    name: 'settlements/call-reconstruction',
     run: () => runSettlementCallReconstructionWorker(client, ports.settlements, marketplaceAddr),
   },
+
   {
-    name: 'nft-collections',
-    run: async () => {
-      await Promise.all([
-        runNFTCollectionMetaWorker(client, ports.nftCollections),
-        runNFTBackfillWorker(client, {
-          findBackfillNotDone: ports.nftCollections.findBackfillNotDone,
-          updateLastScannedBlock: ports.nftCollections.updateLastScannedBlock,
-          ensureNFT: ports.nfts.ensure,
-        }),
-      ])
-    },
+    name: 'nft-collections/meta',
+    run: () => runNFTCollectionMetaWorker(client, ports.nftCollections),
   },
+
   {
-    name: 'nfts',
+    name: 'nft-collections/backfill',
+    run: () =>
+      runNFTBackfillWorker(client, {
+        findBackfillNotDone: ports.nftCollections.findBackfillNotDone,
+
+        updateLastScannedBlock: ports.nftCollections.updateLastScannedBlock,
+
+        ensureNFT: ports.nfts.ensure,
+      }),
+  },
+
+  {
+    name: 'nfts/meta',
     run: () => runNFTMetaWorker(client, ports.nfts),
   },
 ]
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-export async function start(chainClient: ChainClient, ports: Ports) {
-  const list = workers(chainClient, ports)
-
+async function startWorker(worker: Worker, chainId: number) {
   while (true) {
-    for (const worker of list) {
-      try {
-        await worker.run()
-      } catch (err) {
-        const { id } = chainClient.client.chain
-        console.error(`[workers][${id}]: ${worker.name} crashed`, id, err)
-      }
+    try {
+      await worker.run()
+    } catch (err) {
+      console.error(`[workers][${chainId}]: ${worker.name} crashed`, err)
     }
 
     await sleep(10_000)
   }
+}
+
+export async function start(chainClient: ChainClient, ports: Ports) {
+  const list = workers(chainClient, ports)
+  const { id } = chainClient.client.chain
+
+  await Promise.all(list.map(worker => startWorker(worker, id)))
 }
