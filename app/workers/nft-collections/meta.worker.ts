@@ -7,6 +7,8 @@ import { isErc721 } from '#app/lib/blockchain/interfaces/erc165.js'
 
 import { NFTCollectionPort, nftCollectionPortForChain } from '#app/domain/nft-collection/port.js'
 
+import { nftCollectionActions } from '#app/di/write.js'
+
 export async function runNFTCollectionMetaWorker(client: AppClient, port: NFTCollectionPort) {
   const collections = nftCollectionPortForChain(port, client.chain.id)
 
@@ -24,7 +26,11 @@ export async function runNFTCollectionMetaWorker(client: AppClient, port: NFTCol
 
     try {
       const chainMeta = await readERC721Meta(client, address)
-      await collections.finalizeMeta(address, chainMeta)
+      await nftCollectionActions.applyCollectionMeta({
+        chainId: client.chain.id,
+        address,
+        meta: chainMeta,
+      })
     } catch (err) {
       await collections.markMetaFailed(
         address,

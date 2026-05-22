@@ -6,7 +6,8 @@ import { DEFAULT_WORKER_LIMIT } from '#app/config/workers.js'
 import { FORK_START_BLOCK } from '#app/config/app.js'
 
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
-import type { NFTPort } from '#app/domain/nft/port.js'
+
+import { nftActions } from '#app/di/write.js'
 
 import { isFullyMinted } from '#app/lib/blockchain/calls/dnft-fully-minted.js'
 
@@ -20,7 +21,6 @@ const TRANSFER_EVENT = parseAbiItem(
 type BackfillPort = {
   findBackfillNotDone: NFTCollectionPort['findBackfillNotDone']
   updateLastScannedBlock: NFTCollectionPort['updateLastScannedBlock']
-  ensureNFT: NFTPort['ensure']
 }
 
 export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort) {
@@ -69,7 +69,10 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
 
         console.log(`[backfill] nft=${tokenId} block=${block}`)
 
-        await port.ensureNFT({ chainId, collection: c.address, tokenId: tokenId.toString() }, block)
+        await nftActions.ingestNFT(
+          { chainId, collection: c.address, tokenId: tokenId.toString() },
+          block
+        )
       }
 
       // here or

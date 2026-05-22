@@ -26,7 +26,7 @@ export const makeSettlementActions = ({ settlements, orders, nftCollections, rea
     void onSettlementCreated({ chainId, orderHash, collection, chainEvent: execution })
   }
 
-  async function ingestReconstructedCall({
+  async function applyReconstructedCall({
     chainId,
     orderHash,
     call,
@@ -70,5 +70,5 @@ export const makeSettlementActions = ({ settlements, orders, nftCollections, rea
     realtime?.broadcast('settlement.created', { chainId, orderHash })
   }
 
-  return { ingestSettlement, ingestReconstructedCall }
+  return { ingestSettlement, ingestReconstructedCall: applyReconstructedCall }
 }

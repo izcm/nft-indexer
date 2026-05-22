@@ -313,17 +313,26 @@ Relations are defined at domain layer, but solely used in read layer, you'll see
 
 ### Repos
 
-Only repos talk to database. Every repo implements the respective resource's `Port` interface, plus the shared interfaces in `read-commons`.
+Repos are the only layer that talks directly to the database.
 
-Repos implement the domain port interfaces (`ByKey`, `Pageable`) — nothing more. The domain layer defines what a repo must do; the mongo implementation is a detail.
+Each repo implements:
 
-Shared helpers in `repos/mongo/shared/`:
+- the resource-specific `Port` interface from the domain layer
+- shared read interfaces from `read-commons`
 
-- `_read.ts` / `_write.ts` — common read and write operations reused across repos
-- `docs.ts` — mapping between domain models and mongo documents
-- `field-config.ts` — declares which fields are sortable and filterable per repo
-- `pagination/to-repo-query.ts` — maps `PageQuery` to mongo cursor args
-- `pagination/find-page-generic.ts` — generic cursor-paginated `findPage` used by all repos
+The rest of the application never talks to MongoDB directly. Repos are wired in at startup, so replacing the database mostly means providing another set of repo implementations.
+
+#### Mongo
+
+Mongo repos and their shared utilities are found in `repos/mongo`.
+
+| File                                     | Description                                                                                                                       |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `shared/_read.ts` / `_write.ts`          | shared read and write helpers reused across repos                                                                                 |
+| `model/field-config.ts`                  | maps domain fields to mongo-specific fields, eg. routing sorting on string field `order.price` to the Decimal128 field `db.price` |
+| `shared/pagination/find-page-generic.ts` | generic cursor-paginated `findPage` implementation reused across repos                                                            |
+| `model/docs.ts`                          | maps domain models to their denormalized MongoDB document representation                                                          |
+| `shared/to-repo-query.ts`                | maps `PageQuery` into the shape expected by `find-page-generic`                                                                   |
 
 ### Listeners
 
@@ -332,8 +341,6 @@ For every configured chain, the application subscribes to the marketplace contra
 When a log is observed, the listener checks whether a handler exists for the decoded event.
 
 ```ts
-// listeners/start.ts
-
 // registry event -> handler
 const routers: Record<string, (item: ListenerItem) => Promise<void>> = {
   Settlement: handleSettlement,
@@ -379,11 +386,35 @@ For example:
 
 If a worker throws, the error is logged and the loop continues running.
 
-Supported workers are documented in [Workers](#workers-1) under Reference.
+Workers are documented in [Workers](#workers-1) under Reference.
 
 ### Dependency Injection
 
----
+Dependencies are assembled under `di/` during startup.
+
+**Actions**
+
+Domain actions is the layer that calls write ops in repos, they are injected in `di/write.ts`.
+
+```ts
+export const orderActions = makeOrderActions({
+  orders: orderRepo,
+  nftCollections: nftCollectionRepo,
+  realtime,
+})
+```
+
+In the example above:
+
+- `orderRepo` satisfies the `OrderPort` interface
+- `nftCollectionRepo` satisfies the `NFTCollectionPort` interface
+- `realtime` satisfies the `RealtimePort` interface
+
+API / listeners / workers (what the fuck is a better word here) imports whatever action needed;
+
+- API: Order ingestion route imports `orderActions`.
+- Listeners: Settlement handler imports `settlementActions`
+-
 
 ## Data flow
 
@@ -573,6 +604,11 @@ Sort fields: `createdAt`, `updatedAt`, `price`, `buyer`, `seller`, `timestamp`
 
 No filters beyond pagination.
 
+> [!NOTE]
+> This backend is tailored for the specific frontend implementation of the `d | mrkt` demo. It only seeds one NFT collection, so filters / pagination wasn't needed for this model.
+>
+> Any future version will surely be extended to include this.
+
 ### Response shapes
 
 **Page**
@@ -678,14 +714,6 @@ No filters beyond pagination.
 | `settlement.callReconstructed` | `{ chainId, orderHash }` |
 
 `settlement.callReconstructed`: workers have collected and attached transaction context to a settlement record, eg. gas used, calldata, function name (derived from selector).
-
----
-
-### Future improvements
-
-ERC1155 support
-better caching
-metrics
 
 ---
 

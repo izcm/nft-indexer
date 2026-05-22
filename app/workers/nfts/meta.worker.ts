@@ -4,13 +4,13 @@ import { erc721For } from '#app/lib/blockchain/interfaces/erc721.js'
 import { DEFAULT_WORKER_LIMIT } from '#app/config/workers.js'
 import type { NFTPort } from '#app/domain/nft/port.js'
 
+import { nftActions } from '#app/di/write.js'
+
 import { parseTokenUri } from './logic.js'
 
 type MetaPort = {
   findPendingMeta: NFTPort['findPendingMeta']
-  finalizeMeta: NFTPort['finalizeMeta']
   markMetaFailed: NFTPort['markMetaFailed']
-  projectNFT: NFTPort['projectNFT']
 }
 
 export async function runNFTMetaWorker(client: AppClient, port: MetaPort) {
@@ -34,9 +34,7 @@ export async function runNFTMetaWorker(client: AppClient, port: MetaPort) {
         continue
       }
 
-      await port.finalizeMeta({ chainId, collection, tokenId, meta })
-
-      await port.projectNFT({ chainId, collection, tokenId }, meta)
+      await nftActions.applyNFTMeta({ chainId, collection, tokenId, meta })
     } catch (err) {
       await port.markMetaFailed({
         chainId,

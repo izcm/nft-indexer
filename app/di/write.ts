@@ -2,10 +2,13 @@ import { WebSocketServer } from 'ws'
 
 import { orderRepo } from '#app/repos/mongo/order.repo.js'
 import { nftCollectionRepo } from '#app/repos/mongo/nft-collection.repo.js'
+import { nftRepo } from '#app/repos/mongo/nft.repo.js'
 import { settlementRepo } from '#app/repos/mongo/settlement.repo.js'
 
 import { makeOrderActions } from '#app/domain/order/actions.js'
 import { makeSettlementActions } from '#app/domain/settlement/actions.js'
+import { makeNFTActions } from '#app/domain/nft/actions.js'
+import { makeNFTCollectionActions } from '#app/domain/nft-collection/actions.js'
 import { RealtimePort } from '#app/domain/shared/interfaces/realtime-port.js'
 
 // --- web socket ---
@@ -50,3 +53,7 @@ export const settlementActions = makeSettlementActions({
   nftCollections: nftCollectionRepo,
   realtime,
 })
+
+export const nftActions = makeNFTActions({ nfts: nftRepo })
+
+export const nftCollectionActions = makeNFTCollectionActions({ nftCollections: nftCollectionRepo })

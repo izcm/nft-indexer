@@ -40,10 +40,7 @@ const workers = ({ client, marketplaceAddr }: ChainClient, ports: Ports): Worker
     run: () =>
       runNFTBackfillWorker(client, {
         findBackfillNotDone: ports.nftCollections.findBackfillNotDone,
-
         updateLastScannedBlock: ports.nftCollections.updateLastScannedBlock,
-
-        ensureNFT: ports.nfts.ensure,
       }),
   },
 
