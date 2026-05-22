@@ -22,30 +22,27 @@ For routes, events, and query formats — see [Reference](#reference):
 
 ## Overview
 
-This indexer is at version v.0, ready for demo purposes. It's built around a specific marketplace contract, available [here](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol). The architecture is designed to handle multiple chains.
+Indexer is at version v.0, ready for demo purposes. It's built around a specific marketplace contract, available [here](https://github.com/izcm/dmrkt-contracts/blob/main/contracts/orderbook/OrderEngine.sol). The architecture is designed to handle multiple chains.
 
 **Ingestion**
 
-Signed EIP-712 orders are ingested through POST requests to API.
-
-On-chain events — `Settlement` and `OrderCancelled` — are picked up by log listeners subscribed to the RPC and used to update order status.
+Signed EIP-712 orders are ingested via POST, and on-chain events — `Settlement` and `OrderCancelled` — are picked up by log listeners subscribed to the RPC.
 
 When an order or settlement is ingested the address in its collection field is noted, and stored to DB if not already there. Here it will be enriched with additional metadata, which is fetched from periodic background workers.
 
 **Workers**
 
-Background jobs run periodically. Each worker fits into one of two groups:
+Background workers periodically enrich and expand stored data.
 
-| Type      | Description                                                             | Example                                                                    |
-| --------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Enrichers | Pick up incomplete records and fetch missing data from external sources | Get a stored collection's name and symbol from chain and attach to record. |
-| Pollers   | Poll chain data to fill in context for records already in the database. | NFT backfill for a newly stored collection.                                |
+For example, workers fetch NFT metadata and backfill NFTs from historical `Transfer` events.
 
 A record that hasn't been enriched yet is still queryable through the API.
 
 **API**
 
-The API is simple, with a query route for every domain model and an ingestion route for signed orders. Query routes each expose a by-key and a pagination endpoint.
+The API is minimal. Query routes each expose a by-key and a pagination endpoint. These endpoints exist for every domain model.
+
+One POST route accepts signed orders for ingestion.
 
 There are currently no auth mechanisms, anyone can read data and post orders. Query parameters and POST bodies are validated / whitelisted through JSON schemas.
 
@@ -139,10 +136,10 @@ The typed payload maps directly to the on-chain `Order` struct:
 
 ```solidity
 struct Order {
-  Side side; // 0 = ask, 1 = bid
+  Side side;              // 0 = ask, 1 = bid
   bool isCollectionBid;
   address collection;
-  uint256 tokenId; // ignored if isCollectionBid = true
+  uint256 tokenId;        // ignored if isCollectionBid = true
   address currency;
   uint256 price;
   address actor;
@@ -163,6 +160,7 @@ read       -> intermediate reading layer and DTO transforms
 repos      -> from / to db
 listeners  -> blockchain events
 workers    -> background jobs
+di         -> startup wiring
 ```
 
 The design choices made are DDD-inspired, focus being on _framework as a detail_ rather than ensuring perfect DDD architecture.
@@ -178,7 +176,7 @@ API is minimal, each data model has two query routes:
 | `/:id` | reads a single resource by id |
 | `/`    | read a page                   |
 
-The only domain model that is ingestable is `Order`.
+Only `Order` records are ingested through the API.
 
 ```
 api/
@@ -195,7 +193,7 @@ api/
     └── get-or-404.ts        fetches a record by key, returns 404 if not found
 ```
 
-Routes import read functions from `di/read.ts`. Ingestion goes through `actions`, imported from `di/write.ts`. See [Dependency injection](#dependency-injection).
+The imported read methods are wired at startup – see [Dependency injection](#dependency-injection).
 
 > [!NOTE]
 > Available query parameters, `id` formats, response shapes, and `Order` POST body example are given in the [API reference](#api-1)
@@ -237,7 +235,7 @@ They simply explain the flow for doing some sort of write,
 
 The snippet below is a composed example showing a typical use of the resource registry.
 
-```js
+```ts
 const RESOURCE_NAMES = ['settlement', 'order', 'nftCollection', 'nft'] as const
 
 type ResourceName = (typeof RESOURCE_NAMES)[number]
@@ -265,7 +263,7 @@ function toDTO<K extends ResourceName>(resource: K, value: ResourceType<K>) {
 }
 ```
 
-### Read layer
+### Read
 
 The read layer sits between API and the repos.
 
@@ -273,7 +271,7 @@ It depends on the `read-commons` interfaces rather than full repos — only the 
 
 Readers are injected at startup — see [Dependency injection](#dependency-injection).
 
-```js
+```ts
 // read-one.ts
 
 // `ByKey` is a `read-commons` interface
@@ -294,7 +292,7 @@ export const makeReadOne = (readers: ByIdReaders) =>
   }
 ```
 
-Before returning data to API, the read layer transforms it to its DTO representation.
+Before returning the result, the read layer transforms items to their DTO representation.
 
 Reading a page works similarly, with one extra step — hydrating results with any related records requested via `include`.
 
@@ -306,14 +304,16 @@ For example, each order in a page can include its nft-collection, but an nft-col
 
 To use includes in queries — see [Available query parameters](#available-query-parameters).
 
+> [!IMPORTANT]
+> `NFT` is not yet available as an include target — its relations haven't been defined in `relations.ts`.
+
 **Relations**
 
 Relations are defined at domain layer, but solely used in read layer, you'll see an example in the section after this. It might as well be moved to
 
-> [!IMPORTANT]
-> `NFT` is not yet available as an include target — its relations haven't been defined in `relations.ts`.
-
 ### Repos
+
+Only repos talk to database. Every repo implements the respective resource's `Port` interface, plus the shared interfaces in `read-commons`.
 
 Repos implement the domain port interfaces (`ByKey`, `Pageable`) — nothing more. The domain layer defines what a repo must do; the mongo implementation is a detail.
 
@@ -327,11 +327,59 @@ Shared helpers in `repos/mongo/shared/`:
 
 ### Listeners
 
-Each chain client subscribes to contract events from `OrderEngine` via viem's `watchContractEvent`. Incoming logs are routed by event name to a handler. Each handler parses the log and calls the appropriate domain action. See [Listeners](#listeners-1) in Reference.
+For every configured chain, the application subscribes to the marketplace contract defined in the chain config file.
+
+When a log is observed, the listener checks whether a handler exists for the decoded event.
+
+```ts
+// listeners/start.ts
+
+// registry event -> handler
+const routers: Record<string, (item: ListenerItem) => Promise<void>> = {
+  Settlement: handleSettlement,
+  OrderCancelled: handleOrderCancelled,
+}
+```
+
+An event that doesn't map to a handler is silently discarded.
+
+Handlers parse events to their expected domain shape. Persistance happens through calling the appropriate action.
+
+Actions are wired at startup — see [Dependency injection](#dependency-injection).
+
+Supported events are documented in [Listeners](#listeners-1) under Reference.
 
 ### Workers
 
-Workers run in a loop, sleeping 10 seconds between cycles. Each cycle runs all workers sequentially per chain. Workers are either enrichers (fetch missing data for incomplete records) or pollers (scan chain state to fill in context). See [Workers](#workers-1) in Reference.
+Workers are long-running background jobs started per configured chain.
+
+Each worker exposes a `run()` method:
+
+```ts
+type Worker = {
+  name: string
+  run: () => Promise<void>
+}
+```
+
+Every worker runs inside its own async loop. After a run completes, the loop sleeps before starting the next cycle.
+
+Workers are grouped into two categories:
+
+| Type      | Description                                                        |
+| --------- | ------------------------------------------------------------------ |
+| Enrichers | Fetch missing metadata for incomplete records already stored in DB |
+| Pollers   | Scan chain state to build missing historical context               |
+
+For example:
+
+- `nft-collections/meta` enriches stored collections with name and symbol
+- `nft-collections/backfill` reads historical `Transfer` events to reconstruct NFTs
+- `settlements/call-reconstruction` attaches transaction context to settlements
+
+If a worker throws, the error is logged and the loop continues running.
+
+Supported workers are documented in [Workers](#workers-1) under Reference.
 
 ### Dependency Injection
 
