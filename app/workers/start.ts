@@ -4,10 +4,10 @@ import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 import type { NFTPort } from '#app/domain/nft/port.js'
 import type { SettlementPort } from '#app/domain/settlement/port.js'
 
-import { runNFTBackfillWorker } from './nft-collections/backfill.worker.js'
-import { runNFTCollectionMetaWorker } from './nft-collections/meta.worker.js'
-import { runNFTMetaWorker } from './nfts/meta.worker.js'
-import { runSettlementCallReconstructionWorker } from './settlements/call-reconstruction.worker.js'
+import { runNFTBackfillWorker } from './poll/nft-collection/backfill.worker.js'
+import { runNFTCollectionMetaWorker } from './enrich/nft-collection/meta.worker.js'
+import { runNFTMetaWorker } from './enrich/nft/meta.worker.js'
+import { runSettlementCallReconstructionWorker } from './enrich/settlement/call-reconstruction.worker.js'
 
 // ------------------
 // WORKERS
