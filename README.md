@@ -11,7 +11,7 @@ It's an indexer that:
 > [!WARNING]
 > Not production ready.
 
-**Contents** — [Overview](#overview) · [Prerequisites](#prerequisites) · [Run](#run) · [Web3 layer](#web3-layer) · [Architecture](#architecture) · [Data Flow](#data-flow) · [Reference](#reference) · [Future improvements](#future-improvements)
+**Contents** — [Overview](#overview) · [Prerequisites](#prerequisites) · [Run](#run) · [Web3 layer](#web3-layer) · [Architecture](#architecture) · [Data Flow](#data-flow) · [Reference](#reference)
 
 For routes, events, and query formats — see [Reference](#reference):
 
@@ -70,8 +70,8 @@ RPC URLs and contract addresses are configured in `chains.json` — see `chains.
 | ------------------ | ---------------------------------------- | -------- | --------------------------- |
 | `MONGODB_URI`      | MongoDB connection string                | Yes      | `mongodb://localhost:27017` |
 | `DB_NAME`          | MongoDB database name                    | Yes      | `dmrkt`                     |
-| `CHAINS_CONFIG`    | Path to chains.json                      | No       | `./chains.json`             |
-| `FORK_START_BLOCK` | Block used as starting point for polling | No       | `21000000`                  |
+| `CHAINS_CONFIG`    | path to chains.json                      | No       | `./chains.json`             |
+| `FORK_START_BLOCK` | block used as starting point for polling | No       | `21000000`                  |
 
 If `FORK_START_BLOCK` is not set, polling starts at the genesis block.
 
@@ -110,9 +110,9 @@ docker compose down
 
 ### Multichain
 
-Chain configuration lives in `chains.json` — an array of `{ rpcUrl, marketplaceAddr }` objects, one per chain. On boot, the indexer creates one viem client per entry and starts listeners and workers across all of them.
+Chain configuration lives in `chains.json` — an array of `{ rpcUrl, marketplaceAddr }` objects, one per chain. On boot, the indexer creates one viem client per entry and starts listeners and workers for each of them.
 
-Each RPC is queried for its chain-id. Code throws if the URL doesn't point to a valid RPC or if the response chain-id is not found in `viem/chains`.
+RPCs are queried for their chain-ids. Code throws if a URL doesn't point to a valid RPC or if the response chain-id is not found in `viem/chains`.
 
 All domain models are scoped by `chainId`, so multiple chains share the same database without collision.
 
@@ -120,11 +120,11 @@ All domain models are scoped by `chainId`, so multiple chains share the same dat
 
 NFT collections get noted as orders and settlements are ingested. For example, when ingesting an order for token #5 in collection `0xabc`, that collection address gets noted.
 
-> “Noted” means the address is ensured to exist in the database.
+> “Noted” means the address is ensured to exist in database.
 
 Collection addresses are persisted without token-standard validation, so any address can be stored.
 
-Since enrichment and NFT backfill currently only support ERC-721, non-ERC-721 collections will end up stale.
+Enrichment and NFT backfill currently only support ERC-721; non-ERC-721 collections will end up stale.
 
 ### EIP-712
 
@@ -210,7 +210,7 @@ But no furniture – its decoupled from all frameworks.
 
 The project uses the term “Resource” when referring to the complete representation of a model — not just its shape, but also its key type, ports, relations, DTO transforms, and read behavior.
 
-Each resource in the domain follows the same structure:
+In the domain, each resource follows the same structure:
 
 | File         | Description                                                     |
 | ------------ | --------------------------------------------------------------- |
@@ -223,11 +223,42 @@ Though each resource doesn't have to implement all of the above.
 
 **Actions**
 
-The resource `actions` contain the definitions for what to do when some part of the indexer, whether API or listener, wants to persist data to DB.
+Actions define what happens when something occurs in the domain.
 
-It doesn't depend on any frameworks, nor any code outside domain – these are injected at startup.
+They orchestrate persistence, side effects, and cross-resource updates while remaining decoupled from framework code.
 
-They simply explain the flow for doing some sort of write,
+For example, when an `OrderCancelled` event is observed on-chain, the action:
+
+- marks matching orders as cancelled
+- persists cancellation metadata
+- broadcasts realtime updates to connected clients
+
+```ts
+async function applyOrderCancelled({
+  chainId,
+  user,
+  nonce,
+  cancellation,
+}: {
+  chainId: number
+  user: Address
+  nonce: string
+  cancellation: ChainEvent
+}) {
+  const cancelled = await orders.cancelOrdersByChainIdNonce({
+    chainId,
+    user,
+    nonce,
+    cancellation,
+  })
+
+  cancelled.forEach(({ orderHash }) =>
+    realtime?.broadcast('order.cancelled', { chainId, orderHash })
+  )
+}
+```
+
+Actions are wired at startup — see [Dependency injection](#dependency-injection).
 
 **ResourceMap**
 
@@ -269,7 +300,7 @@ The read layer sits between API and the repos.
 
 It depends on the `read-commons` interfaces rather than full repos — only the read operations it needs, making the layer easier to test in isolation.
 
-Readers are injected at startup — see [Dependency injection](#dependency-injection).
+The layer is also responsible for transforming items to their DTO representation.
 
 ```ts
 // read-one.ts
@@ -292,9 +323,9 @@ export const makeReadOne = (readers: ByIdReaders) =>
   }
 ```
 
-Before returning the result, the read layer transforms items to their DTO representation.
-
 Reading a page works similarly, with one extra step — hydrating results with any related records requested via `include`.
+
+Readers are injected at startup — see [Dependency injection](#dependency-injection).
 
 **Include**
 
@@ -304,12 +335,31 @@ For example, each order in a page can include its nft-collection, but an nft-col
 
 To use includes in queries — see [Available query parameters](#available-query-parameters).
 
+<!-- should I specify that this is kind of mongo specific behaviour? because it wouldnt really be a thing if it was a relational database -->
+
 > [!IMPORTANT]
 > `NFT` is not yet available as an include target — its relations haven't been defined in `relations.ts`.
 
 **Relations**
 
-Relations are defined at domain layer, but solely used in read layer, you'll see an example in the section after this. It might as well be moved to
+Relations between resources are defined in `relations.ts`.
+
+The read layer uses these relations when hydrating page items with requested includes.
+
+For example, when querying settlements with `include=nftCollection`, the relation definition tells the read layer how to derive the related `NFTCollectionKey` from a `Settlement`.
+
+```ts
+const relations = {
+  settlement: {
+    nftCollection: (s: Settlement): NFTCollectionKey => ({
+      chainId: s.chainId,
+      address: s.collection,
+    }),
+  },
+}
+```
+
+Project might move to a relational database instead of resolving relations in code.
 
 ### Repos
 
@@ -322,21 +372,11 @@ Each repo implements:
 
 The rest of the application never talks to MongoDB directly. Repos are wired in at startup, so replacing the database mostly means providing another set of repo implementations.
 
-#### Mongo
-
-Mongo repos and their shared utilities are found in `repos/mongo`.
-
-| File                                     | Description                                                                                                                       |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `shared/_read.ts` / `_write.ts`          | shared read and write helpers reused across repos                                                                                 |
-| `model/field-config.ts`                  | maps domain fields to mongo-specific fields, eg. routing sorting on string field `order.price` to the Decimal128 field `db.price` |
-| `shared/pagination/find-page-generic.ts` | generic cursor-paginated `findPage` implementation reused across repos                                                            |
-| `model/docs.ts`                          | maps domain models to their denormalized MongoDB document representation                                                          |
-| `shared/to-repo-query.ts`                | maps `PageQuery` into the shape expected by `find-page-generic`                                                                   |
+Every database implementation should have separate READMEs – MongoDB's is [here](app/repos/mongo/README.md)
 
 ### Listeners
 
-For every configured chain, the application subscribes to the marketplace contract defined in the chain config file.
+For every configured chain, the application subscribes to logs from the corresponding marketplace address.
 
 When a log is observed, the listener checks whether a handler exists for the decoded event.
 
@@ -350,11 +390,11 @@ const routers: Record<string, (item: ListenerItem) => Promise<void>> = {
 
 An event that doesn't map to a handler is silently discarded.
 
-Handlers parse events to their expected domain shape. Persistance happens through calling the appropriate action.
+Handlers parse events to their expected domain shape. Persistence happens through calling the appropriate action.
 
 Actions are wired at startup — see [Dependency injection](#dependency-injection).
 
-Supported events are documented in [Listeners](#listeners-1) under Reference.
+Supported events are documented in [Reference - Listeners](#listeners-1)
 
 ### Workers
 
@@ -371,30 +411,42 @@ type Worker = {
 
 Every worker runs inside its own async loop. After a run completes, the loop sleeps before starting the next cycle.
 
-Workers are grouped into two categories:
+Workers are organized by category:
 
-| Type      | Description                                                        |
-| --------- | ------------------------------------------------------------------ |
-| Enrichers | Fetch missing metadata for incomplete records already stored in DB |
-| Pollers   | Scan chain state to build missing historical context               |
+| Category | Description                                              |
+| -------- | -------------------------------------------------------- |
+| enrich   | fetches missing metadata for incomplete records in DB    |
+| poll     | scans chain state to reconstruct missing historical data |
 
 For example:
 
-- `nft-collections/meta` enriches stored collections with name and symbol
-- `nft-collections/backfill` reads historical `Transfer` events to reconstruct NFTs
-- `settlements/call-reconstruction` attaches transaction context to settlements
+- `enrich/nft-collection/meta` enriches stored collections with name and symbol
+- `poll/nft-collection/backfill` reads historical `Transfer` events to reconstruct NFTs
+- `enrich/settlement/call-reconstruction` attaches transaction context to settlements
 
 If a worker throws, the error is logged and the loop continues running.
 
-Workers are documented in [Workers](#workers-1) under Reference.
+Workers are documented in [Reference - Workers](#workers-1)
 
 ### Dependency Injection
 
-Dependencies are assembled under `di/` during startup.
+Wiring happens in `di/read.ts` and `di/write.ts`. These are the only files that import concrete repo implementations.
 
-**Actions**
+`di/read.ts` builds the `readers` map used by the read layer:
 
-Domain actions is the layer that calls write ops in repos, they are injected in `di/write.ts`.
+```ts
+const readers: Readers = {
+  order: orderRepo,
+  settlement: settlementRepo,
+  nftCollection: nftCollectionRepo,
+  nft: nftRepo,
+}
+
+export const readByKey = makeReadOne(readers)
+export const readPage = makeReadPage(readers)
+```
+
+`di/write.ts` wires repos and infrastructure into actions:
 
 ```ts
 export const orderActions = makeOrderActions({
@@ -404,54 +456,7 @@ export const orderActions = makeOrderActions({
 })
 ```
 
-In the example above:
-
-- `orderRepo` satisfies the `OrderPort` interface
-- `nftCollectionRepo` satisfies the `NFTCollectionPort` interface
-- `realtime` satisfies the `RealtimePort` interface
-
-API / listeners / workers (what the fuck is a better word here) imports whatever action needed;
-
-- API: Order ingestion route imports `orderActions`.
-- Listeners: Settlement handler imports `settlementActions`
--
-
-## Data flow
-
-Each flow traces a request or event step-by-step through the codebase.
-
-### Read page
-
-Read a page of orders, include related NFTCollections.
-
-**Route:** `GET /api/orders?include=settlement`
-
-1. `di/read.ts` — `readPage` is `makeReadPage(readers)` with repos injected at startup
-2. `api/routes/orders/query.ts` — builds page query, calls `readPage`
-3. `read/read-page.ts` — fetches page from repo, hydrates includes // wrong this happens in hydrate-page read-page just do branching logic and reads page if not accepts includes, if accepts includes its sent to
-4. `read/shared/hydrate-page.ts` — fetches related records
-5. `repos/mongo/order.repo.ts` — runs query against MongoDB
-6. `read/shared/apply-dtos.ts` — transforms results before returning
-
-### Receive order
-
-**Route:** `POST /api/orders`
-
-1. `di/write.ts` — `orderActions` is `makeOrderActions(repos)` with repos injected at startup
-2. `api/routes/orders/ingest.ts` — validates body and headers, calls `ingestOrder`
-3. `domain/order/actions.ts` — validates order rules, persists via repo, notes NFT collection
-4. `repos/mongo/order.repo.ts` — upserts order to MongoDB
-5. `domain/order/actions.ts` — broadcasts `order.created` via realtime port
-
-### Observe event
-
-**Event:** `Settlement` log from `OrderEngine` contract
-
-1. `di/write.ts` — `settlementActions` is `makeSettlementActions(repos)` with repos injected at startup
-2. `listeners/start.ts` — receives log, routes to `handleSettlement`
-3. `listeners/settlements/from-log.ts` — parses log into settlement domain model
-4. `listeners/settlements/handler.ts` — calls `ingestSettlement`
-5. `domain/settlement/actions.ts` — persists settlement, notes NFT collection, broadcasts `settlement.created`
+`di/write.ts` also creates the WebSocket server and exposes it through the `RealtimePort` interface.
 
 ---
 
@@ -459,19 +464,19 @@ Read a page of orders, include related NFTCollections.
 
 ### Listeners
 
-| Event            | Description                                           |
-| ---------------- | ----------------------------------------------------- |
-| `Settlement`     | parses log, persists settlement, notes NFT collection |
-| `OrderCancelled` | parses log, marks matching orders as cancelled        |
+| Event            | Description                                  |
+| ---------------- | -------------------------------------------- |
+| `Settlement`     | persists settlement and notes NFT collection |
+| `OrderCancelled` | marks matching orders as cancelled           |
 
 ### Workers
 
-| Worker                            | Type     | Description                                                            |
-| --------------------------------- | -------- | ---------------------------------------------------------------------- |
-| `nft-collections/meta`            | Enricher | fetches name, symbol, and type for collections seen for the first time |
-| `nfts/meta`                       | Enricher | fetches token URI and metadata for individual NFTs                     |
-| `settlements/call-reconstruction` | Enricher | decodes `settle()` calldata from the transaction receipt               |
-| `nft-collections/backfill`        | Poller   | reads Transfer events from chain to backfill NFTs in a collection      |
+| Worker                                  | Description                                      |
+| --------------------------------------- | ------------------------------------------------ |
+| `enrich/nft-collection/meta`            | enriches collections with name, symbol, and type |
+| `enrich/nft/meta`                       | enriches NFTs with token URI and metadata        |
+| `enrich/settlement/call-reconstruction` | reconstructs transaction context for settlements |
+| `poll/nft-collection/backfill`          | backfills NFTs from historical `Transfer` events |
 
 ### API
 
@@ -539,59 +544,97 @@ Order validation rules:
 
 #### Query parameters
 
-**Pagination**
+> [!TIP]
+> The `.http` files in the repo contain more ready-to-run examples for each route.
 
-| Param     | Type            | Notes                              |
-| --------- | --------------- | ---------------------------------- |
-| `limit`   | number          | 1–100                              |
-| `cursor`  | string          | from `nextCursor` in previous page |
-| `sortDir` | `asc` \| `desc` | defaults to `desc`                 |
+##### Pagination
 
-**Orders**
+| Param       | Type            | Notes                              |
+| ----------- | --------------- | ---------------------------------- |
+| `limit`     | number          | 1–100, defaults to 10              |
+| `cursor`    | string          | from `nextCursor` in previous page |
+| `sortDir`   | `asc` \| `desc` | defaults to `desc`                 |
+| `sortField` | string          | defaults to `updatedAt`            |
 
-| Filter            | Type               | Notes                                      |
-| ----------------- | ------------------ | ------------------------------------------ |
-| `chainId`         | number             |                                            |
-| `orderHash`       | bytes32            |                                            |
-| `status`          | string             | `active`, `filled`, `cancelled`, `expired` |
-| `actor`           | address            |                                            |
-| `collection`      | address            |                                            |
-| `tokenId`         | string / string[]  |                                            |
-| `currency`        | address            |                                            |
-| `price`           | string             |                                            |
-| `side`            | `0` \| `1`         |                                            |
-| `isCollectionBid` | boolean            |                                            |
-| `start`           | number             | unix seconds                               |
-| `end`             | number             | unix seconds                               |
-| `txHash`          | bytes32            |                                            |
-| `or.side`         | string or string[] | OR filter                                  |
-| `or.tokenId`      | string or string[] | OR filter                                  |
-| `trait`           | string             | filter by related NFT trait name           |
-| `value`           | string             | filter by related NFT trait value          |
-| `include`         | string[]           | `nftCollection`                            |
+```
+# 20 orders sorted by price, cheapest first
+GET /api/orders?limit=20&sortField=price&sortDir=asc
+
+# next page using cursor from previous response
+GET /api/orders?limit=10&cursor=<nextCursor>
+```
+
+##### Orders
+
+| Filter            | Type              | Notes                                      |
+| ----------------- | ----------------- | ------------------------------------------ |
+| `chainId`         | number            |                                            |
+| `orderHash`       | bytes32           |                                            |
+| `status`          | string            | `active`, `filled`, `cancelled`, `expired` |
+| `actor`           | address           |                                            |
+| `collection`      | address           |                                            |
+| `tokenId`         | string / string[] |                                            |
+| `currency`        | address           |                                            |
+| `price`           | string            |                                            |
+| `side`            | `0` \| `1`        |                                            |
+| `isCollectionBid` | boolean           |                                            |
+| `start`           | number            | unix seconds                               |
+| `end`             | number            | unix seconds                               |
+| `txHash`          | bytes32           |                                            |
+| `trait`           | string            | filter by related NFT trait name           |
+| `value`           | string            | filter by related NFT trait value          |
+| `include`         | string[]          | `nftCollection`                            |
 
 Sort fields: `createdAt`, `updatedAt`, `price`, `start`, `end`, `expires`, `actor`
 
-**Settlements**
+OR filters::
 
-| Filter       | Type               | Notes                             |
-| ------------ | ------------------ | --------------------------------- |
-| `chainId`    | number             |                                   |
-| `orderHash`  | bytes32            |                                   |
-| `collection` | address            |                                   |
-| `tokenId`    | string / string[]  |                                   |
-| `seller`     | address            |                                   |
-| `buyer`      | address            |                                   |
-| `txHash`     | bytes32            |                                   |
-| `or.buyer`   | string or string[] | OR filter                         |
-| `or.seller`  | string or string[] | OR filter                         |
-| `trait`      | string             | filter by related NFT trait name  |
-| `value`      | string             | filter by related NFT trait value |
-| `include`    | string[]           | `order`, `nftCollection`          |
+| Filter       | Type               | Notes |
+| ------------ | ------------------ | ----- |
+| `or.side`    | string or string[] |       |
+| `or.tokenId` | string or string[] |       |
+
+```
+# active asks for a collection, with their nft-collection included
+GET /api/orders?collection=0xabc&status=active&side=0&include=nftCollection
+
+# orders for token 5 or 12 that have a specific trait
+GET /api/orders?or.tokenId=5&or.tokenId=12&trait=Background&value=Blue
+```
+
+##### Settlements
+
+| Filter       | Type              | Notes                             |
+| ------------ | ----------------- | --------------------------------- |
+| `chainId`    | number            |                                   |
+| `orderHash`  | bytes32           |                                   |
+| `collection` | address           |                                   |
+| `tokenId`    | string / string[] |                                   |
+| `seller`     | address           |                                   |
+| `buyer`      | address           |                                   |
+| `txHash`     | bytes32           |                                   |
+| `trait`      | string            | filter by related NFT trait name  |
+| `value`      | string            | filter by related NFT trait value |
+| `include`    | string[]          | `order`, `nftCollection`          |
 
 Sort fields: `createdAt`, `updatedAt`, `price`, `buyer`, `seller`, `timestamp`
 
-**NFTs**
+OR filters:
+
+| Filter      | Type               | Notes |
+| ----------- | ------------------ | ----- |
+| `or.buyer`  | string or string[] |       |
+| `or.seller` | string or string[] |       |
+
+```
+# all settlements for a collection, with the matched order and collection included
+GET /api/settlements?collection=0xabc&include=order&include=nftCollection
+
+# all settlements where an address was either buyer or seller
+GET /api/settlements?or.buyer=0x123&or.seller=0x123&sortDir=asc
+```
+
+##### NFTs
 
 | Filter       | Type              | Notes       |
 | ------------ | ----------------- | ----------- |
@@ -600,12 +643,20 @@ Sort fields: `createdAt`, `updatedAt`, `price`, `buyer`, `seller`, `timestamp`
 | `trait`      | string            | trait name  |
 | `value`      | string            | trait value |
 
-**NFT Collections**
+```
+# all nfts in a collection with a specific trait
+GET /api/nfts?collection=0xabc&trait=Background&value=Blue
+
+# fetch specific tokens by id
+GET /api/nfts?collection=0xabc&tokenId=5&tokenId=12
+```
+
+##### NFT Collections
 
 No filters beyond pagination.
 
 > [!NOTE]
-> This backend is tailored for the specific frontend implementation of the `d | mrkt` demo. It only seeds one NFT collection, so filters / pagination wasn't needed for this model.
+> This backend is tailored for the `d | mrkt` demo, which only seeds one NFT collection. That's why this part was forgot about.
 >
 > Any future version will surely be extended to include this.
 
