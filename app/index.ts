@@ -1,6 +1,7 @@
 import 'dotenv/config'
 
-const missing = ['MONGODB_URI', 'DB_NAME'].filter(k => !process.env[k])
+// expected to add more later so just leaving this here
+const missing = ['MONGODB_URI'].filter(k => !process.env[k])
 if (missing.length) throw new Error(`Missing env vars: ${missing.join(', ')}`)
 
 import './di/write.js'

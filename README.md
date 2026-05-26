@@ -28,7 +28,7 @@ Indexer is at version v.0, ready for demo purposes. It's built around a specific
 
 Signed EIP-712 orders are ingested via POST, and on-chain events — `Settlement` and `OrderCancelled` — are picked up by log listeners subscribed to the RPC.
 
-When an order or settlement is ingested the address in its collection field is noted, and stored to DB if not already there. Here it will be enriched with additional metadata, which is fetched from periodic background workers.
+When an order or settlement is ingested the address in its collection field is noted, then stored to DB if not already there. Here it will be enriched with additional metadata fetched by periodic background workers.
 
 **Workers**
 
@@ -40,17 +40,17 @@ A record that hasn't been enriched yet is still queryable through the API.
 
 **API**
 
-The API is minimal. Query routes each expose a by-key and a pagination endpoint. These endpoints exist for every domain model.
+The API is minimal, exposing two query routes per domain model; by-key and by-page.
 
-One POST route accepts signed orders for ingestion.
+There is only one POST route, ingesting signed orders.
 
-There are currently no auth mechanisms, anyone can read data and post orders. Query parameters and POST bodies are validated / whitelisted through JSON schemas.
+Currently no auth mechanisms, anyone can read data and post orders. QRequest payloads are validated and whitelisted through JSON schemas.
 
 ---
 
 ## Prerequisites
 
-An `OrderEngine` contract must be deployed per chain. Deployment is straightforward, [repo](https://github.com/izcm/dmrkt-contracts) `README` explains how.
+An `OrderEngine` contract must be deployed per chain. Deployment is straightforward, [the repo is here](https://github.com/izcm/dmrkt-contracts)
 
 RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
 
@@ -69,7 +69,6 @@ RPC URLs and contract addresses are configured in `chains.json` — see `chains.
 | VAR                | Description                              | Required | Example                     |
 | ------------------ | ---------------------------------------- | -------- | --------------------------- |
 | `MONGODB_URI`      | MongoDB connection string                | Yes      | `mongodb://localhost:27017` |
-| `DB_NAME`          | MongoDB database name                    | Yes      | `dmrkt`                     |
 | `CHAINS_CONFIG`    | path to chains.json                      | No       | `./chains.json`             |
 | `FORK_START_BLOCK` | block used as starting point for polling | No       | `21000000`                  |
 
