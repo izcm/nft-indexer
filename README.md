@@ -66,11 +66,12 @@ RPC URLs and contract addresses are configured in `chains.json` — see `chains.
 
 ### Environment variables
 
-| VAR                | Description                              | Required | Example                     |
-| ------------------ | ---------------------------------------- | -------- | --------------------------- |
-| `MONGODB_URI`      | MongoDB connection string                | Yes      | `mongodb://localhost:27017` |
-| `CHAINS_CONFIG`    | path to chains.json                      | No       | `./chains.json`             |
-| `FORK_START_BLOCK` | block used as starting point for polling | No       | `21000000`                  |
+| VAR                | Description                                        | Required | Example                           |
+| ------------------ | -------------------------------------------------- | -------- | --------------------------------- |
+| `MONGODB_URI`      | MongoDB connection string                          | Yes      | `mongodb://localhost:27017`       |
+| `CHAINS_CONFIG`    | path to chains.json                                | No       | `./chains.json`                   |
+| `FORK_START_BLOCK` | block used as starting point for polling           | No       | `21000000`                        |
+| `CORS_ORIGIN`      | comma-separated allowed origins; omit to allow all | No       | `https://foo.com,https://bar.com` |
 
 If `FORK_START_BLOCK` is not set, polling starts at the genesis block.
 

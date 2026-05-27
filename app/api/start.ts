@@ -25,8 +25,11 @@ const app = Fastify({
 // ------------------
 
 export const start = async () => {
+  if (!process.env.CORS_ORIGIN)
+    console.log('[api] CORS_ORIGIN not set — allowing all origins (demo only)')
+
   await app.register(cors as any, {
-    origin: 'http://localhost:3000',
+    origin: process.env.CORS_ORIGIN?.split(',') ?? true,
     methods: ['GET', 'POST', 'PUT'],
     credentials: false,
   })
