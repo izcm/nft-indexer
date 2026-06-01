@@ -66,12 +66,13 @@ RPC URLs and contract addresses are configured in `chains.json` — see `chains.
 
 ### Environment variables
 
-| VAR                | Description                                        | Required | Example                           |
-| ------------------ | -------------------------------------------------- | -------- | --------------------------------- |
-| `MONGODB_URI`      | MongoDB connection string                          | Yes      | `mongodb://localhost:27017`       |
-| `CHAINS_CONFIG`    | path to chains.json                                | No       | `./chains.json`                   |
-| `FORK_START_BLOCK` | block used as starting point for polling           | No       | `21000000`                        |
-| `CORS_ORIGIN`      | comma-separated allowed origins; omit to allow all | No       | `https://foo.com,https://bar.com` |
+| VAR                  | Description                                        | Required | Example                           |
+| -------------------- | -------------------------------------------------- | -------- | --------------------------------- |
+| `MONGODB_URI`        | MongoDB connection string                          | Yes      | `mongodb://localhost:27017`       |
+| `CHAINS_CONFIG`      | path to chains.json                                | No       | `./chains.json`                   |
+| `FORK_START_BLOCK`   | block used as starting point for polling           | No       | `21000000`                        |
+| `CORS_ORIGIN`        | comma-separated allowed origins; omit to allow all | No       | `https://foo.com,https://bar.com` |
+| `WORKER_INTERVAL_MS` | sleep duration between worker cycles               | No       | `10000`                           |
 
 If `FORK_START_BLOCK` is not set, polling starts at the genesis block.
 
@@ -409,7 +410,7 @@ type Worker = {
 }
 ```
 
-Every worker runs inside its own async loop. After a run completes, the loop sleeps before starting the next cycle.
+Every worker runs inside its own async loop. After a run completes, the loop sleeps before starting the next cycle. Sleep duration defaults to 10 seconds and can be overridden with `WORKER_INTERVAL_MS`.
 
 Workers are organized by category:
 
@@ -570,7 +571,7 @@ GET /api/orders?limit=10&cursor=<nextCursor>
 | ----------------- | ----------------- | ------------------------------------------ |
 | `chainId`         | number            |                                            |
 | `orderHash`       | bytes32           |                                            |
-| `status`          | string            | `active`, `filled`, `cancelled`, `expired` |
+| `status`          | string[]          | `active`, `filled`, `cancelled`, `expired` |
 | `actor`           | address           |                                            |
 | `collection`      | address           |                                            |
 | `tokenId`         | string / string[] |                                            |
@@ -687,7 +688,7 @@ No filters beyond pagination.
   actor: string
   start: number              // unix ms
   end: number                // unix ms
-  status: string
+  status: 'active' | 'filled' | 'cancelled' | 'expired'
   txHash?: string
   rawOrder: Order
   createdAt: number

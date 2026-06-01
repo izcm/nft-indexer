@@ -52,7 +52,7 @@ const workers = ({ client, marketplaceAddr }: ChainClient, ports: Ports): Worker
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-async function startWorker(worker: Worker, chainId: number) {
+async function startWorker(worker: Worker, chainId: number, interval: number) {
   while (true) {
     try {
       await worker.run()
@@ -60,13 +60,13 @@ async function startWorker(worker: Worker, chainId: number) {
       console.error(`[workers][${chainId}]: ${worker.name} crashed`, err)
     }
 
-    await sleep(10_000)
+    await sleep(interval)
   }
 }
 
-export async function start(chainClient: ChainClient, ports: Ports) {
+export async function start(chainClient: ChainClient, ports: Ports, interval = 10_000) {
   const list = workers(chainClient, ports)
   const { id } = chainClient.client.chain
 
-  await Promise.all(list.map(worker => startWorker(worker, id)))
+  await Promise.all(list.map(worker => startWorker(worker, id, interval)))
 }

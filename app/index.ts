@@ -69,7 +69,10 @@ async function main() {
 
     logSection('Workers')
     console.log(`starting background workers for chain ${name} (${id})...`)
-    startWorkers(chainClient, ports)
+    const workerInterval = process.env.WORKER_INTERVAL_MS
+      ? Number(process.env.WORKER_INTERVAL_MS)
+      : undefined
+    startWorkers(chainClient, ports, workerInterval)
   })
 
   logSection('d | mrkt indexer is up')
