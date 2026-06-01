@@ -48,8 +48,8 @@ export const start = async () => {
   app.register(nftCollectionsQuery, { prefix: '/api/nft-collections' })
   app.register(nftsQuery, { prefix: '/api/nfts' })
 
-  // routes - healthcheck
-  app.register(healthcheck, { prefix: '/api/healthcheck' })
+  // demo-only, not part of the api
+  app.register(healthcheck, { prefix: '/healthcheck' })
 
   app.listen({ port: 5000, host: '0.0.0.0' }, function (err, address) {
     if (err) {

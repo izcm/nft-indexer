@@ -1,6 +1,7 @@
 import { chainEventQueryableFields, paginationQueryParams } from '#app/api/shared/schemas.js'
 
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
+import { Status } from '#app/domain/shared/status.js'
 import { ORDER_INCLUDES } from '#app/read/shared/relations.js'
 import { attributesQueryFields } from '../nfts/schema.js'
 
@@ -34,7 +35,7 @@ export const orderCoreFieldSchema = {
   collection: { type: 'string', pattern: ADDR_REGEX },
   tokenId: { type: 'array', items: { type: 'string' } }, // eg. list of owned tokenIds
   currency: { type: 'string', pattern: ADDR_REGEX },
-  price: { type: 'string' },
+  price: { type: 'string' }, // todo: implement range search
   side: { type: 'integer', minimum: 0, maximum: 1 },
   isCollectionBid: { type: 'boolean' },
   start: { type: 'integer', minimum: 0, maximum: 1e11 },
@@ -47,7 +48,11 @@ export const orderRecordQueryableFields = {
   ...chainEventQueryableFields,
   chainId: { type: 'number' },
   orderHash: { type: 'string', pattern: BYTES32_REGEX },
-  status: { type: 'string', enum: ['active', 'filled', 'cancelled', 'expired'] },
+  status: {
+    type: 'array',
+    maxItems: Object.keys(Status).length,
+    items: { type: 'string', enum: ['active', 'filled', 'cancelled', 'expired'] },
+  },
 } as const
 
 // these mappings ar domain specific

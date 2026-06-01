@@ -10,8 +10,8 @@ import { Address } from '#app/domain/shared/types/eth.js'
 
 export const healthcheck = (fastify: FastifyInstance) => {
   // return demo collection if indexed
-  fastify.get('/', {}, async () => {
-    const doc = await nftCollections().findOne({}, { projection: { _id: 1 } })
+  fastify.get('/', () => {
+    return nftCollections().findOne()
   })
 
   // collection enrich + backfill progress
