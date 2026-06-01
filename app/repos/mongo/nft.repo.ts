@@ -2,7 +2,6 @@ import { nfts, orders, settlements } from '#app/db/collections.js'
 
 import type { NFT, NFTKey } from '#app/domain/nft/model.js'
 import type { NFTPort } from '#app/domain/nft/port.js'
-import type { Address } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './shared/_read.js'
@@ -16,13 +15,9 @@ const baseRead = makeReadRepo<NFT, NFTKey>(nfts, k => ({
   tokenId: k.tokenId,
 }))
 
+// === init write helper ===
+
 const write = makeTsWrite<NFT>(nfts)
-
-export const countNfts = (chainId: number, collection: Address) =>
-  nfts().countDocuments({ chainId, collection })
-
-export const countHasMeta = (chainId: number, collection: Address) =>
-  nfts().countDocuments({ chainId, collection, metaStatus: Status.DONE })
 
 export const nftRepo: NFTPort = {
   // === read ===

@@ -1,26 +1,25 @@
 // for demo usage
 // frontend shows spinner until healthcheck is true (all nfts are indexed)
-// since its only for demo healthcheckk we'll simply import from mongo repo directly
 
 import { FastifyInstance } from 'fastify'
 
-import { countHasMeta } from '#app/repos/mongo/nft.repo.js'
-import { countSettlements, countHasCallReconstructed } from '#app/repos/mongo/settlement.repo.js'
-import { nftCollectionRepo } from '#app/repos/mongo/nft-collection.repo.js'
+import { nfts, nftCollections, settlements } from '#app/db/collections.js'
+import { Status } from '#app/domain/shared/status.js'
 import { ADDR_REGEX } from '#app/domain/constants/regex.js'
 import { Address } from '#app/domain/shared/types/eth.js'
 
-type HealthcheckQuery = {
-  chainId: number
-  collection: string
-}
-
 export const healthcheck = (fastify: FastifyInstance) => {
-  fastify.get<{ Querystring: HealthcheckQuery }>(
-    '/',
+  // return demo collection if indexed
+  fastify.get('/', {}, async () => {
+    const doc = await nftCollections().findOne({}, { projection: { _id: 1 } })
+  })
+
+  // collection enrich + backfill progress
+  fastify.get<{ Params: { chainId: number; collection: string } }>(
+    '/:chainId/:collection',
     {
       schema: {
-        querystring: {
+        params: {
           type: 'object',
           required: ['chainId', 'collection'],
           properties: {
@@ -31,20 +30,21 @@ export const healthcheck = (fastify: FastifyInstance) => {
       },
     },
     async (req, reply) => {
-      const { chainId, collection } = req.query
-
+      const { chainId, collection } = req.params
       const colAddr = collection as Address
-      const col = await nftCollectionRepo.findByKey({ chainId, address: colAddr })
 
+      const col = await nftCollections().findOne({ chainId, address: colAddr })
+
+      // sanity check, all demo collections will implement tokenSupply
       if (!col?.totalSupply) {
         return reply.status(400).send({ error: 'collection totalSupply not available' })
       }
 
       const totalSupply = Number(col.totalSupply)
       const [nftIndexed, settlementTotal, settlementReconstructed] = await Promise.all([
-        countHasMeta(chainId, colAddr),
-        countSettlements(chainId, colAddr),
-        countHasCallReconstructed(),
+        nfts().countDocuments({ chainId, collection: colAddr, metaStatus: Status.DONE }),
+        settlements().countDocuments({ chainId, collection: colAddr }),
+        settlements().countDocuments({ 'execution.callReconstruction.status': Status.DONE }),
       ])
 
       return {

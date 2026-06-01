@@ -4,7 +4,7 @@ import { nfts, settlements } from '#app/db/collections.js'
 
 import type { SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
 import type { SettlementPort } from '#app/domain/settlement/port.js'
-import type { Address, Hash } from '#app/domain/shared/types/eth.js'
+import type { Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './shared/_read.js'
@@ -32,14 +32,6 @@ const baseRead = makeReadRepo<SettlementDoc, SettlementKey>(
   }),
   SETTLEMENT_FIELD_TRANSFORMS
 )
-
-// === healthchecks ===
-
-export const countSettlements = (chainId: Number, collection: Address) =>
-  settlements().countDocuments({ chainId, collection })
-
-export const countHasCallReconstructed = () =>
-  settlements().countDocuments({ [crPaths.status]: Status.DONE })
 
 const write = makeTsWrite(settlements)
 
