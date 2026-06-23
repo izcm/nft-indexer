@@ -35,7 +35,7 @@ export const healthcheck = (fastify: FastifyInstance) => {
 
       const col = await nftCollections().findOne({ chainId, address: colAddr })
 
-      // sanity check, all demo collections will implement tokenSupply
+      // sanity check, all demo collections will implement totalupply
       if (!col?.totalSupply) {
         return reply.status(400).send({ error: 'collection totalSupply not available' })
       }

@@ -1,4 +1,4 @@
-import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
+import json from '@a2zb/abis/dmrkt/OrderEngine.json' with { type: 'json' }
 
 // TODO: https://vitest.dev/config/ **define import aliases in vitest config**
 import { describe, expect, it } from 'vitest'

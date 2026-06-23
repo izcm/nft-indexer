@@ -1,4 +1,4 @@
-import json from '@a2zb/packages/abis/dmrkt/OrderEngine.json' with { type: 'json' }
+import json from '@a2zb/abis/dmrkt/OrderEngine.json' with { type: 'json' }
 import type { Abi } from 'viem'
 
 import type { AppClient } from '#app/clients.js'
