@@ -54,6 +54,17 @@ An `OrderEngine` contract must be deployed per chain. Deployment is straightforw
 
 RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
 
+RPC URLs in `chains.json` support `${ENV_VAR}` placeholders that are substituted at startup from environment variables. This lets you keep API keys out of the config file:
+
+```json
+[
+  {
+    "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
+    "marketplaceAddr": "0x..."
+  }
+]
+```
+
 > [!IMPORTANT]
 > If `marketplaceAddr` doesn't point to a deployed `OrderEngine`, the indexer will run fine but never pick up any events.
 

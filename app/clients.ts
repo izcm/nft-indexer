@@ -1,6 +1,5 @@
 import { Chain, createPublicClient, http, PublicClient } from 'viem'
 import * as chains from 'viem/chains'
-import { anvil } from 'viem/chains'
 
 import { loadChainsConfig } from '#app/config/chains.js'
 

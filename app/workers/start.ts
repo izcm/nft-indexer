@@ -35,14 +35,14 @@ const workers = ({ client, marketplaceAddr }: ChainClient, ports: Ports): Worker
     run: () => runNFTCollectionMetaWorker(client, ports.nftCollections),
   },
 
-  {
-    name: 'nft-collections/backfill',
-    run: () =>
-      runNFTBackfillWorker(client, {
-        findBackfillNotDone: ports.nftCollections.findBackfillNotDone,
-        updateLastScannedBlock: ports.nftCollections.updateLastScannedBlock,
-      }),
-  },
+  // {
+  //   name: 'nft-collections/backfill',
+  //   run: () =>
+  //     runNFTBackfillWorker(client, {
+  //       findBackfillNotDone: ports.nftCollections.findBackfillNotDone,
+  //       updateLastScannedBlock: ports.nftCollections.updateLastScannedBlock,
+  //     }),
+  // },
 
   {
     name: 'nfts/meta',

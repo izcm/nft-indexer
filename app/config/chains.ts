@@ -9,5 +9,6 @@ export type ChainConfig = {
 export function loadChainsConfig(): ChainConfig[] {
   const path = process.env.CHAINS_CONFIG ?? './chains.json'
   const raw = fs.readFileSync(path, 'utf-8')
-  return JSON.parse(raw) as ChainConfig[]
+  const expanded = raw.replace(/\$\{(\w+)\}/g, (_, key) => process.env[key] ?? '')
+  return JSON.parse(expanded) as ChainConfig[]
 }

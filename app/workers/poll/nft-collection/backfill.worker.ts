@@ -11,7 +11,7 @@ import { nftActions } from '#app/di/write.js'
 
 import { isFullyMinted } from '#app/lib/blockchain/calls/dnft-fully-minted.js'
 
-const STEP = 5n // rpc free tier restriction
+const STEP = 2n // rpc free tier restriction
 const MAX_STEPS = 500
 
 const TRANSFER_EVENT = parseAbiItem(
