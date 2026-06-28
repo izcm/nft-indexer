@@ -16,11 +16,8 @@ import { nftsQuery } from './routes/nfts/query.js'
 
 const app = Fastify({
   logger: true,
+  bodyLimit: 64 * 1024,
 })
-
-// ------------------
-// API SERVER
-// ------------------
 
 export const start = async () => {
   // === CORS ===

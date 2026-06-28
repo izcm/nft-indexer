@@ -1,4 +1,9 @@
-import { chainEventQueryableFields, paginationQueryParams } from '#app/api/shared/schemas.js'
+import {
+  chainEventQueryableFields,
+  chainIdSchema,
+  paginationQueryParams,
+  uint256Schema,
+} from '#app/api/shared/schemas.js'
 
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { SETTLEMENT_INCLUDES } from '#app/read/shared/relations.js'
@@ -20,9 +25,9 @@ export const SETTLEMENT_SORT_FIELDS_MAP = {
 } as const
 
 export const settlementQueryableFields = {
-  chainId: { type: 'number' },
+  chainId: chainIdSchema,
   collection: { type: 'string', pattern: ADDR_REGEX },
-  tokenId: { type: 'array', items: { type: 'string' } }, // eg. list of owned tokenIds
+  tokenId: { type: 'array', items: uint256Schema }, // eg. list of owned tokenIds
   seller: { type: 'string', pattern: ADDR_REGEX },
   buyer: { type: 'string', pattern: ADDR_REGEX },
   orderHash: { type: 'string', pattern: BYTES32_REGEX },

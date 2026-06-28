@@ -1,8 +1,14 @@
-import { chainEventQueryableFields, paginationQueryParams } from '#app/api/shared/schemas.js'
+import {
+  chainEventQueryableFields,
+  chainIdSchema,
+  paginationQueryParams,
+  uint256Schema,
+} from '#app/api/shared/schemas.js'
 
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { Status } from '#app/domain/shared/status.js'
 import { ORDER_INCLUDES } from '#app/read/shared/relations.js'
+
 import { attributesQueryFields } from '../nfts/schema.js'
 
 // --- sorting ---
@@ -33,9 +39,9 @@ export type OrderSortField = (typeof ORDER_SORT_FIELDS)[number]
 export const orderCoreFieldSchema = {
   actor: { type: 'string', pattern: ADDR_REGEX },
   collection: { type: 'string', pattern: ADDR_REGEX },
-  tokenId: { type: 'array', items: { type: 'string' } }, // eg. list of owned tokenIds
+  tokenId: { type: 'array', items: uint256Schema }, // eg. list of owned tokenIds
   currency: { type: 'string', pattern: ADDR_REGEX },
-  price: { type: 'string' }, // todo: implement range search
+  price: uint256Schema,
   side: { type: 'integer', minimum: 0, maximum: 1 },
   isCollectionBid: { type: 'boolean' },
   start: { type: 'integer', minimum: 0, maximum: 1e11 },
@@ -46,7 +52,7 @@ export const orderCoreQueryableFields = orderCoreFieldSchema
 export const orderRecordQueryableFields = {
   ...orderCoreQueryableFields,
   ...chainEventQueryableFields,
-  chainId: { type: 'number' },
+  chainId: chainIdSchema,
   orderHash: { type: 'string', pattern: BYTES32_REGEX },
   status: {
     type: 'array',
@@ -82,8 +88,8 @@ export const orderCreateBody = {
   ],
   properties: {
     ...orderCoreFieldSchema,
-    tokenId: { type: 'string' }, // eg. list of owned tokenIds
-    nonce: { type: 'string' },
+    tokenId: uint256Schema,
+    nonce: uint256Schema,
     signature: {
       type: 'object',
       required: ['r', 's', 'v'],

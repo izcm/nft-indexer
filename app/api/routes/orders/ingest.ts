@@ -17,6 +17,12 @@ export const ordersIngest = (fastify: FastifyInstance) => {
         },
         body: { $ref: 'order-create#' },
       },
+      config: {
+        rateLimit: {
+          max: 30,
+          timeWindow: '1 minute',
+        },
+      },
     },
     async (req, res) => {
       const xChainId = req.headers['x-chain-id']
@@ -32,7 +38,6 @@ export const ordersIngest = (fastify: FastifyInstance) => {
 
         res.code(code).header('Location', `/api/orders/${chainId}:${orderHash}`)
 
-        // todo: keyToId()
         return { id: `${chainId}:${orderHash}` }
       } catch (err) {
         if (err instanceof InvalidOrderError) {
