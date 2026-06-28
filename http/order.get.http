@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:5000
 
 ### List orders
-GET {{baseUrl}}/api/orders?limit=25
+GET {{baseUrl}}/api/orderssss?limit=25
 
 ### List orders – by chain
 GET {{baseUrl}}/api/orders?chainId=31337&limit=25

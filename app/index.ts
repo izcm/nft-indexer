@@ -57,7 +57,16 @@ async function main() {
 
   // read and initialize clients
 
-  const chainClients = await initChainClients()
+  let chainClients
+  while (true) {
+    try {
+      chainClients = await initChainClients()
+      break
+    } catch (err) {
+      console.error('[indexer] chain client init failed, retrying in 5s...', err)
+      await new Promise(resolve => setTimeout(resolve, 5_000))
+    }
+  }
 
   // background workers + listeners
 

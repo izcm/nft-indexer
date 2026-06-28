@@ -52,7 +52,7 @@ Currently no auth mechanisms, anyone can read data and post orders. QRequest pay
 
 An `OrderEngine` contract must be deployed per chain. Deployment is straightforward, [the repo is here](https://github.com/izcm/dmrkt-contracts)
 
-RPC URLs and contract addresses are configured in `chains.json` — see `chains.example.json` for the expected shape.
+RPC URLs and contract addresses are configured in `chains.json`.
 
 RPC URLs in `chains.json` support `${ENV_VAR}` placeholders that are substituted at startup from environment variables. This lets you keep API keys out of the config file:
 

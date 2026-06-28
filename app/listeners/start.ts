@@ -11,16 +11,18 @@ import { ListenerItem } from './shared/types.js'
 // ------------------
 
 export const start = ({ client, marketplaceAddr }: ChainClient) => {
-  const watch = () =>
-    client.watchContractEvent({
+  const watch = () => {
+    const unwatch = client.watchContractEvent({
       address: marketplaceAddr,
       abi: json.abi,
       onLogs: logs => logs.forEach(log => routeLog({ log, chainId: client.chain.id })),
       onError: error => {
         console.error('[indexer] watcher error, restarting', error)
+        unwatch()
         setTimeout(watch, 2_000)
       },
     })
+  }
 
   watch()
 }

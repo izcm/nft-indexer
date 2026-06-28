@@ -1,4 +1,5 @@
 import Fastify from 'fastify'
+import rateLimit from '@fastify/rate-limit'
 import cors from '@fastify/cors'
 
 // api routes - SETTLEMENTS
@@ -7,9 +8,6 @@ import { settlementsQuery } from './routes/settlements/query.js'
 // api routes - ORDERS
 import { ordersIngest } from './routes/orders/ingest.js'
 import { ordersQuery } from './routes/orders/query.js'
-
-// api routes - HEALTHCHECK
-import { healthcheck } from './routes/healthcheck.js'
 
 // schemas
 import { nftCollectionsQuery } from './routes/nft-collections/query.js'
@@ -25,6 +23,8 @@ const app = Fastify({
 // ------------------
 
 export const start = async () => {
+  // === CORS ===
+
   if (!process.env.CORS_ORIGIN)
     console.log('[api] CORS_ORIGIN not set — allowing all origins (demo only)')
 
@@ -34,8 +34,35 @@ export const start = async () => {
     credentials: false,
   })
 
-  // register all defined bodies
+  // === RATE LIMITS ===
+
+  await app.register(rateLimit, {
+    max: 350,
+    global: true,
+    timeWindow: '1 minute',
+  })
+
+  app.setNotFoundHandler(
+    {
+      preHandler: app.rateLimit({
+        max: 30,
+        timeWindow: '1 minute',
+      }),
+    },
+    function (_, reply) {
+      return reply.code(404).send({
+        error: 'Not Found',
+        message: 'Route not found',
+        statusCode: 404,
+      })
+    }
+  )
+
+  // === REGISTER SCHEMAS ===
+
   app.addSchema(orderCreateBody)
+
+  // === ROUTES ===
 
   // routes - orders
   app.register(ordersIngest, { prefix: '/api/orders' })
@@ -48,8 +75,7 @@ export const start = async () => {
   app.register(nftCollectionsQuery, { prefix: '/api/nft-collections' })
   app.register(nftsQuery, { prefix: '/api/nfts' })
 
-  // demo-only, not part of the api
-  app.register(healthcheck, { prefix: '/healthcheck' })
+  // === START SERVER ===
 
   app.listen({ port: 5000, host: '0.0.0.0' }, function (err, address) {
     if (err) {

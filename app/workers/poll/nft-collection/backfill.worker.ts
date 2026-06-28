@@ -11,8 +11,8 @@ import { nftActions } from '#app/di/write.js'
 
 import { isFullyMinted } from '#app/lib/blockchain/calls/dnft-fully-minted.js'
 
-const STEP = 2n // rpc free tier restriction
-const MAX_STEPS = 500
+const STEP = 5n // rpc free tier restrictions
+const MAX_STEPS = 100
 
 const TRANSFER_EVENT = parseAbiItem(
   'event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)'
@@ -31,11 +31,11 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
 
   for (const c of collections) {
     // line below is for demo purposes only
-    const fullyMinted = await isFullyMinted(client, c.address)
-    if (!fullyMinted) {
-      console.log(`[backfill] skipping ${c.address} — not fully minted yet`)
-      return
-    }
+    // const fullyMinted = await isFullyMinted(client, c.address)
+    // if (!fullyMinted) {
+    //   console.log(`[backfill] skipping ${c.address} — not fully minted yet`)
+    //   return
+    // }
 
     let from = BigInt(c.lastScannedBlock ?? FORK_START_BLOCK ?? 0)
 
