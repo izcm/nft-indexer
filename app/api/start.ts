@@ -1,6 +1,8 @@
-import Fastify from 'fastify'
+import Fastify, { FastifyError } from 'fastify'
+
 import rateLimit from '@fastify/rate-limit'
 import cors from '@fastify/cors'
+import helmet from '@fastify/helmet'
 
 // api routes - SETTLEMENTS
 import { settlementsQuery } from './routes/settlements/query.js'
@@ -17,10 +19,11 @@ import { nftsQuery } from './routes/nfts/query.js'
 const app = Fastify({
   logger: true,
   bodyLimit: 64 * 1024,
+  requestTimeout: 10_000,
 })
 
 export const start = async () => {
-  // === CORS ===
+  // === cors ===
 
   if (!process.env.CORS_ORIGIN)
     console.log('[api] CORS_ORIGIN not set — allowing all origins (demo only)')
@@ -31,7 +34,7 @@ export const start = async () => {
     credentials: false,
   })
 
-  // === RATE LIMITS ===
+  // === rate limits & security headers ===
 
   await app.register(rateLimit, {
     max: 350,
@@ -55,11 +58,31 @@ export const start = async () => {
     }
   )
 
-  // === REGISTER SCHEMAS ===
+  await app.register(helmet)
+
+  // === error handling ===
+
+  app.setErrorHandler((err: FastifyError, req, reply) => {
+    req.log.error(err)
+
+    const statusCode = err.statusCode ?? 500
+
+    if (statusCode < 500) {
+      return reply.status(statusCode).send({
+        error: err.message,
+      })
+    }
+
+    return reply.status(500).send({
+      error: 'Internal server error',
+    })
+  })
+
+  // === register schemas ===
 
   app.addSchema(orderCreateBody)
 
-  // === ROUTES ===
+  // === routes ===
 
   // routes - orders
   app.register(ordersIngest, { prefix: '/api/orders' })
@@ -72,7 +95,7 @@ export const start = async () => {
   app.register(nftCollectionsQuery, { prefix: '/api/nft-collections' })
   app.register(nftsQuery, { prefix: '/api/nfts' })
 
-  // === START SERVER ===
+  // === start server ===
 
   app.listen({ port: 5000, host: '0.0.0.0' }, function (err, address) {
     if (err) {

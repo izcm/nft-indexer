@@ -22,7 +22,7 @@ import {
   orTransform,
 } from './schemas.js'
 
-// -- DI ---
+// -- di ---
 import { readByKey, readPage } from '#app/di/read.js'
 
 export const ordersQuery = (fastify: FastifyInstance) => {

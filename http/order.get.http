@@ -4,7 +4,7 @@
 GET {{baseUrl}}/api/orders?limit=25
 
 ### List orders – by chain
-GET {{baseUrl}}/api/orders?chainId=31337&limit=25
+GET {{baseUrl}}/api/orders/31337:0xa42e02404bc1450e2a9c7e810a93fd0c02972993c42eff3e925a38d95f5cd731
 
 ### List orders – active asks, sorted by expiry, with nft-collection included
 GET {{baseUrl}}/api/orders?status=active&isCollectionBid=false&sortField=end&sortDir=asc&include=nftCollection&limit=25

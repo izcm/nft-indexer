@@ -30,7 +30,7 @@ export async function initDb() {
     throw new Error('Error reading db config from .env')
   }
 
-  const client = new MongoClient(MONGODB_URI)
+  const client = new MongoClient(MONGODB_URI, { timeoutMS: 10_000 })
   await client.connect()
 
   db = client.db(DB_NAME)
