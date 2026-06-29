@@ -6,13 +6,12 @@ import type { PageRequest } from '#app/domain/shared/types/page.js'
 import type { PageQuery } from '#app/domain/shared/types/page.js'
 import { parseTripleDomainId } from '#app/domain/shared/ids.js'
 
-import { getOr404 } from '#app/api/shared/get-or-404.js'
+import { getOr404 } from '../../shared/get-or-404.js'
 import {
   buildPageQuery,
   buildAttributeFilters,
   buildFilters,
-} from '#app/api/shared/build-page-query.js'
-
+} from '../../shared/build-page-query.js'
 import { nftPageSchema, nftQueryableFields } from './schemas.js'
 
 // --- DI ---
@@ -33,7 +32,7 @@ export const nftsQuery = (fastify: FastifyInstance) => {
       schema: nftPageSchema,
     },
     async (req, res) => {
-      const query = req.query
+      const { query } = req
 
       const filters = {
         ...buildFilters(query, nftQueryableFields),

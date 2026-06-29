@@ -3,7 +3,7 @@ import {
   chainIdSchema,
   paginationQueryParams,
   uint256Schema,
-} from '#app/api/shared/schemas.js'
+} from '../../shared/schemas.js'
 
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { Status } from '#app/domain/shared/status.js'

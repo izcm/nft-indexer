@@ -17,7 +17,7 @@ export const nftCollectionKeyOf = (collection: NFTCollectionBase): NFTCollection
 // DONE     -> all intended metadata sources processed
 // FAILED   -> ingestion failed irrecoverably
 
-// chainMetaStatus tracks status of the meta derived from contract calls
+// metaStatus tracks status of the meta derived from contract calls
 
 export type NFTCollectionBase = NFTCollectionKey &
   WithTimestamps & {
@@ -36,19 +36,5 @@ export type NFTCollectionMeta = {
   tokenType: string
   totalSupply: string
 }
-
-// // incremental metadata eg. fetched across requests / partial updates
-// export type NFTCollectionMetaPatch = Partial<
-//   Omit<
-//     NFTCollectionBase,
-//     | 'chainId'
-//     | 'address'
-//     | 'metaStatus'
-//     | 'chainMetaStatus'
-//     | 'chainMetaError'
-//     | 'updatedAt'
-//     | 'createdAt'
-//   >
-// >
 
 export type NFTCollection = NFTCollectionBase & Partial<NFTCollectionMeta>

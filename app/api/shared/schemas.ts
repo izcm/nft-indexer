@@ -24,6 +24,12 @@ export const chainEventQueryableFields = {
   txHash: { type: 'string', pattern: BYTES32_REGEX },
 } as const
 
+// absolute minimal sortfields
+export const basicSortFields = {
+  type: 'string',
+  enum: ['createdAt', 'updatedAt'],
+}
+
 export const byIdParams = (regex: string) =>
   ({
     type: 'object',

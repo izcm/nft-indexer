@@ -7,13 +7,13 @@ import type { PageRequest } from '#app/domain/shared/types/page.js'
 import type { PageQuery } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
-import { byIdParams } from '#app/api/shared/schemas.js'
+import { byIdParams } from '../../shared/schemas.js'
 import {
   buildPageQuery,
   buildAttributeFilters,
   buildFilters,
-} from '#app/api/shared/build-page-query.js'
-import { getOr404 } from '#app/api/shared/get-or-404.js'
+} from '../../shared/build-page-query.js'
+import { getOr404 } from '../../shared/get-or-404.js'
 
 import {
   SETTLEMENT_SORT_FIELDS_MAP,

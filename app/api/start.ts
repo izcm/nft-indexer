@@ -20,19 +20,27 @@ const app = Fastify({
   logger: true,
   bodyLimit: 64 * 1024,
   requestTimeout: 10_000,
+  // reject requests with invalid fields instead of stripping them
+  // todo: would be nice to specify the invalid fields(s)
+  ajv: {
+    customOptions: {
+      removeAdditional: false,
+    },
+  },
 })
 
 export const start = async () => {
   // === cors ===
 
-  if (!process.env.CORS_ORIGIN)
-    console.log('[api] CORS_ORIGIN not set — allowing all origins (demo only)')
+  const corsOrigin = process.env.CORS_ORIGIN?.split(',')
 
   await app.register(cors as any, {
-    origin: process.env.CORS_ORIGIN?.split(',') ?? true,
-    methods: ['GET', 'POST', 'PUT'],
+    origin: corsOrigin,
+    methods: ['GET', 'POST'],
     credentials: false,
   })
+
+  console.log('[api] CORS origin: ', corsOrigin)
 
   // === rate limits & security headers ===
 

@@ -1,16 +1,21 @@
 import type { FastifyInstance } from 'fastify'
 
-import type { NFTCollection, NFTCollectionKey } from '#app/domain/nft-collection/model.js'
-
 import { DEFAULT_PAGE_LIMIT } from '#app/config/api.js'
-import type { PageQuery } from '#app/domain/shared/types/page.js'
+
+// --- domain ---
+import type { NFTCollectionKey } from '#app/domain/nft-collection/model.js'
 import type { PageRequest } from '#app/domain/shared/types/page.js'
 import { parseDomainId } from '#app/domain/shared/ids.js'
 
-// --- DI ---
-import { readByKey, readPage } from '#app/di/read.js'
-import { getOr404 } from '#app/api/shared/get-or-404.js'
+// --- api ---
+import { getOr404 } from '../../shared/get-or-404.js'
+import { chainIdSchema, basicSortFields, paginationQueryParams } from '../../shared/schemas.js'
 
+// --- di ---
+import { readByKey, readPage } from '#app/di/read.js'
+
+// NFTCollection query is very thin since
+// current use-case is simply to fetch per chainId
 export const nftCollectionsQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>('/:id', async (req, res) => {
     const { chainId, value: address } = parseDomainId(req.params.id)
@@ -26,16 +31,21 @@ export const nftCollectionsQuery = (fastify: FastifyInstance) => {
         querystring: {
           type: 'object',
           additionalProperties: false,
+          properties: {
+            chainId: chainIdSchema,
+            ...paginationQueryParams,
+            sortField: basicSortFields,
+          },
         },
       },
     },
     async req => {
-      const q = req.query
+      const { query } = req
 
       const pageQuery = {
-        limit: q.limit ?? DEFAULT_PAGE_LIMIT,
+        limit: query.limit ?? DEFAULT_PAGE_LIMIT,
         sortField: 'createdAt',
-        sortDir: q.sortDir,
+        sortDir: query.sortDir,
       }
 
       return readPage('nftCollection', { ...pageQuery, include: [] })
