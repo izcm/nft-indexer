@@ -9,7 +9,7 @@ import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { Status } from '#app/domain/shared/status.js'
 import { ORDER_INCLUDES } from '#app/read/shared/relations.js'
 
-import { attributesQueryFields } from '../nfts/schema.js'
+import { attributesQueryFields } from '../nfts/schemas.js'
 
 // --- sorting ---
 
@@ -127,16 +127,22 @@ export const orderPageSchema = {
     },
 
     patternProperties: {
-      '^or\\.(side|tokenId)$': {
-        anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+      '^or\\.side$': {
+        anyOf: [
+          { type: 'string', pattern: '^[01]$' },
+          { type: 'array', items: { type: 'string', pattern: '^[01]$' } },
+        ],
+      },
+
+      '^or\\.tokenId$': {
+        anyOf: [uint256Schema, { type: 'array', items: uint256Schema }],
       },
     },
   },
 }
 
-// our domain model mostly consist of fields with type 'string'
-// since patternProperties treats values as string / string[]
-// fields of other types need transformation
+// Query parameters are parsed as string|string[].
+// Convert fields whose domain type is not string.
 export const orTransform = (k: string, v: unknown) => {
   if (k === 'side') {
     return Array.isArray(v) ? v.map(Number) : Number(v)

@@ -7,8 +7,8 @@ export const nftQueryableFields = {
 }
 
 export const attributesQueryFields = {
-  trait: { type: 'string' },
-  value: { type: 'string' },
+  trait: { type: 'string', pattern: '^[^,]+(,[^,]+)*$', maxLength: 256 },
+  value: { type: 'string', pattern: '^[^,]+(,[^,]+)*$', maxLength: 256 },
 }
 
 export const nftPageSchema = {

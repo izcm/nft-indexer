@@ -13,7 +13,7 @@ import {
   buildFilters,
 } from '#app/api/shared/build-page-query.js'
 
-import { nftPageSchema, nftQueryableFields } from './schema.js'
+import { nftPageSchema, nftQueryableFields } from './schemas.js'
 
 // --- DI ---
 import { readByKey, readPage } from '#app/di/read.js'

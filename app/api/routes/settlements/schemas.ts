@@ -7,7 +7,7 @@ import {
 
 import { ADDR_REGEX, BYTES32_REGEX } from '#app/domain/constants/regex.js'
 import { SETTLEMENT_INCLUDES } from '#app/read/shared/relations.js'
-import { attributesQueryFields } from '../nfts/schema.js'
+import { attributesQueryFields } from '../nfts/schemas.js'
 
 // --- sort whitelist + domain-shape field mapping ---
 
@@ -59,7 +59,10 @@ export const settlementPageQuery = {
 
     patternProperties: {
       '^or\\.(buyer|seller)$': {
-        anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+        anyOf: [
+          { type: 'string', pattern: ADDR_REGEX },
+          { type: 'array', items: { type: 'string', pattern: ADDR_REGEX } },
+        ],
       },
     },
   },
