@@ -1,4 +1,4 @@
-import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
+import type { ByKey, Countable, Pageable } from '../shared/interfaces/read-commons.js'
 import type { Hash, Address, ChainEvent } from '../shared/types/eth.js'
 import type { Order, OrderKey, OrderRecord, OrderStatus } from './model.js'
 
@@ -6,7 +6,7 @@ import type { Order, OrderKey, OrderRecord, OrderStatus } from './model.js'
  * Order read / write definitions.
  */
 
-export interface OrderPort extends ByKey<OrderRecord, OrderKey>, Pageable<OrderRecord> {
+export interface OrderPort extends ByKey<OrderRecord, OrderKey>, Pageable<OrderRecord>, Countable {
   /**
    * Upsert order. Returns id and whether it was newly created.
    */

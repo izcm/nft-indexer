@@ -42,8 +42,6 @@ export const orderRepo: OrderPort = {
       tokenId,
     })
 
-    const now = Date.now()
-
     const res = await write.updateOne(
       { chainId, orderHash },
       {

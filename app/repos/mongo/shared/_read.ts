@@ -1,7 +1,7 @@
 import { Collection, Filter, Document as MongoDoc, WithId } from 'mongodb'
 
 import { PageQuery } from '#app/domain/shared/types/page.js'
-import { ByKey, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
+import { ByKey, Countable, Pageable } from '#app/domain/shared/interfaces/read-commons.js'
 
 import { findPageGeneric } from './pagination/find-page-generic.js'
 import { mapToRepoQuery } from './to-repo-query.js'
@@ -32,5 +32,14 @@ export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
         ...repoQuery,
       })
     },
-  } satisfies ByKey<WithId<TDoc>, TKey> & Pageable<WithId<TDoc>>
+
+    count(args: Pick<PageQuery, 'filters'>) {
+      const { baseQuery } = mapToRepoQuery<TDoc>(
+        { filters: args.filters, sortField: '', sortDir: 'desc', limit: 0 },
+        getCol(),
+        fieldConfig
+      )
+      return getCol().countDocuments(baseQuery)
+    },
+  } satisfies ByKey<WithId<TDoc>, TKey> & Pageable<WithId<TDoc>> & Countable
 }

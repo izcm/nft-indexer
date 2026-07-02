@@ -23,7 +23,7 @@ import {
 } from './schemas.js'
 
 // --- DI ---
-import { readByKey, readPage } from '#app/di/read.js'
+import { readByKey, readPage, countSettlements, countUniqueWallets } from '#app/di/read.js'
 
 export const settlementsQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(
@@ -32,6 +32,36 @@ export const settlementsQuery = (fastify: FastifyInstance) => {
     async (req, res) => {
       const { chainId, value: orderHash } = parseDomainId(req.params.id)
       return getOr404(() => readByKey('settlement', { chainId, orderHash } as SettlementKey), res)
+    }
+  )
+
+  fastify.get<{ Querystring: PageRequest<'settlement'> & Record<string, unknown> }>(
+    '/wallets/count',
+    { schema: settlementPageQuery },
+    async req => {
+      const query = req.query
+
+      const filters = {
+        ...buildFilters(query, settlementQueryableFields, settlementNestedMap),
+        ...buildAttributeFilters(query),
+      }
+
+      return { count: await countUniqueWallets(filters) }
+    }
+  )
+
+  fastify.get<{ Querystring: PageRequest<'settlement'> & Record<string, unknown> }>(
+    '/count',
+    { schema: settlementPageQuery },
+    async req => {
+      const query = req.query
+
+      const filters = {
+        ...buildFilters(query, settlementQueryableFields, settlementNestedMap),
+        ...buildAttributeFilters(query),
+      }
+
+      return { count: await countSettlements(filters) }
     }
   )
 

@@ -3,12 +3,14 @@ import { Decimal128 } from 'mongodb'
 import { nfts, settlements } from '#app/db/collections.js'
 
 import type { SettlementCall, SettlementKey } from '#app/domain/settlement/model.js'
+import type { PageQuery } from '#app/domain/shared/types/page.js'
 import type { SettlementPort } from '#app/domain/settlement/port.js'
 import type { Hash } from '#app/domain/shared/types/eth.js'
 import { Status } from '#app/domain/shared/status.js'
 
 import { makeReadRepo } from './shared/_read.js'
 import { makeTsWrite } from './shared/_write.js'
+import { mapToRepoQuery } from './shared/to-repo-query.js'
 
 import { SettlementDoc } from './model/docs.js'
 import { SETTLEMENT_FIELD_TRANSFORMS } from './model/field-config.js'
@@ -39,6 +41,24 @@ export const settlementRepo: SettlementPort = {
   // === read ===
 
   ...baseRead,
+
+  async countUniqueWallets(filters?: PageQuery['filters']) {
+    const { baseQuery } = mapToRepoQuery<SettlementDoc>(
+      { filters, sortField: '', sortDir: 'desc', limit: 0 },
+      settlements(),
+      SETTLEMENT_FIELD_TRANSFORMS
+    )
+    const result = await settlements()
+      .aggregate<{ uniqueWallets: number }>([
+        { $match: baseQuery },
+        { $project: { wallet: ['$buyer', '$seller'] } },
+        { $unwind: '$wallet' },
+        { $group: { _id: '$wallet' } },
+        { $count: 'uniqueWallets' },
+      ])
+      .next()
+    return result?.uniqueWallets ?? 0
+  },
 
   findPendingCallReconstruction(chainId, limit) {
     return settlements()

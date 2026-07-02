@@ -8,3 +8,7 @@ export interface ByKey<TEntity, TKey> {
 export interface Pageable<TEntity extends object> {
   findPage(args: PageQuery): Promise<Page<TEntity>>
 }
+
+export interface Countable {
+  count(args: Pick<PageQuery, 'filters'>): Promise<number>
+}

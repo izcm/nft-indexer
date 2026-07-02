@@ -1,4 +1,5 @@
-import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
+import type { ByKey, Countable, Pageable } from '../shared/interfaces/read-commons.js'
+import type { PageQuery } from '../shared/types/page.js'
 import type { Hash } from '../shared/types/eth.js'
 import type { Settlement, SettlementCall, SettlementKey } from './model.js'
 
@@ -6,7 +7,8 @@ import type { Settlement, SettlementCall, SettlementKey } from './model.js'
  * Settlement read / write definitions.
  */
 
-export interface SettlementPort extends ByKey<Settlement, SettlementKey>, Pageable<Settlement> {
+export interface SettlementPort
+  extends ByKey<Settlement, SettlementKey>, Pageable<Settlement>, Countable {
   /**
    * Save settlement. Should error on duplicate chainId + orderHash.
    */
@@ -28,6 +30,12 @@ export interface SettlementPort extends ByKey<Settlement, SettlementKey>, Pageab
    * Mark call reconstruction as failed.
    */
   markCallReconstructionFailed(args: SettlementKey & { error: string }): Promise<void>
+
+  /**
+   * Count distinct wallet addresses across buyer and seller fields.
+   * Optionally scoped to a subset of settlements via filters.
+   */
+  countUniqueWallets(filters?: PageQuery['filters']): Promise<number>
 }
 
 /**

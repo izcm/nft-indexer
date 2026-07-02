@@ -23,7 +23,7 @@ import {
 } from './schemas.js'
 
 // -- di ---
-import { readByKey, readPage } from '#app/di/read.js'
+import { readByKey, readPage, countOrders } from '#app/di/read.js'
 
 export const ordersQuery = (fastify: FastifyInstance) => {
   fastify.get<{ Params: { id: string } }>(
@@ -34,6 +34,19 @@ export const ordersQuery = (fastify: FastifyInstance) => {
       return getOr404(() => readByKey('order', { chainId, orderHash } as OrderKey), res)
     }
   )
+
+  fastify.get<{
+    Querystring: PageRequest<'order'> & Record<string, unknown>
+  }>('/count', { schema: orderPageSchema }, async req => {
+    const query = req.query
+
+    const filters = {
+      ...buildFilters(query, orderRecordQueryableFields, orderRecordNestedMap, orTransform),
+      ...buildAttributeFilters(query),
+    }
+
+    return { count: await countOrders(filters) }
+  })
 
   fastify.get<{
     Querystring: PageRequest<'order'> & Record<string, unknown>

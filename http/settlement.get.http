@@ -6,7 +6,8 @@ GET {{baseUrl}}/api/settlements?limit=25
 ### By seller or buyer (any involvement)
 GET {{baseUrl}}/api/settlements?or.seller=<address>&or.buyer=<address>
 
-# GET {{baseUrl}}/api/settlements?seller=<address>&limit=25
+### Read unique wallets
+GET {{baseUrl}}/api/settlements/wallets/count
 
 # GET {{baseUrl}}/api/settlements?buyer=<address>&limit=25
 
