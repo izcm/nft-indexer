@@ -27,10 +27,10 @@ jobs:
       - name: Build image
         run: |
           docker build \
-            -t ghcr.io/${{ github.repository_owner }}/dmrkt-indexer:latest \
+            -t ghcr.io/${{ github.repository_owner }}/nft-indexer:latest \
             .
 
       - name: Push image
         run: |
           docker push \
-            ghcr.io/${{ github.repository_owner }}/dmrkt-indexer:latest
+            ghcr.io/${{ github.repository_owner }}/nft-indexer:latest
