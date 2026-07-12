@@ -1,4 +1,4 @@
-# d | mrkt indexer
+# NFT indexer
 
 A component of the web3 demo; `d | mrkt`.
 
