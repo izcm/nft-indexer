@@ -1,10 +1,10 @@
-import { Chain, createPublicClient, http, PublicClient } from 'viem'
+import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem'
 import * as chains from 'viem/chains'
 
 import { loadChainsConfig } from '#app/config/chains.js'
 
-// chain.id !== undefined
-export type AppClient = PublicClient<any, Chain>
+// chain !== undefined
+export type AppClient = PublicClient<Transport, Chain>
 
 export type ChainClient = {
   client: AppClient

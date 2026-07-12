@@ -7,7 +7,7 @@ export const isErc721 = async (client: PublicClient, address: Hex) =>
   supportsInterface(client, address, '0x80ac58cd')
 
 export const isDNFT = async (client: PublicClient, address: Hex) =>
-  supportsInterface(client, address, '0x40bf1e93')
+  supportsInterface(client, address, '0x6a1c69c8')
 
 function supportsInterface(client: PublicClient, address: Hex, interfaceId: Hex) {
   return client.readContract({

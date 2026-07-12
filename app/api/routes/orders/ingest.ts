@@ -19,7 +19,7 @@ export const ordersIngest = (fastify: FastifyInstance) => {
       },
       config: {
         rateLimit: {
-          max: 30,
+          max: 60,
           timeWindow: '1 minute',
         },
       },
