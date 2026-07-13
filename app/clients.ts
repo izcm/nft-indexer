@@ -18,9 +18,9 @@ export const chainClients: ChainClient[] = configs.map(({ rpcUrl, marketplaceAdd
   marketplaceAddr,
 }))
 
-export const clientsByChainId: Record<number, AppClient> = Object.fromEntries(
-  chainClients.map(({ client }) => [client.chain?.id, client])
-)
+// export const clientsByChainId: Record<number, AppClient> = Object.fromEntries(
+//   chainClients.map(({ client }) => [client.chain?.id, client])
+// )
 
 export async function initChainClients(): Promise<ChainClient[]> {
   const configs = loadChainsConfig()

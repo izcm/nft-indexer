@@ -3,7 +3,7 @@ import { parseAbiItem, zeroAddress } from 'viem'
 import { AppClient } from '#app/clients.js'
 
 import { DEFAULT_WORKER_LIMIT } from '#app/config/workers.js'
-import { FORK_START_BLOCK } from '#app/config/app.js'
+import { FORK_START_BLOCK, IS_DEMO } from '#app/config/app.js'
 
 import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 
@@ -30,12 +30,13 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
   const latest = await client.getBlockNumber()
 
   for (const c of collections) {
-    // line below is for demo purposes only
-    // const fullyMinted = await isFullyMinted(client, c.address)
-    // if (!fullyMinted) {
-    //   console.log(`[backfill] skipping ${c.address} — not fully minted yet`)
-    //   return
-    // }
+    if (IS_DEMO) {
+      const fullyMinted = await isFullyMinted(client, c.address)
+      if (!fullyMinted) {
+        console.log(`[backfill] skipping ${c.address} — not fully minted yet`)
+        return
+      }
+    }
 
     let from = BigInt(c.lastScannedBlock ?? FORK_START_BLOCK ?? 0)
 

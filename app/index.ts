@@ -80,7 +80,7 @@ async function main() {
     console.log(`starting background workers for chain ${name} (${id})...`)
     const workerInterval = process.env.WORKER_INTERVAL_MS
       ? Number(process.env.WORKER_INTERVAL_MS)
-      : undefined
+      : 10_000
     startWorkers(chainClient, ports, workerInterval)
   })
 

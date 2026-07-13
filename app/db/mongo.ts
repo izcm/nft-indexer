@@ -26,7 +26,7 @@ export async function initDb() {
   const MONGODB_URI = process.env.MONGODB_URI
   const DB_NAME = 'dmrkt'
 
-  if (!MONGODB_URI || !DB_NAME) {
+  if (!MONGODB_URI) {
     throw new Error('Error reading db config from .env')
   }
 

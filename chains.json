@@ -1,6 +1,0 @@
-[
-  {
-    "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}",
-    "marketplaceAddr": "0xB3F657a8Aa21398d9CA6a2B5386B53134E150DD0"
-  }
-]

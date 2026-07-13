@@ -64,7 +64,7 @@ async function startWorker(worker: Worker, chainId: number, interval: number) {
   }
 }
 
-export async function start(chainClient: ChainClient, ports: Ports, interval = 10_000) {
+export async function start(chainClient: ChainClient, ports: Ports, interval: number) {
   const list = workers(chainClient, ports)
   const { id } = chainClient.client.chain
 

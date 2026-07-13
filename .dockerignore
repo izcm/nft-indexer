@@ -19,3 +19,6 @@ notes
 
 http
 docker-compose.yml
+
+# per-deployment config
+chains.json

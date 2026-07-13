@@ -15,13 +15,15 @@ import { ordersQuery } from './routes/orders/query.js'
 import { nftCollectionsQuery } from './routes/nft-collections/query.js'
 import { orderCreateBody } from './routes/orders/schemas.js'
 import { nftsQuery } from './routes/nfts/query.js'
+import { healthcheck } from './routes/healthcheck.js'
+
+import { IS_DEMO } from '#app/config/app.js'
 
 const app = Fastify({
   logger: true,
   bodyLimit: 64 * 1024,
   requestTimeout: 10_000,
   // reject requests with invalid fields instead of stripping them
-  // todo: would be nice to specify the invalid fields(s)
   ajv: {
     customOptions: {
       removeAdditional: false,
@@ -32,7 +34,7 @@ const app = Fastify({
 export const start = async () => {
   // === cors ===
 
-  const corsOrigin = process.env.CORS_ORIGIN?.split(',')
+  const corsOrigin = IS_DEMO ? true : process.env.CORS_ORIGIN?.split(',')
 
   await app.register(cors as any, {
     origin: corsOrigin,
@@ -102,6 +104,11 @@ export const start = async () => {
   // routes - nft-collections & nfts
   app.register(nftCollectionsQuery, { prefix: '/api/nft-collections' })
   app.register(nftsQuery, { prefix: '/api/nfts' })
+
+  // routes - healthcheck (demo only)
+  if (IS_DEMO) {
+    app.register(healthcheck, { prefix: '/api/healthcheck' })
+  }
 
   // === start server ===
 
