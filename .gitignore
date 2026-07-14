@@ -22,6 +22,3 @@ coverage/
 
 # personal
 notes/
-
-# per-deployment config
-chains.json
