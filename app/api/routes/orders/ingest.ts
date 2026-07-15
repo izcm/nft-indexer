@@ -4,6 +4,7 @@ import type { Order, OrderCore } from '#app/domain/order/model.js'
 import { InvalidOrderError } from '#app/domain/shared/errors.js'
 
 import { orderActions as actions } from '#app/di/write.js'
+import { IS_DEMO } from '#app/config/app.js'
 
 export const ordersIngest = (fastify: FastifyInstance) => {
   fastify.post<{ Headers: { 'x-chain-id': number }; Body: CreateOrderRequest }>(
@@ -18,10 +19,12 @@ export const ordersIngest = (fastify: FastifyInstance) => {
         body: { $ref: 'order-create#' },
       },
       config: {
-        rateLimit: {
-          max: 60,
-          timeWindow: '1 minute',
-        },
+        rateLimit: IS_DEMO
+          ? false
+          : {
+              max: 60,
+              timeWindow: '1 minute',
+            },
       },
     },
     async (req, res) => {
