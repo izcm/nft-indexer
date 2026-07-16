@@ -24,4 +24,4 @@ export const isValidOrder = (o: Order): boolean => {
   )
 }
 
-// have signature validation here also
+// todo: signature validation

@@ -33,7 +33,7 @@ export const makeReadRepo = <TDoc extends MongoDoc, TKey>(
       })
     },
 
-    count(args: Pick<PageQuery, 'filters'>) {
+    count(args: Pick<PageQuery, 'filters'> = {}) {
       const { baseQuery } = mapToRepoQuery<TDoc>(
         { filters: args.filters, sortField: '', sortDir: 'desc', limit: 0 },
         getCol(),

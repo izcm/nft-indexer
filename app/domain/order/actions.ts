@@ -11,8 +11,8 @@ import { InvalidOrderError } from '../shared/errors.js'
 const TAG = 'order'
 
 type Deps = {
-  orders: Pick<OrderPort, 'ensure' | 'cancelOrdersByChainIdNonce'>
-  nftCollections: Pick<NFTCollectionPort, 'noteNFTCollection'>
+  orders: Pick<OrderPort, 'ensure' | 'cancelOrdersByChainIdNonce' | 'count'>
+  nftCollections: Pick<NFTCollectionPort, 'noteNFTCollection' | 'count' | 'findByKey'>
   realtime?: RealtimePort
 }
 
@@ -20,6 +20,20 @@ export const makeOrderActions = ({ orders, nftCollections, realtime }: Deps) => 
   // --- primary actions ---
 
   async function ingestOrder(chainId: number, order: Order) {
+    // temporary rule for testnet deployment:
+    // -> only allow orders on a collection that is already stored in db.
+    // -> skip if there isnt any nftcollections in db
+    // (only one demo collection is live per now)
+    if (
+      (await nftCollections.count()) > 0 && // if 'nft-collections' doument count > 0
+      !nftCollections.findByKey({ chainId, address: order.collection }) // and order.collection isn't in db
+    ) {
+      throw new InvalidOrderError('Collection not supported.') // reject
+    }
+
+    if ((await orders.count()) > 10_000) throw new Error('Order cap reached.')
+
+    // real rules from here
     if (!isValidOrder(order)) {
       throw new InvalidOrderError()
     }

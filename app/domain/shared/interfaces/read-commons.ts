@@ -10,5 +10,5 @@ export interface Pageable<TEntity extends object> {
 }
 
 export interface Countable {
-  count(args: Pick<PageQuery, 'filters'>): Promise<number>
+  count(args?: Pick<PageQuery, 'filters'>): Promise<number>
 }

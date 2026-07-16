@@ -1,4 +1,4 @@
-import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
+import type { ByKey, Countable, Pageable } from '../shared/interfaces/read-commons.js'
 import { Address } from '../shared/types/eth.js'
 import type { NFTCollection, NFTCollectionMeta, NFTCollectionKey } from './model.js'
 
@@ -7,7 +7,7 @@ import type { NFTCollection, NFTCollectionMeta, NFTCollectionKey } from './model
  */
 
 export interface NFTCollectionPort
-  extends ByKey<NFTCollection, NFTCollectionKey>, Pageable<NFTCollection> {
+  extends ByKey<NFTCollection, NFTCollectionKey>, Pageable<NFTCollection>, Countable {
   /**
    * Ensure collection exists (no-op if already present).
    *
