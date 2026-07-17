@@ -13,9 +13,12 @@ const fakeDeps = () => ({
     ensure: vi.fn(),
     updateStatus: vi.fn(),
     cancelOrdersByChainIdNonce: vi.fn(),
+    count: vi.fn(),
   },
   nftCollections: {
     noteNFTCollection: vi.fn(),
+    findByKey: vi.fn(),
+    count: vi.fn(),
   },
 })
 
