@@ -3,6 +3,7 @@ import Fastify, { FastifyError } from 'fastify'
 import rateLimit from '@fastify/rate-limit'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
+import websocket from '@fastify/websocket'
 
 // api routes - SETTLEMENTS
 import { settlementsQuery } from './routes/settlements/query.js'
@@ -18,6 +19,7 @@ import { nftsQuery } from './routes/nfts/query.js'
 import { healthcheck } from './routes/healthcheck.js'
 
 import { IS_DEMO } from '#app/config/app.js'
+import { handleConnection } from '#app/di/write.js'
 
 const app = Fastify({
   logger: true,
@@ -43,6 +45,11 @@ export const start = async () => {
   })
 
   console.log('[api] CORS origin: ', corsOrigin)
+
+  // === web socket ===
+
+  await app.register(websocket)
+  app.get('/websocket', { websocket: true }, handleConnection)
 
   // === rate limits & security headers ===
 

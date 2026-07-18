@@ -1,4 +1,4 @@
-import { WebSocketServer } from 'ws'
+import { WebSocket } from 'ws'
 
 import { orderRepo } from '#app/repos/mongo/order.repo.js'
 import { nftCollectionRepo } from '#app/repos/mongo/nft-collection.repo.js'
@@ -13,25 +13,30 @@ import { RealtimePort } from '#app/domain/shared/interfaces/realtime-port.js'
 
 // --- web socket ---
 
-const wss = new WebSocketServer({ port: 5001 })
+export const clients = new Set<WebSocket>()
 
-wss.on('error', err => {
-  console.error('WebSocket server error:', err)
-  process.exit(1)
-})
+export function handleConnection(socket: WebSocket) {
+  console.log('IOWJKDOWKDOSK COPS JCOISA OPCDJOIHJVC KDSBV CDIXSJ')
+  console.log('socket constructor:', socket?.constructor?.name)
+  console.log('typeof socket.on:', typeof (socket as any)?.on)
+  clients.add(socket)
 
-wss.on('connection', function connection(ws) {
-  ws.on('error', function (error) {
+  socket.on('error', function (error) {
     this.close()
     console.error(error)
   })
-})
+
+  socket.on('close', () => {
+    clients.delete(socket)
+    console.log('Client disconnected')
+  })
+}
 
 const realtime: RealtimePort = {
   broadcast(event, payload) {
     const msg = JSON.stringify({ event, payload })
 
-    wss.clients.forEach(client => {
+    clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(msg)
       }

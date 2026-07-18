@@ -468,7 +468,7 @@ export const orderActions = makeOrderActions({
 })
 ```
 
-`di/write.ts` also creates the WebSocket server and exposes it through the `RealtimePort` interface.
+`di/write.ts` also tracks connected WebSocket clients and exposes broadcasting through the `RealtimePort` interface. The `/websocket` route itself is registered in `api/start.ts` using `@fastify/websocket`, so it shares the same port as the HTTP API.
 
 ---
 
