@@ -16,9 +16,6 @@ import { RealtimePort } from '#app/domain/shared/interfaces/realtime-port.js'
 export const clients = new Set<WebSocket>()
 
 export function handleConnection(socket: WebSocket) {
-  console.log('IOWJKDOWKDOSK COPS JCOISA OPCDJOIHJVC KDSBV CDIXSJ')
-  console.log('socket constructor:', socket?.constructor?.name)
-  console.log('typeof socket.on:', typeof (socket as any)?.on)
   clients.add(socket)
 
   socket.on('error', function (error) {
