@@ -12,6 +12,8 @@ import { ListenerItem } from './shared/types.js'
 
 export const start = ({ client, marketplaceAddr }: ChainClient) => {
   const watch = () => {
+    console.log(`[indexer] listening for events on ${marketplaceAddr} (chain ${client.chain.id})`)
+
     const unwatch = client.watchContractEvent({
       address: marketplaceAddr,
       abi: json.abi,
