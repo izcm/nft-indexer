@@ -6,10 +6,7 @@ const abi = parseAbi(['function supportsInterface(bytes4 interfaceId) view retur
 export const isErc721 = async (client: PublicClient, address: Hex) =>
   supportsInterface(client, address, '0x80ac58cd')
 
-export const isDNFT = async (client: PublicClient, address: Hex) =>
-  supportsInterface(client, address, '0x6a1c69c8')
-
-function supportsInterface(client: PublicClient, address: Hex, interfaceId: Hex) {
+export function supportsInterface(client: PublicClient, address: Hex, interfaceId: Hex) {
   return client.readContract({
     address,
     abi,

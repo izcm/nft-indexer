@@ -27,7 +27,7 @@ export type NFTCollectionBase = NFTCollectionKey &
 
     // backfill
     lastScannedBlock?: number
-    backfillDone: boolean
+    backfillDone: boolean // for static supply collections
   }
 
 export type NFTCollectionMeta = {

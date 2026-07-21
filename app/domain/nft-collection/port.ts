@@ -41,6 +41,13 @@ export interface NFTCollectionPort
    * Update lastScannedBlock for a collection.
    */
   updateLastScannedBlock(args: NFTCollectionKey & { block: number }): Promise<void>
+
+  /**
+   * Mark backfill as fully done — only applicable to fixed-supply collections
+   * (currently: DNFT) once minting has reached MAX_SUPPLY. Continuously-minting
+   * collections never reach this state.
+   */
+  markBackfillDone(key: NFTCollectionKey): Promise<void>
 }
 
 /**

@@ -9,7 +9,8 @@ import type { NFTCollectionPort } from '#app/domain/nft-collection/port.js'
 
 import { nftActions } from '#app/di/write.js'
 
-import { isFullyMinted } from '#app/lib/blockchain/calls/dnft-fully-minted.js'
+import { DNFT_ABI, isDNFT, isFullyMinted } from '#app/lib/blockchain/calls/dnft.js'
+import { NFTPort } from '#app/domain/nft/port.js'
 
 const STEP = 5n // rpc free tier restrictions
 const MAX_STEPS = 100
@@ -21,6 +22,8 @@ const TRANSFER_EVENT = parseAbiItem(
 type BackfillPort = {
   findBackfillNotDone: NFTCollectionPort['findBackfillNotDone']
   updateLastScannedBlock: NFTCollectionPort['updateLastScannedBlock']
+  markBackfillDone: NFTCollectionPort['markBackfillDone']
+  nftCount: NFTPort['count']
 }
 
 export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort) {
@@ -30,59 +33,75 @@ export async function runNFTBackfillWorker(client: AppClient, port: BackfillPort
   const latest = await client.getBlockNumber()
 
   for (const c of collections) {
-    if (IS_DEMO) {
-      const fullyMinted = await isFullyMinted(client, c.address)
-      if (!fullyMinted) {
-        console.log(`[backfill] skipping ${c.address} — not fully minted yet`)
-        return
-      }
-    }
-
-    let from = BigInt(c.lastScannedBlock ?? FORK_START_BLOCK ?? 0)
-
-    // categorized as`mint`:
-    //  - event = TRANSFER_EVENT
-    //  - topic 'from' = ZeroAddress
-
-    let step = 0
-
-    while (from < latest && step < MAX_STEPS) {
-      let to = from + STEP
-
-      if (to > latest) to = latest
-
-      const logs = await client.getLogs({
-        address: c.address,
-        event: TRANSFER_EVENT,
-        args: {
-          from: zeroAddress,
-        },
-        fromBlock: from,
-        toBlock: to,
-      })
-
-      // loop returned logs
-      for (const log of logs) {
-        const { tokenId } = log.args
-        if (tokenId === undefined) continue
-
-        const block = Number(log.blockNumber)
-
-        console.log(`[backfill] nft=${tokenId} block=${block}`)
-
-        await nftActions.ingestNFT(
-          { chainId, collection: c.address, tokenId: tokenId.toString() },
-          block
-        )
+    try {
+      if (IS_DEMO) {
+        const fullyMinted = await isFullyMinted(client, c.address)
+        if (!fullyMinted) {
+          console.log(`[backfill] skipping ${c.address} — not fully minted yet`)
+          continue
+        }
       }
 
-      // here or
-      await port.updateLastScannedBlock({ chainId, address: c.address, block: Number(to) })
+      // if implements DNFT interface + nft count = MAX_SUPPLY -> continue
+      if (await isDNFT(client, c.address)) {
+        const [count, maxSupply] = await Promise.all([
+          port.nftCount({ filters: { chainId: c.chainId, collection: c.address } }),
+          client.readContract({ address: c.address, abi: DNFT_ABI, functionName: 'MAX_SUPPLY' }),
+        ])
 
-      // the returned logs keep
-      from = to + 1n
+        if (BigInt(count) >= maxSupply) {
+          console.log(`[backfill] skipping ${c.address} — DNFT max supply reached`)
+          await port.markBackfillDone({ chainId: c.chainId, address: c.address })
+          continue
+        }
+      }
 
-      step++
+      let from = BigInt(c.lastScannedBlock ?? FORK_START_BLOCK ?? 0)
+
+      // categorized as`mint`:
+      //  - event = TRANSFER_EVENT
+      //  - topic 'from' = ZeroAddress
+
+      let step = 0
+
+      while (from < latest && step < MAX_STEPS) {
+        let to = from + STEP
+
+        if (to > latest) to = latest
+
+        const logs = await client.getLogs({
+          address: c.address,
+          event: TRANSFER_EVENT,
+          args: {
+            from: zeroAddress,
+          },
+          fromBlock: from,
+          toBlock: to,
+        })
+
+        // loop returned logs
+        for (const log of logs) {
+          const { tokenId } = log.args
+          if (tokenId === undefined) continue
+
+          const block = Number(log.blockNumber)
+
+          console.log(`[backfill] nft=${tokenId} block=${block}`)
+
+          await nftActions.ingestNFT(
+            { chainId, collection: c.address, tokenId: tokenId.toString() },
+            block
+          )
+        }
+
+        await port.updateLastScannedBlock({ chainId, address: c.address, block: Number(to) })
+
+        from = to + 1n
+
+        step++
+      }
+    } catch (error) {
+      console.log(`[backfill] error processing ${c.address}`, error)
     }
   }
 }

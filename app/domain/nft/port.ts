@@ -1,11 +1,11 @@
-import type { ByKey, Pageable } from '../shared/interfaces/read-commons.js'
+import type { ByKey, Countable, Pageable } from '../shared/interfaces/read-commons.js'
 import type { NFT, NFTKey, NFTMeta } from './model.js'
 
 /**
  * NFT read / write definitions.
  */
 
-export interface NFTPort extends ByKey<NFT, NFTKey>, Pageable<NFT> {
+export interface NFTPort extends ByKey<NFT, NFTKey>, Pageable<NFT>, Countable {
   /**
    * Ensures NFT exists in db
    * Prevents duplicate keys without throwing errors

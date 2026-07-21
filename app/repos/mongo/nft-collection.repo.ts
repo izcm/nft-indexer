@@ -96,4 +96,8 @@ export const nftCollectionRepo: NFTCollectionPort = {
   async updateLastScannedBlock({ chainId, address, block }) {
     await nftCollections().updateOne({ chainId, address }, { $set: { lastScannedBlock: block } })
   },
+
+  async markBackfillDone({ chainId, address }) {
+    await nftCollections().updateOne({ chainId, address }, { $set: { backfillDone: true } })
+  },
 }
