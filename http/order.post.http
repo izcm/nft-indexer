@@ -6,19 +6,19 @@ Content-Type: application/json
 X-Chain-Id: 31337
 
 {
-  "actor": "0x31F1a4B4f9f7CAD3f21bF9F2c3840C5CcF7B85b9",
-  "collection": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+  "actor": "0xCA97a6c4e2ca37Fcf90050B97e6368378F13949f",
+  "collection": "0xa1E25aef7feDD5dc15619769111ffa31897b8459",
   "currency": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-  "end": 1868226790,
+  "end": 1785267451,
   "isCollectionBid": false,
-  "nonce": "1",
-  "price": "100000000000000000",
-  "side": 0,
+  "nonce": "36806293475385620267970156553871960809188460684459596992312668430547009235228",
+  "price": 15000000000000000,
+  "side": 1,
   "signature": {
-    "r": "0x990665297d7fe4aac4d15b4d255aab45128e2b39b2412cd4467acca99b0e7db5",
-    "s": "0x2dd482557c37ff19e0ef2caeac5b8f2afa7b3765a06c27850feeac022ab82c79",
-    "v": 28
+    "r": "0x160c10bd8c91853ffc181580d2e0ab95909840688b927ca3e9325c6672f2bf9b",
+    "s": "0x3c40a32210248c4887bb16f6d8acf220bd50eff3a7d7c2bfaa134e1e8eaa23c0",
+    "v": 27
   },
-  "start": 0,
-  "tokenId": "2"
+  "start": 1779247515,
+  "tokenId": 42
 }

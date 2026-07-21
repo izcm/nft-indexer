@@ -25,8 +25,8 @@ export const makeOrderActions = ({ orders, nftCollections, realtime }: Deps) => 
     // -> skip if there isnt any nftcollections in db
     // (only one demo collection is live per now) tmp: very strict one collection only
     if (
-      (await nftCollections.count()) > 0 // && // if 'nft-collections' doument count > 0
-      // !nftCollections.findByKey({ chainId, address: order.collection }) // and order.collection isn't in db
+      (await nftCollections.count()) > 0 && // if 'nft-collections' doument count > 0
+      !nftCollections.findByKey({ chainId, address: order.collection }) // and order.collection isn't in db
     ) {
       throw new InvalidOrderError('Collection not supported.') // reject
     }

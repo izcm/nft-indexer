@@ -1,14 +1,14 @@
 services:
   # for local dev
-  anvil:
-    image: ghcr.io/foundry-rs/foundry
-    entrypoint: ['anvil']
-    command:
-      - --host=0.0.0.0
-      - --port=8545
-      - --chain-id=31337
-    ports:
-      - '8545:8545'
+  # anvil:
+  #   image: ghcr.io/foundry-rs/foundry
+  #   entrypoint: ['anvil']
+  #   command:
+  #     - --host=0.0.0.0
+  #     - --port=8545
+  #     - --chain-id=31337
+  #   ports:
+  #     - '8545:8545'
 
   mongo:
     image: mongo:7
