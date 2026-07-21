@@ -622,7 +622,7 @@ GET /api/orders?or.tokenId=5&or.tokenId=12&trait=Background&value=Blue
 | `txHash`     | bytes32           |                                   |
 | `trait`      | string            | filter by related NFT trait name  |
 | `value`      | string            | filter by related NFT trait value |
-| `include`    | string[]          | `order`, `nftCollection`          |
+| `include`    | string[]          | `order`, `nftCollection`, `nft`   |
 
 Sort fields: `createdAt`, `updatedAt`, `price`, `buyer`, `seller`, `timestamp`
 
