@@ -16,7 +16,7 @@ import {
   type ResourceType,
 } from '#app/domain/shared/types/resource.js'
 
-export type PagedWithIncludesResource = Exclude<ResourceName, 'nftCollection' | 'nft'>
+export type PagedWithIncludesResource = Exclude<ResourceName, 'nftCollection'>
 
 import { nftKeyOf, type NFT, type NFTKey } from '#app/domain/nft/model.js'
 
@@ -37,6 +37,11 @@ export const relations = {
       chainId: s.chainId,
       address: s.collection,
     }),
+    nft: (s: Settlement): NFTKey => ({
+      chainId: s.chainId,
+      collection: s.collection,
+      tokenId: s.tokenId,
+    }),
   },
   order: {
     settlement: (o: OrderRecord): SettlementKey => ({
@@ -46,6 +51,17 @@ export const relations = {
     nftCollection: (o: OrderRecord): NFTCollectionKey => ({
       chainId: o.chainId,
       address: o.order.collection,
+    }),
+    nft: (o: OrderRecord): NFTKey => ({
+      chainId: o.chainId,
+      collection: o.order.collection,
+      tokenId: o.order.tokenId,
+    }),
+  },
+  nft: {
+    nftCollection: (n: NFT): NFTCollectionKey => ({
+      chainId: n.chainId,
+      address: n.collection,
     }),
   },
 } as const

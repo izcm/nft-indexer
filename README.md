@@ -347,11 +347,6 @@ For example, each order in a page can include its nft-collection, but an nft-col
 
 To use includes in queries — see [Available query parameters](#available-query-parameters).
 
-<!-- should I specify that this is kind of mongo specific behaviour? because it wouldnt really be a thing if it was a relational database -->
-
-> [!IMPORTANT]
-> `NFT` is not yet available as an include target — its relations haven't been defined in `relations.ts`.
-
 **Relations**
 
 Relations between resources are defined in `relations.ts`.
@@ -595,7 +590,7 @@ GET /api/orders?limit=10&cursor=<nextCursor>
 | `txHash`          | bytes32           |                                            |
 | `trait`           | string            | filter by related NFT trait name           |
 | `value`           | string            | filter by related NFT trait value          |
-| `include`         | string[]          | `nftCollection`                            |
+| `include`         | string[]          | `nftCollection`, `nft`                     |
 
 Sort fields: `createdAt`, `updatedAt`, `price`, `start`, `end`, `expires`, `actor`
 

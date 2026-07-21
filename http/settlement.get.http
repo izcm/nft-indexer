@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:5000
 
-### List settlements
-GET {{baseUrl}}/api/settlements?limit=25
+### Li st settlements
+GET {{baseUrl}}/api/settlements?limit=25&include=nftCollection&include=nft
 
 ### By seller or buyer (any involvement)
 GET {{baseUrl}}/api/settlements?or.seller=<address>&or.buyer=<address>

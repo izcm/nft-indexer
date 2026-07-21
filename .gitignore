@@ -22,3 +22,6 @@ coverage/
 
 # personal
 notes/
+
+# dev
+chains.dev.json

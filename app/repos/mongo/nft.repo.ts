@@ -11,7 +11,7 @@ import { makeTsWrite } from './shared/_write.js'
 
 const baseRead = makeReadRepo<NFT, NFTKey>(nfts, k => ({
   chainId: k.chainId,
-  collection: k,
+  collection: k.collection,
   tokenId: k.tokenId,
 }))
 

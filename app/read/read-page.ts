@@ -8,11 +8,8 @@ import { hydratePage } from './shared/hydrate-page.js'
 
 export const makeReadPage = (readers: Readers) =>
   async function readPage<R extends ResourceName>(resource: R, query: PageRequest<R>) {
-    // todo: nft is skipped because of unfinished config
-    // it should be able to specify includes
-
     /// only 1:1 M:1 relationships – NFTCollection only has 1:M
-    if (resource === 'nftCollection' || resource === 'nft') {
+    if (resource === 'nftCollection') {
       const page = await readers[resource].findPage(query)
 
       return {
