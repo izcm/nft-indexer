@@ -5,6 +5,9 @@ export default defineConfig({
   test: {
     environment: 'node',
     exclude: ['dist/**', 'node_modules/**'],
+    restoreMocks: true,
+    // https://vitest.dev/api/mock.html#mockclear
+    clearMocks: true,
   },
   resolve: {
     alias: {

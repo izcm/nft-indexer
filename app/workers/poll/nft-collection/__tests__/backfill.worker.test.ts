@@ -59,7 +59,6 @@ describe('runNFTBackfillWorker', () => {
   let logSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    vi.clearAllMocks()
     isDemo = false
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
   })

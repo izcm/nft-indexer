@@ -77,15 +77,18 @@ RPC URLs in `chains.json` support `${ENV_VAR}` placeholders that are substituted
 
 ### Environment variables
 
-| VAR                  | Description                                        | Required | Example                           |
-| -------------------- | -------------------------------------------------- | -------- | --------------------------------- |
-| `MONGODB_URI`        | MongoDB connection string                          | Yes      | `mongodb://localhost:27017`       |
-| `CHAINS_CONFIG`      | path to chains.json                                | No       | `./chains.json`                   |
-| `FORK_START_BLOCK`   | block used as starting point for polling           | No       | `21000000`                        |
-| `CORS_ORIGIN`        | comma-separated allowed origins; omit to allow all | No       | `https://foo.com,https://bar.com` |
-| `WORKER_INTERVAL_MS` | sleep duration between worker cycles               | No       | `10000`                           |
+| VAR                  | Description                                                   | Required | Example                           |
+| -------------------- | ------------------------------------------------------------- | -------- | --------------------------------- |
+| `MONGODB_URI`        | MongoDB connection string                                     | Yes      | `mongodb://localhost:27017`       |
+| `CHAINS_CONFIG`      | path to chains.json                                           | No       | `./chains.json`                   |
+| `FORK_START_BLOCK`   | block used as starting point for polling                      | No       | `21000000`                        |
+| `CORS_ORIGIN`        | comma-separated allowed origins; omit to allow all            | No       | `https://foo.com,https://bar.com` |
+| `WORKER_INTERVAL_MS` | sleep duration between worker cycles                          | No       | `10000`                           |
+| `STRICT_INGESTION`   | reject orders on collections not already known to the indexer | No       | `true`                            |
 
 If `FORK_START_BLOCK` is not set, polling starts at the genesis block.
+
+If `STRICT_INGESTION` is not `"true"`, orders are accepted for any collection.
 
 ---
 
