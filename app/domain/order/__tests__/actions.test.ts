@@ -85,6 +85,15 @@ describe('domain actions - orders', () => {
           )
         })
       })
+
+      it('throws when order count greater than 10_000', async () => {
+        deps.orders.count.mockResolvedValueOnce(10_001)
+        await expect(callIngest()).rejects.toThrow(
+          expect.objectContaining({
+            message: 'Order cap reached.',
+          })
+        )
+      })
     })
 
     it('returns id + indicator on whether order was upserted and notes collection', async () => {
