@@ -21,6 +21,9 @@ import { start as startServer } from './api/start.js'
 // workers
 import { start as startWorkers } from './workers/start.js'
 
+// flags
+import { IS_DEMO, STRICT_INGESTION } from './config/app.js'
+
 // di repos
 import { nftCollectionRepo } from './repos/mongo/nft-collection.repo.js'
 import { nftRepo } from './repos/mongo/nft.repo.js'
@@ -35,6 +38,15 @@ async function main() {
   }
 
   logSection('Booting up d | mrkt indexer')
+
+  const workerInterval = process.env.WORKER_INTERVAL_MS
+    ? Number(process.env.WORKER_INTERVAL_MS)
+    : 10_000
+
+  logSection('Flags')
+  console.log(`IS_DEMO: ${IS_DEMO ? 'on' : 'off'}`)
+  console.log(`STRICT_INGESTION: ${STRICT_INGESTION ? 'on' : 'off'}`)
+  console.log(`WORKER_INTERVAL_MS: ${workerInterval}`)
 
   // db + server
 
@@ -78,9 +90,6 @@ async function main() {
 
     logSection('Workers')
     console.log(`starting background workers for chain ${name} (${id})...`)
-    const workerInterval = process.env.WORKER_INTERVAL_MS
-      ? Number(process.env.WORKER_INTERVAL_MS)
-      : 10_000
     startWorkers(chainClient, ports, workerInterval)
   })
 
